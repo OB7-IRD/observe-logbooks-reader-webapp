@@ -846,7 +846,12 @@ def add_trip(token, content, url_base):
             return (errorFilter(res.text), 2)
             # return json.loads(res.text), 2
         except KeyError:
-            print("Message d'erreur: ", json.loads(res.text))
+
+
+            # Faire une fonction pour mieux traiter ce type d'erreur
+            print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
+
+
             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
 
 
