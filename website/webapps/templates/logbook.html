@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+{% load tailwind_tags %}
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Logbook</title>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!--  <link rel="stylesheet" href="{% static 'assets/bootstrap/css/bootstrap.min.css' %}"> -->
+    {% tailwind_css %}
+</head>
+
+
+<body id="body">
+
+<!-- This example requires Tailwind CSS v2.0+ -->
+<!--
+  This example requires updating your template:
+
+  ```
+  <html class="h-full bg-gray-100">
+  <body class="h-full">
+  ```
+-->
+<div class="min-h-full">
+  <nav class="bg-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <img class="h-8 w-8 rounded-xl" src="{% static '/assets/img/logo.png' %}" alt="Workflow">
+          </div>
+          <div class="hidden md:block">
+            <div class="ml-10 flex items-baseline space-x-4">
+              <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
+              <a href="{% url 'home' %}" class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white" >Dashboard</a>
+
+              <a href="{% url 'logbook' %}" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium" aria-current="page">Logbook</a>
+
+            </div>
+          </div>
+        </div>
+
+        <a href="{% url 'logout' %}" class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white">
+          <span class="sr-only">Logout</span>
+          <!-- Heroicon name: outline/bell -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </a>
+
+
+
+      </div>
+    </div>
+  </nav>
+
+  <header class="bg-white shadow">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <h1 class="text-3xl font-bold text-gray-900">Logbook</h1>
+      <div class="text-center justify-between">
+
+          <a href="{% url 'update' %}" class="font-bold mt-2 px-4 py-2 rounded-full text-xs text-white uppercase transition bg-blue-600 hover:bg-blue-900 shadow">
+              Mise à jour des données de réferences
+          </a>
+      </div>
+    </div>
+
+  </header>
+  <main>
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <!-- Replace with your content  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA -->
+
+        <form action="apply" method="post" id="apply">
+            {% csrf_token %}
+          <div class="flex items-baseline space-x-2">
+            <select name="langue" class="w-full px-2 py-3 ring-1 ring-cyan-700 rounded-xl">
+                <option value="FR">Français</option>
+                <option value="EN">Anglais</option>
+            </select>
+            <select id="domaine" name="domaine" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+                <option>Domaine...</option>
+                <option value="senne">Senne</option>
+                <option value="palangre">Palangre</option>
+            </select>
+
+            <select id="programme" name="programme" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+                <option class="after">Programmes du domaine...</option>
+            </select>
+            <select id="ocean" name="ocean" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+                <option>Ocean...</option>
+                {% for key, value in ocean_data.items %}
+                    <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select><br>
+            <select id="ty_doc" name="ty_doc" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+                <option class="after">Types de document...</option>
+            </select><br>
+              <button id="btn_apply" type="submit" name="appliquer" title="Submit" class="w-full px-4 py-3 text-center rounded-xl transition bg-blue-600 hover:bg-blue-900 active:bg-blue-900 focus:bg-blue-900">
+                  <span class="text-white font-semibold">
+                      Appliquer
+                  </span>
+              </button>
+          </div>
+        </form>
+
+        <br>
+
+
+        <!--
+        <style>
+            .dz-error-mark svg g g {   color: red;
+                                        background-color: red;
+                                     }
+        </style>
+        -->
+        <style>
+            input.inp{
+                position: absolute;
+                padding:0;
+                z-index: -1;
+                }
+            input.dz-button{
+                /*position: absolute;
+                margin-top : -100px;*/
+            }
+            p span { color: red; font-size: 0.8em;}
+        </style>
+
+        <div id="div_upload" hidden="true" class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <!-- Replace with your content -->
+          <div class="px-4 py-6 sm:px-0">
+            <p class="text-black text-center">
+                Les documents doivent être de type: .xlsx, .xlsm, .zip.
+            </p>
+              <hr>
+                <p id="myDrop" class="text-center">
+                <span class="font-semibold">
+                   << Pour les fichiers Zip: soit exemple.zip ==> dossier("exemple") avec les fichiers [logb1, logb2,..,logbn] >>
+                </span>
+
+                </p>
+
+                <form action="upload" method="post" id="my-dropzone" class="form border-4 border-dashed border-gray-200 rounded-lg h-96 hover:bg-blue-100 dropzone">
+                    {% csrf_token %}
+                      <div class="fallback">
+                        <input name="file" class="inp" type="file" multiple />
+                      </div>
+                    <br>
+                </form>
+              <form action="" method="post" id="form_test">
+                    {% csrf_token %}
+                  <br>
+                  <div class="text-center">
+                      <input id="test_btn" value="Extration des informations pour la soumission dans observe" type="submit" name="submit" class="text-white bg-blue-900 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-blue-800 dark:hover:bg-blue-900"/>
+                      <input data-url="{% url 'domaineSelect' %}" id="cancel_btn" value="Annuler" type="reset" name="submit_annuler" class="text-red-900 bg-transparent border border-red-900 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-800 dark:text-red-800 dark:hover:text-white"/>
+                  </div>
+              </form>
+
+
+
+          </div>
+          <!-- /End replace -->
+        </div>
+        {{files}}
+      <!-- /End replace -->
+
+        <div class="card">
+            {% if messages %}
+            <div class="message">
+                <span class="aft"></span>
+              {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                         <div class="flex p-4 mb-4 bg-red-100 border-t-4 border-red-500 dark:bg-red-200" id="msg" role="alert">
+                            <div class="ml-3 text-sm font-medium text-red-700">
+                                <p class="font-bold">Erreur</p>
+                                <br>
+                                <p>{{ message }}</p>
+                            </div>
+                        </div>
+                    {% elif message.tags == 'error2' %}
+                         <div class="flex p-4 mb-4 bg-red-100 border-t-4 border-red-500 dark:bg-red-200" id="msg" role="alert">
+                            <div class="ml-3 text-sm font-medium text-red-700">
+                                <p class="font-bold">Attention signal faible</p>
+                                <br>
+                                <p>{{ message }}</p>
+                            </div>
+                        </div>
+                    {% elif message.tags == 'info' %}
+                        <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3" role="alert">
+                          <p class="font-bold">Info</p>
+                          <p class="text-sm"><p>{{ message }}</p>
+                        </div>
+                        <br>
+                        <div class="flex">
+                            <button data-url="{% url 'sendData' %}" id="send_data" type="button" class="text-white bg-blue-900 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-blue-800 dark:hover:bg-blue-900">
+                                <div class="spinner_info" hidden="true" role="status">
+                                    <svg aria-hidden="true" class="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                                    </svg>
+                                    <span class="sr-only">Loading...</span>
+                                </div>
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                 Envoyer les donnée
+                            </button>
+                            <button data-url="{% url 'domaineSelect' %}" id="load_data" type="button" class="text-blue-900 bg-transparent border border-blue-900 hover:bg-blue-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-blue-200 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-blue-800 dark:text-blue-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-1" aria-label="Close">
+                              Annuler et charger un nouveau logbook
+                            </button>
+                        </div>
+                    {% elif message.tags == 'success' %}
+                        <div class="bg-teal-100 border-t-4 border-teal-500 rounded-b text-teal-900 px-4 py-3 shadow-md" role="alert">
+                          <div class="flex">
+                            <div class="py-1"><svg class="fill-current h-6 w-6 text-teal-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z"/></svg></div>
+                            <div>
+                              <p class="font-bold">Effectué</p>
+                              <p class="text-sm">{{ message }}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <br>
+                        <div class="flex">
+                            <button data-url="{% url 'domaineSelect' %}" id="load_data2" type="button" class="text-green-700 bg-transparent border border-green-700 hover:bg-green-800 hover:text-white focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-green-800 dark:text-green-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-3" aria-label="Close">
+                              Charger un nouveau logbook
+                            </button>
+                        </div>
+                    {% endif %}
+              {% endfor %}
+              {% if tags == 'error' %}
+                <div class="flex">
+                    <button data-url="{% url 'sendData' %}" id="send_data2" type="button" class="text-white bg-red-900 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 mr-2 text-center inline-flex items-center dark:bg-red-800 dark:hover:bg-red-900">
+                        <div class="spinner_error" hidden="true" role="status">
+                            <svg aria-hidden="true" class="inline w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-pink-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                            </svg>
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                         Forcer l'envoie des données
+                    </button>
+                    <button data-url="{% url 'domaineSelect' %}" id="load_data3" type="button" class="text-red-900 bg-transparent border border-red-900 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-800 dark:text-red-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-2" aria-label="Close">
+                      Corriger et envoyer à nouveau
+                    </button>
+
+                </div>
+                <br>
+                <hr>
+                <p class="">
+                <span class="font-semibold">
+                   <b>NB:</b> Il est possible de forcer l'envoi si les erreurs ne concernent que l'opération objet incorrectement saisie et/ou le code espèce rejeté à trois (3) caractères.
+                </span>
+
+                </p>
+              {% endif %}
+              {% if tags == 'error2' %}
+                <div class="flex flexi">
+                    <button data-url="{% url 'domaineSelect' %}" id="load_data7" type="button" class="text-red-900 bg-transparent border border-red-900 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-800 dark:text-red-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-2" aria-label="Close">
+                      Reprendre à nouveau
+                    </button>
+
+                </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+            <span class="span_message"></span>
+            <div class="btn_message">
+                <div class="flex">
+                    <button hidden="true" type="button" id="load_data4" data-url="{% url 'domaineSelect' %}" class="btn_success text-green-700 bg-transparent border border-green-700 hover:bg-green-800 hover:text-white focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-green-800 dark:text-green-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-3" aria-label="Close">
+                        Charger un nouveau logbook
+                    </button>
+                </div>
+                 <div class="flex">
+                    <button hidden="true" type="button" id="load_data5" data-url="{% url 'domaineSelect' %}" class="btn_error text-red-900 bg-transparent border border-red-900 hover:bg-red-900 hover:text-white focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-red-800 dark:text-red-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-2" aria-label="Close">
+                        Charger un logbook
+                    </button>
+                 </div>
+                <div class="flex">
+                    <button hidden="true" type="button" id="load_data6" data-url="{% url 'domaineSelect' %}" class="btn_warning text-yellow-700 bg-transparent border border-yellow-700 hover:bg-yellow-800 hover:text-white focus:ring-4 focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-xs px-3 py-1.5 text-center dark:border-yellow-800 dark:text-yellow-800 dark:hover:text-white" data-dismiss-target="#alert-additional-content-4" aria-label="Close">
+                        Charger un logbook
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+  </main>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="{% static 'assets/js/code.js' %}"></script>
+</body>
+</html>
