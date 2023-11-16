@@ -1,3 +1,3 @@
 # observe-logbooks-reader-webapp
 
-Application web d'interpretation automatisée des livres de bord
+Application web pour l'interprétation automatisée des livres de bord
