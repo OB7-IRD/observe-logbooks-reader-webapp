@@ -9,7 +9,7 @@ import json
 
 from api_traitement.json_fonctions import *
 
-
+# Convert date
 def date_convert(time_to_convert):
     return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
 
