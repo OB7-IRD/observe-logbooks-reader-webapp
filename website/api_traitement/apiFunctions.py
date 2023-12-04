@@ -572,12 +572,12 @@ def transmittingBType(chaine, dico, allData):
     if ("m3i" in str(chaine).lower()): return dico['25'], ""
     if ("m4i+" in str(chaine).lower()): return dico['28'], ""
     if ("m4i" in str(chaine).lower()): return dico['27'], ""
+    if ("thalos mod" in str(chaine).lower()): return dico['90'], ""
     if ("ortbit+" in str(chaine).lower()): return dico['92'], ""
     if ("orbit+" in str(chaine).lower()): return dico['92'], ""
-    if ("marine instru" in str(chaine).lower()): return dico['20'], ""
     if ("ortbit" in str(chaine).lower()): return dico['91'], ""
     if ("orbit" in str(chaine).lower()): return dico['91'], ""
-    if ("thalos mod" in str(chaine).lower()): return dico['90'], ""
+    if ("marine instru" in str(chaine).lower()): return dico['20'], ""
     if ("SLX+" in str(chaine).lower()): return dico['47'], ""
     if ("slx+" in str(chaine).lower()): return dico['47'], ""
     if ("isd+" in str(chaine).lower()): return dico['46'], ""
@@ -849,7 +849,8 @@ def add_trip(token, content, url_base):
 
 
             # Faire une fonction pour mieux traiter ce type d'erreur
-            print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
+            # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
+            print("Message d'erreur: ", json.loads(res.text)) # A faire
 
 
             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
@@ -1342,6 +1343,9 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                                   bool_tuple=("true", "true"), argment="code=11")
                     tab3_floatingObject.append(js_floatingObjects)
 
+                if (data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" is not str(data['bouee_inst_act_bou']).lower()):
+                    allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
+
             except TransmitException as e:
                 # print(data["date"],data["heure"]," Logbook non conforme #######")
                 allMessages.append(e.message)
@@ -1398,7 +1402,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                                                                  data["long2"],
                                                                                                  data["long3"])
 
-                        returnMsg = "Position manquant (latitude / longitude): Le " + str(data["date"]).replace(
+                        returnMsg = "Position manquante (latitude / longitude): Le " + str(data["date"]).replace(
                             " 00:00:00", " à ") + str(data["heure"])
                         if checkMsg:
                             allMessages.append(returnMsg)
@@ -1551,7 +1555,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                 js_activitys["number"] = int(nb)
 
 
-                if (heure_prece == data["heure"]):
+                if (heure_prece == data["heure"]) and (date_prece == data["date"]):
                     # Supprimer activité inseré en dernier
                     if len(activite) != 0:
                         del(activite[-1])
@@ -1584,6 +1588,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
                 fpa_prece       = data["zee"]
                 heure_prece     = data["heure"]
+                date_prece     = data["date"]
                 comment_prece   = data["comment"]
                 nb_prece        = int(nb)
                 Som_thon        = 0
