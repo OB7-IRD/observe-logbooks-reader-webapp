@@ -384,16 +384,20 @@ def get_lat_long(allData, harbour):
     Permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
     """
     print(harbour)
-    harbour = str(harbour).strip()
-    for val in allData["Harbour"]:
-        # print("Label 2: ",val["label2"], " ==> Recherche: ", harbour)
+    if harbour != None:
+        harbour = str(harbour).strip()
+        for val in allData["Harbour"]:
+            # print("Label 2: ",val["label2"], " ==> Recherche: ", harbour)
 
-        if (harbour.lower() in val["label1"].lower()) or (harbour.lower() in val["label2"].lower()) or (
-                harbour.lower() in val["label3"].lower()):
-            return float(val["latitude"]), float(val["longitude"])
+            if (harbour.lower() in val["label1"].lower()) or (harbour.lower() in val["label2"].lower()) or (
+                    harbour.lower() in val["label3"].lower()):
+                return float(val["latitude"]), float(val["longitude"])
 
-    # return "Le port de départ << "+ harbour + " >> n'a pas été trouvé dans le service."
-    return None, None
+        # return "Le port de départ << "+ harbour + " >> n'a pas été trouvé dans le service."
+        return None, None
+    else:
+        # return "Le port de départ << "+ harbour + " >> n'a pas été trouvé dans le service."
+        return None, None
 
 
 def lat_long(lat1, lat2, lat3, long1, long2, long3):
