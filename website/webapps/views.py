@@ -164,9 +164,9 @@ def logbook(request):
             try:
                 file_name = "media/data/" + os.listdir('media/data')[0]
                 # Opening JSON file
-                f = open(file_name)
+                f = open(file_name, encoding="utf8")
                 # returns JSON object as  a dictionary
-                allData = json.load(f,)
+                allData = json.load(f)
 
                 allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
 
@@ -277,7 +277,7 @@ def sendData(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         file_name = "media/content_json/content_json.json"
         # Opening JSON file
-        f = open(file_name)
+        f = open(file_name, encoding="utf8")
         # returns JSON object as  a dictionary
         content_json = json.load(f)
 
