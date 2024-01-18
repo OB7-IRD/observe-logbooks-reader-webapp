@@ -135,9 +135,8 @@ def deconnexion(request):
     return redirect("login")
 
 
-@login_required
+# @login_required
 def home(request):
-
     return render(request, "home.html")
 
 
@@ -241,7 +240,7 @@ def getProgram(request, domaine):
     else:
         return JsonResponse({})
 
-@login_required
+# @login_required
 def postProg_info(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
