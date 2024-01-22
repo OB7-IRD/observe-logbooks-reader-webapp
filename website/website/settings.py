@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'theme',
     'blog',
     'webapps',
+    'palangre_syc'
 ]
 
 MIDDLEWARE = [
