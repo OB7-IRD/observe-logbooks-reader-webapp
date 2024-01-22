@@ -15,18 +15,31 @@
 
     <section>
         <h2>Mise à jour des données de références</h2>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam eget orci eu ligula vehicula lobortis.</p>
+        <p>
+            en chargant cette page, normalement on se connecte à la base et on génère un TOKEN
+        </p>
+        <div>
+            {% if token %}
+                <p>Sortie json de la connexion et extraction du token: {{ token }}</p>
+            {% else %}
+                <p>Failed to fetch data from the API.</p>
+            {% endif %}
+        </div>
+    
+        <!-- Button to trigger data update -->
+        <form method="post" action="{% url 'index' %}">
+            {% csrf_token %}
+            <button type="submit"> Recharger un token </button>
+        </form>
         
     </section>
 
     <section>
-        <h2>Services</h2>
-        <ul>
-            <li>Web Development</li>
-            <li>Mobile App Development</li>
-            <li>Database Management</li>
-            <!-- Add more services as needed -->
-        </ul>
+        {% if data_ref_common %}
+            <p> Sortie json de la connexion et extraction du token: {{ data_ref_common }}</p>
+        {% else %}
+            <p> ERREUR : pas de récupération des données réf common.</p>
+        {% endif %}
     </section>
 
     <footer>
