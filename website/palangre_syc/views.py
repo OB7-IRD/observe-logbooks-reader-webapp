@@ -2,7 +2,8 @@ from django.shortcuts import render
 import requests
 
 from django.http import HttpResponse
-
+from django.core.serializers import serialize
+from .models import LazyEncoder
 
 
 def get_token():
@@ -72,6 +73,8 @@ def get_referential_common():
 
     return data_ref_common
     
+
+serialize("json", ref_common.objects.all(), cls=LazyEncoder)
     
 def index(request):
     token = get_token()
