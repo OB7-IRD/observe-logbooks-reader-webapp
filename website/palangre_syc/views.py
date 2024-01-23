@@ -2,8 +2,7 @@ from django.shortcuts import render
 import requests
 
 from django.http import HttpResponse
-from django.core.serializers import serialize
-from .models import LazyEncoder
+from json import dump
 
 
 def get_token():
@@ -47,6 +46,8 @@ def get_referential_ll():
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
         data_ref_ll = response.json()
+        with open('data_ll.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_ll, f, ensure_ascii=False, indent=4)
     else:
         data_ref_ll = None
 
@@ -68,14 +69,14 @@ def get_referential_common():
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
         data_ref_common = response.json()
+        with open('data_common.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_common, f, ensure_ascii=False, indent=4)
     else:
         data_ref_common = None
-
+    
     return data_ref_common
     
-
-serialize("json", ref_common.objects.all(), cls=LazyEncoder)
-    
+        
 def index(request):
     token = get_token()
     data_ref_ll = get_referential_ll()
