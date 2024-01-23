@@ -1,4 +1,5 @@
 {
+    "content": {
         "fr.ird.observe.entities.referential.ll.common.BaitSettingStatus": [
             {
                 "topiaId": "fr.ird.referential.ll.common.BaitSettingStatus#1239832686123#0.2",
@@ -3694,3 +3695,4 @@
             }
         ]
     }
+}

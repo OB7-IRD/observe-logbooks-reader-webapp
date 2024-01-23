@@ -34,13 +34,43 @@
         
     </section>
 
-    <section>
+    <!--section>
         {% if data_ref_common %}
             <p> Sortie json de la connexion et extraction du token: {{ data_ref_common }}</p>
         {% else %}
             <p> ERREUR : pas de récupération des données réf common.</p>
         {% endif %}
-    </section>
+    </section-->
+
+    <div>
+        <p> dataframe propre au trip </p>
+       <!-- {{ df_trip | safe }} -->
+        
+    <table border="1">
+        <thead>
+            <tr>
+                {% for col in df_trip.columns %}
+                    <th>
+                        {{ col }}
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for index, row in df_trip.iterrows %}
+                <tr>
+                    {% for cell in row %}
+                    <td>
+                        {{ cell }}
+                    </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    </div>
 
     <footer>
         <p>&copy; En cours de développement </p>
