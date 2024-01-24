@@ -1,7 +1,6 @@
 from django.shortcuts import render
 import requests
 
-from django.http import HttpResponse
 from json import dump
 
 import openpyxl 
@@ -38,7 +37,7 @@ def get_token():
 
 def get_referential_ll():
     '''
-    Fonction qui affiche le référentiel longliners 
+    Fonction qui récupère le référentiel longliners 
     ''' 
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
     api_Token = 'authenticationToken=' + get_token() +'&'
@@ -60,7 +59,7 @@ def get_referential_ll():
     
 def get_referential_common():
     '''
-    Fonction qui affiche le référentiel common 
+    Fonction qui récupère le référentiel common 
     ''' 
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
     api_Token = 'authenticationToken=' + get_token() +'&'
@@ -94,8 +93,21 @@ def strip_if_string(element):
     '''
     return element.strip() if isinstance(element, str) else element
 
+def np_removing_semicolon(numpy_table, num_col):
+    '''
+    Fonction qui prend une numpy table et ne retourne que la partie avant les deux point de la colonne demandée
+    '''
+    return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
 
-file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+def dms_to_decimal(degrees, minutes, direction):
+    decimal_degrees = degrees + minutes / 60.0
+    if direction in ['S', 'W']:
+        decimal_degrees *= -1
+    return decimal_degrees
+
+#file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+
 
 def read_excel(file_path, num_page): 
     '''
@@ -112,13 +124,11 @@ def read_excel(file_path, num_page):
     
     return df_donnees
     
-    
-def extract_vesselInfo_LL():
+def extract_vesselInfo_LL(file_path):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives au bateau 'Vessel information'
     '''    
     num_page = 1
-    file_path =  './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
     df_donnees = read_excel(file_path, num_page)
     
     # On extrait les données propres au 'Vessel information' 
@@ -132,13 +142,11 @@ def extract_vesselInfo_LL():
     
     return df_vessel
 
-
-def extract_cruiseInfo_LL():
+def extract_cruiseInfo_LL(file_path):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives à la marée
     '''    
     num_page = 1
-    file_path =  './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
     df_donnees = read_excel(file_path, num_page)
     
     # On extrait les données propres au 'Vessel information' 
@@ -152,8 +160,7 @@ def extract_cruiseInfo_LL():
     np_cruise = np.append(np.array(df_cruise1), np.array(df_cruise2), axis = 0)
     
     # on nettoie la colonne en enlevant les espaces et les ':'
-    Logbook_name = np.array([s.partition(':')[0].strip() for s in np_cruise[:, 0]])
-    np_cruise[:, 0] = Logbook_name
+    np_cruise[:, 0] = np_removing_semicolon(np_cruise, 0)
     
     # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
     vect = np.vectorize(strip_if_string)    
@@ -163,17 +170,137 @@ def extract_cruiseInfo_LL():
 
     return df_cruise
 
+def extract_gearInfo_LL(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives à l'équipement
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
     
-    
+    # On extrait les données propres au 'Vessel information' 
+    df_gear = df_donnees.iloc[12:16,11:21]
 
+    # On supprimes les colonnes qui sont vides
+    df_gear = suppression_colonnes_vides(df_gear) 
+
+    np_gear = np.array(df_gear)
+    
+    # on nettoie la colonne en enlevant les espaces et les ':'
+    np_gear[:, 0] = np_removing_semicolon(np_gear, 0)
+    
+    # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)    
+    np_gear[:, 1] = vect(np_gear[:, 1])
+    
+    df_gear = pd.DataFrame(np_gear, columns = ['Logbook_name', 'Value'])
+    
+    return df_gear
+
+def extract_lineMaterial_LL(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives aux matériel des lignes
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_line = df_donnees.iloc[12:16,21:29]
+
+    # On supprimes les colonnes qui sont vides
+    df_line = suppression_colonnes_vides(df_line) 
+    
+    np_line = np.array(df_line)
+    
+    # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)    
+    np_line[:,0:1] = vect(np_line[:,0:1])
+    
+    df_line = pd.DataFrame(np_line, columns = ['Logbook_name', 'Value'])
+    
+    return df_line
+
+def extract_target_LL(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives aux target spécifiques
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_target = df_donnees.iloc[12:16,29:34]
+
+    # On supprimes les colonnes qui sont vides
+    df_target = suppression_colonnes_vides(df_target) 
+
+    np_target = np.array(df_target)
+        
+    np_target[:, 0] = np_removing_semicolon(np_target, 0)
+    # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)    
+    np_target[:,0:1] = vect(np_target[:,0:1])
+    
+    df_target = pd.DataFrame(np_target, columns = ['Logbook_name', 'Value'])
+    
+    return df_target
+
+def extract_logbookDate(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe le mois et l'année du logbook
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_month = df_donnees.iloc[17,5]
+    df_year = df_donnees.iloc[17,11]
+
+    np_date = np.array([('Month', df_month), ('Year', df_year)], 
+                       dtype = [('Logbook_name', 'U10'), ('Value', int)])
+    df_date = pd.DataFrame(np_date)
+    
+    return df_date
 
       
+def extract_positions(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les position de chaque coup de peche par jour 
+    en type float (C'EST QUEL SYSTEME ?)
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    df_lat_dms = df_donnees.iloc[24:54, 1:4]
+    print(df_lat_dms)
+    np_lat_dms = np.array(df_lat_dms)
+    
+#    split_data = np.char.split(np_lat_dms)
+#    np_lat_dms = np.array(split_data.tolist(), dtype=[('Degree', int), ('Minut', int), ('Direction', 'U10')])
+
+
+
+    #df_lat_dec['Latitute'] = df_lat_dms.apply(dms_to_decimal, axis = 0)
+#    print(np_lat_dms)
+    
+    print('DONC JUST UNE LIGNE')
+#    print(np_lat_dms[3,])
+#    for row in range(len(np_lat_dms)):
+#        np_lat_dms[row, 'Latitute'] = dms_to_decimal(np_lat_dms[row, 0], np_lat_dms[row, 1], np_lat_dms[row, 2])
+    
+    df_lat_dec = pd.DataFrame(np_lat_dms)
+    
+    return df_lat_dec
 
 
 def index(request):
+    file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+    df_vessel = extract_vesselInfo_LL(file_path)
+    df_cruise = extract_cruiseInfo_LL(file_path)
+    df_gear = extract_gearInfo_LL(file_path)
+    df_line = extract_lineMaterial_LL(file_path)
+    df_target = extract_target_LL(file_path)
+    df_date = extract_logbookDate(file_path)
     
-    df_vessel = extract_vesselInfo_LL()
-    df_cruise = extract_cruiseInfo_LL()
+    df_position = extract_positions(file_path)
 
     if request.method == 'POST':
         
@@ -186,13 +313,25 @@ def index(request):
             'data_ref_ll': data_ref_ll, 
             'data_ref_common' : data_ref_common, 
             'df_vessel' : df_vessel, 
-            'df_cruise' : df_cruise
+            'df_cruise' : df_cruise, 
+            'df_gear' : df_gear, 
+            'df_line' : df_line, 
+            'df_target' : df_target, 
+            'df_date' : df_date, 
+            
+            'df_position' : df_position
         }
         
     else : 
         context = { 
             'df_vessel' : df_vessel, 
-            'df_cruise' : df_cruise
+            'df_cruise' : df_cruise, 
+            'df_gear' : df_gear, 
+            'df_line' : df_line, 
+            'df_target' : df_target, 
+            'df_date' : df_date, 
+            
+            'df_position' : df_position
         }
     
     return render(request, 'LL_homepage.html', context)

@@ -43,6 +43,33 @@
     </section-->
 
     <div>
+        <h3> Date du logbook </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_date.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_date.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
         <h3> Vessel information - dataframe </h3>
        <!-- {{ df_vessel | safe }} -->  
         <table border="1">
@@ -95,6 +122,115 @@
             </tbody>
         </table>
     </div>
+
+    <div>
+        <h3> Gear information - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_gear.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_gear.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <h3> Line material - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_line.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_line.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <h3> Target species - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_target.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_target.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
+        <h3> Target species - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_position.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_position.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 
 
     <footer>
