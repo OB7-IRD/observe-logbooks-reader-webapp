@@ -18,13 +18,13 @@
         <p>
             en chargant cette page, normalement on se connecte à la base et on génère un TOKEN
         </p>
-        <div>
+        <!-- div>
             {% if token %}
                 <p>Sortie json de la connexion et extraction du token: {{ token }}</p>
             {% else %}
                 <p>Failed to fetch data from the API.</p>
             {% endif %}
-        </div>
+        </div -->
     
         <!-- Button to trigger data update -->
         <form method="post" action="{% url 'index' %}">
@@ -43,34 +43,59 @@
     </section-->
 
     <div>
-        <p> dataframe propre au trip </p>
-       <!-- {{ df_trip | safe }} -->
-        
-    <table border="1">
-        <thead>
-            <tr>
-                {% for col in df_trip.columns %}
-                    <th>
-                        {{ col }}
-                    </th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for index, row in df_trip.iterrows %}
+        <h3> Vessel information - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
                 <tr>
-                    {% for cell in row %}
-                    <td>
-                        {{ cell }}
-                    </td>
+                    {% for col in df_vessel.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
                     {% endfor %}
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-
+            </thead>
+            <tbody>
+                {% for index, row in df_vessel.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+
+    <div>
+        <h3> Cruise information - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_cruise.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_cruise.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 
     <footer>
         <p>&copy; En cours de développement </p>

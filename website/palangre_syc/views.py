@@ -6,6 +6,9 @@ from json import dump
 
 import openpyxl 
 import pandas as pd
+import numpy as np
+
+from .forms import MyForm
 
 
 def get_token():
@@ -85,53 +88,113 @@ def suppression_colonnes_vides(dataframe):
     dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
     return dataframe  
 
-def read_excel(): 
+def strip_if_string(element):
     '''
-    Fonction qui lit un doc excel de palangre seychellois (version 17.6) placé dans le dossier media de l'appli
-    et qui renvoie un tableau (dataframe) des données concernant le trip, et un concernant les activités sur le mois
+    Fonction qui applique la fonction python strip() si l'élement est bien de type texte
     '''
-    file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+    return element.strip() if isinstance(element, str) else element
+
+
+file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+
+def read_excel(file_path, num_page): 
+    '''
+    Fonction qui prend en argument un chemin d'accès d'un document excel et un numéro de page à extraire
+    et qui renvoie un tableau (dataframe) des données 
+    Attention -- num_page correspond au numéro de la page (1, 2, 3 etc ...)
+    '''
     classeur = openpyxl.load_workbook(filename = file_path, data_only=True)
     noms_feuilles = classeur.sheetnames
-
-    # Page 1    
-    feuille = classeur[noms_feuilles[0]]
-
+    feuille = classeur[noms_feuilles[num_page - 1]]
     df_donnees = pd.DataFrame(feuille.values)
-    df_donnees.drop(index=range(6), inplace = True)
-    df_trip = df_donnees.iloc[1:11]
-    df_activity = df_donnees.iloc[22:56]
+    # fermer le classeur excel 
+    classeur.close()
     
-    df_trip = suppression_colonnes_vides(df_trip)
-    df_activity = suppression_colonnes_vides(df_activity)
-    
-    df_trip_propre = pd.DataFrame({'data_obs' : ['startDate', 'endDate', 'noOfCrewMembers'],
-                                   'data_lb' : ['', '', ''],
-                                   'value' : ['', '', '']})
+    return df_donnees
     
     
-   # df_trip_propre = df_trip_propre.to_dict('records')
-    return df_trip, df_activity
+def extract_vesselInfo_LL():
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives au bateau 'Vessel information'
+    '''    
+    num_page = 1
+    file_path =  './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_vessel = df_donnees.iloc[7:16,0]
+    np_vessel = np.array(df_vessel)
+
+    # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
+    entries = [(item.split(":")[0].strip(), item.split(":")[1].strip() if ':' in item else '') for item in np_vessel]
+    np_vessel_clean = np.array(entries, dtype=[('Logbook_name', 'U50'), ('Value', 'U50')])
+    df_vessel = pd.DataFrame(np_vessel_clean)
+    
+    return df_vessel
 
 
-# fermer le classeur excel 
-#classeur.close()
+def extract_cruiseInfo_LL():
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives à la marée
+    '''    
+    num_page = 1
+    file_path =  './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_cruise1 = df_donnees.iloc[7:10,11:20]
+    df_cruise2 = df_donnees.iloc[7:10,20:29]
+
+    # On supprimes les colonnes qui sont vides
+    df_cruise1 = suppression_colonnes_vides(df_cruise1) 
+    df_cruise2 = suppression_colonnes_vides(df_cruise2)
+
+    np_cruise = np.append(np.array(df_cruise1), np.array(df_cruise2), axis = 0)
+    
+    # on nettoie la colonne en enlevant les espaces et les ':'
+    Logbook_name = np.array([s.partition(':')[0].strip() for s in np_cruise[:, 0]])
+    np_cruise[:, 0] = Logbook_name
+    
+    # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)    
+    np_cruise[:, 1] = vect(np_cruise[:, 1])
+    
+    df_cruise = pd.DataFrame(np_cruise, columns = ['Logbook_name', 'Value'])
+
+    return df_cruise
+
+    
+    
+
 
       
 
 
 def index(request):
-    token = get_token()
-    data_ref_ll = get_referential_ll()
-    data_ref_common = get_referential_common()
-    df_trip, df_activity = read_excel()
-    context = {
-        'token': token, 
-        'data_ref_ll': data_ref_ll, 
-        'data_ref_common' : data_ref_common, 
-        'df_trip' : df_trip, 
-        'df_activity' : df_activity
-    }
+    
+    df_vessel = extract_vesselInfo_LL()
+    df_cruise = extract_cruiseInfo_LL()
+
+    if request.method == 'POST':
+        
+        token = get_token()
+        data_ref_ll = get_referential_ll()
+        data_ref_common = get_referential_common()
+
+        context = {
+            'token': token, 
+            'data_ref_ll': data_ref_ll, 
+            'data_ref_common' : data_ref_common, 
+            'df_vessel' : df_vessel, 
+            'df_cruise' : df_cruise
+        }
+        
+    else : 
+        context = { 
+            'df_vessel' : df_vessel, 
+            'df_cruise' : df_cruise
+        }
+    
     return render(request, 'LL_homepage.html', context)
 
  
