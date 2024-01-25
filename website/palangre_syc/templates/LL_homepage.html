@@ -124,6 +124,33 @@
     </div>
 
     <div>
+        <h3> Report information - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_report.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_report.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div>
         <h3> Gear information - dataframe </h3>
        <!-- {{ df_vessel | safe }} -->  
         <table border="1">
@@ -205,7 +232,35 @@
     </div>
 
     <div>
-        <h3> Target species - dataframe </h3>
+        <h3>  Bait - dataframe </h3>
+       <!-- {{ df_vessel | safe }} -->  
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for col in df_bait.columns %}
+                        <th>
+                            {{ col }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for index, row in df_bait.iterrows %}
+                    <tr>
+                        {% for cell in row %}
+                        <td>
+                            {{ cell }}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div>
+        <h3> GPS positions - dataframe </h3>
        <!-- {{ df_vessel | safe }} -->  
         <table border="1">
             <thead>

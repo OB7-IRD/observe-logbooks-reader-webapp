@@ -6,6 +6,7 @@ from json import dump
 import openpyxl 
 import pandas as pd
 import numpy as np
+import re
 
 from .forms import MyForm
 
@@ -79,7 +80,7 @@ def get_referential_common():
     
     return data_ref_common
     
-def suppression_colonnes_vides(dataframe):
+def del_empty_col(dataframe):
     '''
     Fonction qui supprime une colonne si elle est vide ('None')
     '''
@@ -92,6 +93,18 @@ def strip_if_string(element):
     Fonction qui applique la fonction python strip() si l'élement est bien de type texte
     '''
     return element.strip() if isinstance(element, str) else element
+
+def remove_spec_char(char):
+    '''
+    Fonction qui élimine les caractères non ascii
+    '''
+    return re.sub("[^A-Z ]", "", str(char), 0, re.IGNORECASE)
+
+def remove_spec_char_from_list(char_list):
+    '''
+    Applique remove_spec_char à chaque élément d'une liste de chaînes
+    '''
+    return [remove_spec_char(item) for item in char_list]
 
 def np_removing_semicolon(numpy_table, num_col):
     '''
@@ -106,8 +119,8 @@ def dms_to_decimal(degrees, minutes, direction):
     return decimal_degrees
 
 #file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
-
+#file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
 
 def read_excel(file_path, num_page): 
     '''
@@ -138,6 +151,8 @@ def extract_vesselInfo_LL(file_path):
     # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
     entries = [(item.split(":")[0].strip(), item.split(":")[1].strip() if ':' in item else '') for item in np_vessel]
     np_vessel_clean = np.array(entries, dtype=[('Logbook_name', 'U50'), ('Value', 'U50')])
+    # On applique un filtre pour les caractères spéciaux
+    np_vessel_clean['Logbook_name'] = remove_spec_char_from_list(np_vessel_clean['Logbook_name'] )
     df_vessel = pd.DataFrame(np_vessel_clean)
     
     return df_vessel
@@ -154,8 +169,8 @@ def extract_cruiseInfo_LL(file_path):
     df_cruise2 = df_donnees.iloc[7:10,20:29]
 
     # On supprimes les colonnes qui sont vides
-    df_cruise1 = suppression_colonnes_vides(df_cruise1) 
-    df_cruise2 = suppression_colonnes_vides(df_cruise2)
+    df_cruise1 = del_empty_col(df_cruise1) 
+    df_cruise2 = del_empty_col(df_cruise2)
 
     np_cruise = np.append(np.array(df_cruise1), np.array(df_cruise2), axis = 0)
     
@@ -167,8 +182,32 @@ def extract_cruiseInfo_LL(file_path):
     np_cruise[:, 1] = vect(np_cruise[:, 1])
     
     df_cruise = pd.DataFrame(np_cruise, columns = ['Logbook_name', 'Value'])
+    df_cruise['Logbook_name'] = remove_spec_char_from_list(df_cruise['Logbook_name'] )
 
     return df_cruise
+
+def extract_reportInfo_LL(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les données relatives aux info de report
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    # On extrait les données propres au 'Vessel information' 
+    df_report = df_donnees.iloc[7:9,29:35]
+
+    # On supprimes les colonnes qui sont vides
+    df_report = del_empty_col(df_report) 
+    np_report = np.array(df_report)
+    
+    # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)    
+    np_report[:,0:1] = vect(np_report[:,0:1])
+    
+    df_report = pd.DataFrame(np_report, columns = ['Logbook_name', 'Value'])
+    df_report['Logbook_name'] = remove_spec_char_from_list(df_report['Logbook_name'] )
+
+    return df_report
 
 def extract_gearInfo_LL(file_path):
     '''
@@ -181,7 +220,7 @@ def extract_gearInfo_LL(file_path):
     df_gear = df_donnees.iloc[12:16,11:21]
 
     # On supprimes les colonnes qui sont vides
-    df_gear = suppression_colonnes_vides(df_gear) 
+    df_gear = del_empty_col(df_gear) 
 
     np_gear = np.array(df_gear)
     
@@ -193,7 +232,8 @@ def extract_gearInfo_LL(file_path):
     np_gear[:, 1] = vect(np_gear[:, 1])
     
     df_gear = pd.DataFrame(np_gear, columns = ['Logbook_name', 'Value'])
-    
+    df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'] )
+
     return df_gear
 
 def extract_lineMaterial_LL(file_path):
@@ -207,7 +247,7 @@ def extract_lineMaterial_LL(file_path):
     df_line = df_donnees.iloc[12:16,21:29]
 
     # On supprimes les colonnes qui sont vides
-    df_line = suppression_colonnes_vides(df_line) 
+    df_line = del_empty_col(df_line) 
     
     np_line = np.array(df_line)
     
@@ -216,7 +256,8 @@ def extract_lineMaterial_LL(file_path):
     np_line[:,0:1] = vect(np_line[:,0:1])
     
     df_line = pd.DataFrame(np_line, columns = ['Logbook_name', 'Value'])
-    
+    df_line['Logbook_name'] = remove_spec_char_from_list(df_line['Logbook_name'] )
+
     return df_line
 
 def extract_target_LL(file_path):
@@ -230,7 +271,7 @@ def extract_target_LL(file_path):
     df_target = df_donnees.iloc[12:16,29:34]
 
     # On supprimes les colonnes qui sont vides
-    df_target = suppression_colonnes_vides(df_target) 
+    df_target = del_empty_col(df_target) 
 
     np_target = np.array(df_target)
         
@@ -240,10 +281,11 @@ def extract_target_LL(file_path):
     np_target[:,0:1] = vect(np_target[:,0:1])
     
     df_target = pd.DataFrame(np_target, columns = ['Logbook_name', 'Value'])
+    df_target['Logbook_name'] = remove_spec_char_from_list(df_target['Logbook_name'] )
     
     return df_target
 
-def extract_logbookDate(file_path):
+def extract_logbookDate_LL(file_path):
     '''
     Fonction qui extrait et présente dans un dataframe le mois et l'année du logbook
     '''    
@@ -257,50 +299,77 @@ def extract_logbookDate(file_path):
     np_date = np.array([('Month', df_month), ('Year', df_year)], 
                        dtype = [('Logbook_name', 'U10'), ('Value', int)])
     df_date = pd.DataFrame(np_date)
+    df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'] )
     
     return df_date
 
-      
-def extract_positions(file_path):
+def extract_bait_LL(file_path):
     '''
-    Fonction qui extrait et présente dans un dataframe les position de chaque coup de peche par jour 
-    en type float (C'EST QUEL SYSTEME ?)
+    Fonction qui extrait et présente dans un dataframe le type de d'appat utilisé
     '''    
     num_page = 1
     df_donnees = read_excel(file_path, num_page)
     
-    df_lat_dms = df_donnees.iloc[24:54, 1:4]
-    print(df_lat_dms)
-    np_lat_dms = np.array(df_lat_dms)
-    
-#    split_data = np.char.split(np_lat_dms)
-#    np_lat_dms = np.array(split_data.tolist(), dtype=[('Degree', int), ('Minut', int), ('Direction', 'U10')])
+    # On extrait les données propres au 'Vessel information' 
+    df_squid = df_donnees.iloc[19,16]
+    df_sardine = df_donnees.iloc[19,20]
+    df_mackerel = df_donnees.iloc[19,24]
+    df_muroaji = df_donnees.iloc[19,28]
+    df_other = df_donnees.iloc[19,32]
 
+    np_bait = np.array([('Squid', df_squid), 
+                        ('Sardine', df_sardine),
+                        ('Mackerel', df_mackerel),
+                        ('Muroaji', df_muroaji),
+                        ('Orther', df_other),], 
+                       dtype = [('Logbook_name', 'U10'), ('Value', 'U10')])
+    df_bait = pd.DataFrame(np_bait)
+   # df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'] )
+    
+    return df_bait
 
+def extract_positions(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les position de chaque coup de peche par jour 
+    en décimal type float
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+    
+    day = df_donnees.iloc[24:55, 0]
+    df_lat_dms = df_donnees.iloc[24:55, 1:4]
+    df_long_dms = df_donnees.iloc[24:55, 4:7]
+    colnames = ['Degrees', 'Minutes', 'Direction']
+    df_lat_dms.columns = colnames
+    df_long_dms.columns = colnames
+    
+    df_lat_dms['Latitute'] = df_lat_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
+    Latitute = round(df_lat_dms['Latitute'], 2).values
+    
+    df_long_dms['Longitude'] = df_long_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
+    Longitude = round(df_long_dms['Longitude'], 2).values
+    
+    np_position = np.column_stack((day, Latitute, Longitude))
+    df_position = pd.DataFrame(np_position, columns=['Day', 'Latitute', 'Longitude'])
+    
+    return df_position
 
-    #df_lat_dec['Latitute'] = df_lat_dms.apply(dms_to_decimal, axis = 0)
-#    print(np_lat_dms)
-    
-    print('DONC JUST UNE LIGNE')
-#    print(np_lat_dms[3,])
-#    for row in range(len(np_lat_dms)):
-#        np_lat_dms[row, 'Latitute'] = dms_to_decimal(np_lat_dms[row, 0], np_lat_dms[row, 1], np_lat_dms[row, 2])
-    
-    df_lat_dec = pd.DataFrame(np_lat_dms)
-    
-    return df_lat_dec
 
 
 def index(request):
-    file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
-    df_vessel = extract_vesselInfo_LL(file_path)
-    df_cruise = extract_cruiseInfo_LL(file_path)
-    df_gear = extract_gearInfo_LL(file_path)
-    df_line = extract_lineMaterial_LL(file_path)
-    df_target = extract_target_LL(file_path)
-    df_date = extract_logbookDate(file_path)
+   # file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+    fp = FILE_PATH
+
+    df_vessel = extract_vesselInfo_LL(fp)
+    df_cruise = extract_cruiseInfo_LL(fp)
+    df_report = extract_reportInfo_LL(fp)
+    df_gear = extract_gearInfo_LL(fp)
+    df_line = extract_lineMaterial_LL(fp)
+    df_target = extract_target_LL(fp)
+    df_date = extract_logbookDate_LL(fp)
+    df_bait = extract_bait_LL(fp)
     
-    df_position = extract_positions(file_path)
+    df_position = extract_positions(fp)
 
     if request.method == 'POST':
         
@@ -312,24 +381,18 @@ def index(request):
             'token': token, 
             'data_ref_ll': data_ref_ll, 
             'data_ref_common' : data_ref_common, 
-            'df_vessel' : df_vessel, 
-            'df_cruise' : df_cruise, 
-            'df_gear' : df_gear, 
-            'df_line' : df_line, 
-            'df_target' : df_target, 
-            'df_date' : df_date, 
-            
-            'df_position' : df_position
         }
         
     else : 
         context = { 
             'df_vessel' : df_vessel, 
             'df_cruise' : df_cruise, 
+            'df_report' : df_report,
             'df_gear' : df_gear, 
             'df_line' : df_line, 
             'df_target' : df_target, 
             'df_date' : df_date, 
+            'df_bait' : df_bait,
             
             'df_position' : df_position
         }
