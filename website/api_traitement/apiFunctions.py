@@ -654,7 +654,8 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
 
 
 def cap_obs_sea(allData, ob):
-    cap = logbookDataEntryOperator = []
+    cap = []
+    logbookDataEntryOperator = []
 
     for val in allData["Person"]:
         if val["captain"] == True:
@@ -664,30 +665,50 @@ def cap_obs_sea(allData, ob):
 
     def sou_fonc(arra):
         print(ob['captain'])
+        trouv_id = None
+        inconnu_id = [val[0] for val in arra if (("[inconnu]" == val[1]) and ("[inconnu]" == val[2]))]
+
         if ob['captain'] != None:
             if len(ob['captain'].split(" ")) > 2:
                 nom = ob['captain'].split(" ")[0]
                 lisPren = ob['captain'].split(" ")[1:]
                 prenoms = " ".join(lisPren)
             else:
-                nom, prenoms = ob['captain'].split(" ")
+                status = 0
+                try:
+                    # lorsqu'on a le nom et prenoms; ex: paul kenji
+                    nom, prenoms = ob['captain'].split(" ")
 
-            for val in arra:
-                if ((nom.lower() in str(val)) and (prenoms.lower() in str(val))): return val[0]
+                except ValueError:
+                    # lorsque nous avons une seule informations saisie soit le nom ou le prenom; ex: kenji
+                    nom_prenoms = ob['captain']
 
-            for val in arra:
-                if (("[inconnu]" == val[1]) and ("[inconnu]" == val[2])): return val[0]
+
+            if status == 1:
+                trouv_id = [val[0] for val in arra if ((nom.lower() in str(val)) and (prenoms.lower() in str(val)))]
+                if trouv_id != "": return trouv_id[0]
+
+            elif status == 2:
+                # Lorsqu'on a le nom seulement dans la base de donnée
+                trouv_id = [val[0] for val in arra if ((nom_prenoms.lower() in str(val)) and ("[inconnu]" == val[2]))]
+                if trouv_id != "": return trouv_id[0]
+
+                # Lorsqu'on a le prenom seulement dans la base de donnée
+                trouv_id = [val[0] for val in arra if (("[inconnu]" == val[1]) and (nom_prenoms.lower() in str(val)))]
+                if trouv_id != "": return trouv_id[0]
+            else:
+                return inconnu_id[0]
         else:
-            for val in arra:
-                if (("[inconnu]" == val[1]) and ("[inconnu]" == val[2])): return val[0]
+            return inconnu_id[0]
 
     if cap == logbookDataEntryOperator:
         id_cap = sou_fonc(cap)
         return id_cap, id_cap
     else:
         id_cap = sou_fonc(cap)
-        id_op = sou_fonc(logbookDataEntryOperator)
-        return id_cap, id_op
+        # id_op = sou_fonc(logbookDataEntryOperator) # Pas utilisé pour l'instant
+
+        return id_cap, id_cap
 
 
 class TransmitException(Exception):
@@ -1641,7 +1662,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
         js_contents["departureHarbour"] = getId(allData, "Harbour", argment="code=999")
     else:
         resu = getId(allData, "Harbour", argment="label2=" + (info_bat['Depart_Port']).upper())
-        if resu == "":
+        if resu == None:
             js_contents["departureHarbour"] = getId(allData, "Harbour", argment="code=999")
         else:
             js_contents["departureHarbour"] = resu
@@ -1650,7 +1671,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
         js_contents["landingHarbour"] = getId(allData, "Harbour", argment="code=999")
     else:
         resu = getId(allData, "Harbour", argment="label2=" + (info_bat['Arrivee_Port']).upper())
-        if resu == "":
+        if resu == None:
             js_contents["landingHarbour"] = getId(allData, "Harbour", argment="code=999")
         else:
             js_contents["landingHarbour"] = resu
