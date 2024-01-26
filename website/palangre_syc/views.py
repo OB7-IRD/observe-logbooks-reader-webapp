@@ -137,6 +137,11 @@ def convert_to_time_or_text(value):
     except (ValueError, TypeError):
         return value
 
+def zero_if_empty(value):
+    if value == "None" or pd.isna(value):
+        return 0
+    else :
+        return int(value)
 
 #FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
 FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
@@ -385,13 +390,99 @@ def extract_time(file_path):
     df_time = df_donnees.iloc[24:55, 7:8]
     colnames = ['Time']
     df_time.columns = colnames
-    print(df_time)
 
     df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
-    # df_time['Time'] = df_time['Time'].apply(lambda x: x.strftime('%H:%M:%S') if hasattr(x, 'strftime') else x)
-    print(df_time)
+    
     df_time.reset_index(drop=True, inplace=True)
     return df_time
+
+def extract_temperature(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
+    Elle retourne un champ type horaire, sauf si le bateau est en mouvement
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_temp = df_donnees.iloc[24:55, 8:9]
+    colnames = ['Température']
+    df_temp.columns = colnames
+    
+    df_temp.reset_index(drop=True, inplace=True)
+    return df_temp
+
+def extract_fishingEffort(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les efforts de peche
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_fishingEffort = df_donnees.iloc[24:55, 9:12]
+    colnames = ['Hooks', 'Total hooks', 'Total lightsticks']
+    df_fishingEffort.columns = colnames
+    
+    df_fishingEffort.reset_index(drop=True, inplace=True)
+    return df_fishingEffort
+
+def extract_tunas(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_tunas = df_donnees.iloc[24:55, 12:20]
+    colnames = ['No SBF', 'Kg SBF', 
+                'No ALB', 'Kg ALB', 
+                'No BET', 'Kg BET', 
+                'No YFT', 'Kg YFT']
+    df_tunas.columns = colnames
+    
+    df_tunas = df_tunas.map(zero_if_empty)
+
+    df_tunas.reset_index(drop=True, inplace=True)
+    return df_tunas
+
+def extract_billfishes(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_billfishies = df_donnees.iloc[24:55, 20:32]
+    colnames = ['No SWO', 'Kg SWO', 
+                'No MLS', 'Kg MLS', 
+                'No BLZ', 'Kg BLZ', 
+                'No BLM', 'Kg BLM',
+                'No SFA', 'Kg SFA', 
+                'No SSP', 'Kg SSP']
+    df_billfishies.columns = colnames
+    
+    df_billfishies = df_billfishies.map(zero_if_empty)
+
+    df_billfishies.reset_index(drop=True, inplace=True)
+    return df_billfishies
+
+def extract_otherfish(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_otherfish = df_donnees.iloc[24:55, 32:36]
+    colnames = ['No oil fish', 'Kg oil fish', 
+                'No other species', 'Kg other species']
+    df_otherfish.columns = colnames
+    
+    df_otherfish = df_otherfish.map(zero_if_empty)
+
+    df_otherfish.reset_index(drop=True, inplace=True)
+    return df_otherfish
+
+
 
 
 
@@ -407,11 +498,18 @@ def index(request):
     df_target = extract_target_LL(fp)
     df_date = extract_logbookDate_LL(fp)
     df_bait = extract_bait_LL(fp)
+    df_fishingEffort = extract_fishingEffort(fp)
     
     df_position = extract_positions(fp)
     df_time = extract_time(fp)
+    df_temperature = extract_temperature(fp)
+    df_tunas = extract_tunas(fp)
+    df_billfishes = extract_billfishes(fp)
+    df_otherfish = extract_otherfish(fp)
     
-    df_activity = pd.concat([df_position, df_time], axis = 1)
+    df_activity = pd.concat([df_position, df_time, df_temperature, 
+                             df_fishingEffort, df_tunas, df_billfishes, df_otherfish],
+                            axis = 1)
         
     if request.method == 'POST':
         
