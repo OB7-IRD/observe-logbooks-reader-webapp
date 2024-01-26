@@ -7,6 +7,7 @@ import openpyxl
 import pandas as pd
 import numpy as np
 import re
+import datetime
 
 from .forms import MyForm
 
@@ -118,9 +119,28 @@ def dms_to_decimal(degrees, minutes, direction):
         decimal_degrees *= -1
     return decimal_degrees
 
-#file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-#file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
-FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
+def convert_to_time_or_text(value):
+    '''
+    Fonction qui convertit la cellule en time - si elle est au format type time ou type date dans le excel
+    et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
+    '''
+    try:
+        if ' ' in value:
+            date_time = datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
+            if hasattr(date_time, 'strftime'): 
+                return date_time.strftime('%H:%M:%S')  
+            return date_time  
+        else :
+            if re.match("%H:%M:%S", value):
+                return date_time.strftime('%H:%M:%S')  
+            return value  
+    except (ValueError, TypeError):
+        return value
+
+
+#FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+#FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
 
 def read_excel(file_path, num_page): 
     '''
@@ -354,10 +374,29 @@ def extract_positions(file_path):
     
     return df_position
 
+def extract_time(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
+    Elle retourne un champ type horaire, sauf si le bateau est en mouvement
+    '''    
+    num_page = 1
+    df_donnees = read_excel(file_path, num_page)
+
+    df_time = df_donnees.iloc[24:55, 7:8]
+    colnames = ['Time']
+    df_time.columns = colnames
+    print(df_time)
+
+    df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
+    # df_time['Time'] = df_time['Time'].apply(lambda x: x.strftime('%H:%M:%S') if hasattr(x, 'strftime') else x)
+    print(df_time)
+    df_time.reset_index(drop=True, inplace=True)
+    return df_time
+
+
 
 
 def index(request):
-   # file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
     fp = FILE_PATH
 
     df_vessel = extract_vesselInfo_LL(fp)
@@ -370,7 +409,10 @@ def index(request):
     df_bait = extract_bait_LL(fp)
     
     df_position = extract_positions(fp)
-
+    df_time = extract_time(fp)
+    
+    df_activity = pd.concat([df_position, df_time], axis = 1)
+        
     if request.method == 'POST':
         
         token = get_token()
@@ -394,7 +436,9 @@ def index(request):
             'df_date' : df_date, 
             'df_bait' : df_bait,
             
-            'df_position' : df_position
+            'df_position' : df_position,   
+            'df_time' : df_time,       
+            'df_activity' : df_activity, 
         }
     
     return render(request, 'LL_homepage.html', context)
