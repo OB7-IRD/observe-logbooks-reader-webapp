@@ -452,7 +452,7 @@ def extract_tunas(file_path):
 
 def extract_billfishes(file_path):
     '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
+    Fonction qui extrait et présente dans un dataframe les infos sur les billfishes 
     '''    
     num_page = 1
     df_donnees = read_excel(file_path, num_page)
@@ -473,7 +473,7 @@ def extract_billfishes(file_path):
 
 def extract_otherfish(file_path):
     '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
+    Fonction qui extrait et présente dans un dataframe les infos sur les autres poissons 
     '''    
     num_page = 1
     df_donnees = read_excel(file_path, num_page)
@@ -488,7 +488,187 @@ def extract_otherfish(file_path):
     df_otherfish.reset_index(drop=True, inplace=True)
     return df_otherfish
 
+def extract_sharksFAL(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les blacks sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
 
+    df_sharksFAL = df_donnees.iloc[15:46, 1:5]
+    colnames = ['FAL No Retained', 'FAL Kg Retained', 
+                'FAL No Released alive', 'FAL No Discarded dead']
+    df_sharksFAL.columns = colnames
+    
+    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
+
+    df_sharksFAL.reset_index(drop=True, inplace=True)
+    return df_sharksFAL
+
+def extract_sharksBSH(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les blue sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksBSH = df_donnees.iloc[15:46, 5:9]
+    colnames = ['BSH No Retained', 'BSH Kg Retained', 
+                'BSH No Released alive', 'BSH No Discarded dead']
+    df_sharksBSH.columns = colnames
+    
+    df_sharksBSH = df_sharksBSH.map(zero_if_empty)
+
+    df_sharksBSH.reset_index(drop=True, inplace=True)
+    return df_sharksBSH
+
+def extract_sharksMAK(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les Mako 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksMAK = df_donnees.iloc[15:46, 9:13]
+    colnames = ['MAK No Retained', 'MAK Kg Retained', 
+                'MAK No Released alive', 'MAK No Discarded dead']
+    df_sharksMAK.columns = colnames
+    
+    df_sharksMAK = df_sharksMAK.map(zero_if_empty)
+
+    df_sharksMAK.reset_index(drop=True, inplace=True)
+    return df_sharksMAK
+
+def extract_sharksSPN(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksSPN = df_donnees.iloc[15:46, 13:17]
+    colnames = ['SPN No Retained', 'SPN Kg Retained', 
+                'SPN No Released alive', 'SPN No Discarded dead']
+    df_sharksSPN.columns = colnames
+    
+    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
+
+    df_sharksSPN.reset_index(drop=True, inplace=True)
+    return df_sharksSPN
+
+def extract_sharksTIG(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les tiger sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksTIG = df_donnees.iloc[15:46, 17:21]
+    colnames = ['TIG No Retained', 'TIG Kg Retained', 
+                'TIG No Released alive', 'TIG No Discarded dead']
+    df_sharksTIG.columns = colnames
+    
+    df_sharksTIG = df_sharksTIG.map(zero_if_empty)
+
+    df_sharksTIG.reset_index(drop=True, inplace=True)
+    return df_sharksTIG
+
+def extract_sharksPSK(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les crocodile sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksPSK = df_donnees.iloc[15:46, 21:25]
+    colnames = ['PSK No Retained', 'PSK Kg Retained', 
+                'PSK No Released alive', 'PSK No Discarded dead']
+    df_sharksPSK.columns = colnames
+    
+    df_sharksPSK = df_sharksPSK.map(zero_if_empty)
+
+    df_sharksPSK.reset_index(drop=True, inplace=True)
+    return df_sharksPSK
+
+def extract_sharksTHR(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les thresher sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksFAL = df_donnees.iloc[15:46, 25:27]
+    colnames = ['THR No Released alive', 'THR No Discarded dead']
+    df_sharksFAL.columns = colnames
+    
+    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
+
+    df_sharksFAL.reset_index(drop=True, inplace=True)
+    return df_sharksFAL
+
+def extract_sharksOCS(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les oceanic sharks 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_sharksOCS = df_donnees.iloc[15:46, 27:29]
+    colnames = ['OCS No Released alive', 'OCS No Discarded dead']
+    df_sharksOCS.columns = colnames
+    
+    df_sharksOCS = df_sharksOCS.map(zero_if_empty)
+
+    df_sharksOCS.reset_index(drop=True, inplace=True)
+    return df_sharksOCS
+
+def extract_mammals(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les autres mammifères marins 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_mammals = df_donnees.iloc[15:46, 29:31]
+    colnames = ['Mammals No Released alive', 'Mammals No Discarded dead']
+    df_mammals.columns = colnames
+    
+    df_mammals = df_mammals.map(zero_if_empty)
+
+    df_mammals.reset_index(drop=True, inplace=True)
+    return df_mammals
+
+def extract_seabird(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les sea birds
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_seabird = df_donnees.iloc[15:46, 31:33]
+    colnames = ['Seabird No Released alive', 'Seabird No Discarded dead']
+    df_seabird.columns = colnames
+    
+    df_seabird = df_seabird.map(zero_if_empty)
+
+    df_seabird.reset_index(drop=True, inplace=True)
+    return df_seabird
+
+def extract_turtles(file_path):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les torutes 
+    '''    
+    num_page = 2
+    df_donnees = read_excel(file_path, num_page)
+
+    df_turtles = df_donnees.iloc[15:46, 33:35]
+    colnames = ['Turtles No Released alive', 'Turtles No Discarded dead']
+    df_turtles.columns = colnames
+    
+    df_turtles = df_turtles.map(zero_if_empty)
+
+    df_turtles.reset_index(drop=True, inplace=True)
+    return df_turtles
 
 
 
@@ -512,10 +692,28 @@ def index(request):
     df_tunas = extract_tunas(fp)
     df_billfishes = extract_billfishes(fp)
     df_otherfish = extract_otherfish(fp)
+    df_sharksFAL = extract_sharksFAL(fp)
+    df_sharksBSH = extract_sharksBSH(fp)
+    df_sharksMAK = extract_sharksMAK(fp)
+    df_sharksSPN = extract_sharksSPN(fp)
+    df_sharksTIG = extract_sharksTIG(fp)
+    df_sharksPSK = extract_sharksPSK(fp)
+    df_sharksTHR = extract_sharksTHR(fp)
+    df_sharksOCS = extract_sharksOCS(fp)
+    df_mammals = extract_mammals(fp)
+    df_seabirds = extract_seabird(fp)
+    df_turtles = extract_turtles(fp)
+    
+    
     
     df_activity = pd.concat([df_position, df_time, df_temperature, 
-                             df_fishingEffort, df_tunas, df_billfishes, df_otherfish],
+                             df_fishingEffort, df_tunas, df_billfishes, df_otherfish, 
+                             df_sharksFAL, df_sharksBSH, df_sharksMAK, 
+                             df_sharksSPN, df_sharksTIG, df_sharksPSK, 
+                             df_sharksTHR, df_sharksOCS, 
+                             df_mammals, df_seabirds, df_turtles],
                             axis = 1)
+    
         
     if request.method == 'POST':
         
