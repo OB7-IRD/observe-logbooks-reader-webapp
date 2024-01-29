@@ -9,9 +9,6 @@ import numpy as np
 import re
 import datetime
 
-from .forms import MyForm
-
-
 def get_token():
     '''
     Fonction qui sort un Token 
@@ -114,6 +111,12 @@ def np_removing_semicolon(numpy_table, num_col):
     return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
 
 def dms_to_decimal(degrees, minutes, direction):
+    if degrees is None : 
+        return None
+    
+    # if type(degrees) is str:
+    degrees = int(degrees)
+    minutes = int(minutes)
     decimal_degrees = degrees + minutes / 60.0
     if direction in ['S', 'W']:
         decimal_degrees *= -1
@@ -125,17 +128,21 @@ def convert_to_time_or_text(value):
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
     '''
     try:
-        if ' ' in value:
-            date_time = datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
+        if ' ' in value or ':' in value:
+            date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
             if hasattr(date_time, 'strftime'): 
                 return date_time.strftime('%H:%M:%S')  
-            return date_time  
+            return str(date_time)
         else :
             if re.match("%H:%M:%S", value):
-                return date_time.strftime('%H:%M:%S')  
+                # return date_time.strftime('%H:%M:%S')  
+                return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
             return value  
+        
     except (ValueError, TypeError):
-        return value
+        if hasattr(value, 'strftime'): 
+            return value.strftime('%H:%M:%S')  
+        return str(value)
 
 def zero_if_empty(value):
     if value == "None" or pd.isna(value):
@@ -143,9 +150,9 @@ def zero_if_empty(value):
     else :
         return int(value)
 
-#FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+# FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
 FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
-#FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
+# FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
 
 def read_excel(file_path, num_page): 
     '''
@@ -390,7 +397,6 @@ def extract_time(file_path):
     df_time = df_donnees.iloc[24:55, 7:8]
     colnames = ['Time']
     df_time.columns = colnames
-
     df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
     
     df_time.reset_index(drop=True, inplace=True)
