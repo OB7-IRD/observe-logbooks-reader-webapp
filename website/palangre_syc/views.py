@@ -427,11 +427,12 @@ def extract_fishingEffort(file_path):
     '''    
     num_page = 1
     df_donnees = read_excel(file_path, num_page)
-
+    day = df_donnees.iloc[24:55, 0]
     df_fishingEffort = df_donnees.iloc[24:55, 9:12]
-    colnames = ['Hooks', 'Total hooks', 'Total lightsticks']
-    df_fishingEffort.columns = colnames
     
+    np_fishingEffort = np.column_stack((day, df_fishingEffort))
+    
+    df_fishingEffort = pd.DataFrame(np_fishingEffort, columns=['Day', 'Hooks', 'Total hooks', 'Total lightsticks'])
     df_fishingEffort.reset_index(drop=True, inplace=True)
     return df_fishingEffort
 
