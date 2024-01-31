@@ -30,6 +30,9 @@ urlpatterns = [
     path('logbook/apply', postProg_info, name="postProg_info"),
     path('logbook/domainselect', domaineSelect, name="domaineSelect"),
     path('logbook/sendData', sendData, name="sendData"),
+    
+    # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
+    path("palangre_syc/", include("palangre_syc.urls")),
 ]
 
-handler404 = 'website.views.error_page.error_404_view'
+handler404 = 'webapps.views.error_404_view'

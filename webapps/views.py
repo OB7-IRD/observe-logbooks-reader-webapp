@@ -398,3 +398,7 @@ def get_data_extract(request):
 #        return render(request, "logbook.html",{"files": "appliquer"})
 #
 #"""
+
+
+def error_404_view(request, exception):
+    return render(request, "404.html")

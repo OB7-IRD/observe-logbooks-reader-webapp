@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'webapps',
+    'palangre_syc'
 ]
 
 MIDDLEWARE = [
