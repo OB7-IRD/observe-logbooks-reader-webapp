@@ -1,7 +1,7 @@
 from views import * 
 import os
 
-DIR = "./website/palangre_syc/media"
+DIR = "./palangre_syc/media"
 
 for file in os.listdir(DIR) :
     if '~$' not in file : 
