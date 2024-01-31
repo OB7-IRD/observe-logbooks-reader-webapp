@@ -5,6 +5,8 @@ import json
 file_path = './website/palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
 with open('./website/data_common.json', 'r', encoding = 'utf-8') as f:
     data_common = json.load(f)
+with open('./website/data_ll.json', 'r', encoding = 'utf-8') as f:
+    data_ll = json.load(f)    
 
 
 def captain_topiaID():
@@ -32,6 +34,8 @@ def vessel_topiaID():
             return vessel['topiaId']
     return None
 
+
+    
 Trip = {
     'homeId' : 1, 
     'startDate' : extract_cruiseInfo_LL(file_path).loc[extract_cruiseInfo_LL(file_path)['Logbook_name'] == 'Departure Date', 'Value'].values[0],
@@ -67,10 +71,61 @@ Trip = {
     'logbookAvailability'  : '',
 }
 
+def get_VesselActivity_topiaId(startTimeStamp):
+    '''
+    Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
+    cad si'il y a une heure - on est en activité de pêche,
+    En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
+    et s'il contient 'PORT' alors le bateau est au port 
+    'FISHING
+    '''
+    if ":" in startTimeStamp:
+        code = "FO"
+    
+    elif 'CRUIS' in startTimeStamp : 
+        code = "CRUISE"
+        
+    elif 'PORT' in startTimeStamp : 
+        code = "PORT"
+    
+    elif startTimeStamp == None:
+        return None  
+    
+    else : 
+        code = "OTH"
+    
+    VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
+    for VesselActivity in VesselActivities:
+        if VesselActivity.get("code") == code:
+            return VesselActivity["topiaId"]
+         
+    return None
+                
+    
+# filtered_df = extract_time(file_path)[pd.to_datetime(extract_time(file_path)['Time'], errors='coerce').notna()]
+days_in_a_month = len(extract_time(file_path))
+for index in range(days_in_a_month):
+    # if extract_time(file_path).loc[extract_time(file_path)['Time']][index] != str:
+    Activity = {
+        'homeId' : index + 1, 
+        'comment' : '',
+        'startTimeStamp' : extract_time(file_path).loc[index, 'Time'],
+        'endTimeStamp' : '',
+        'latitude' : extract_positions(file_path).loc[index, 'Latitute'],
+        'longitude' : extract_positions(file_path).loc[index, 'Longitude'], 
+        'seaSurfaceTemperature' : extract_temperature(file_path).loc[index, 'Température'], 
+        'wind' : '', 
+        'windDirection' : '', 
+        'currentSpeed' : '', 
+        'currentDirection' : '', 
+        'vesselActivity' : get_VesselActivity_topiaId(extract_time(file_path).loc[index, 'Time']), 
+        'dataQuality' : '', 
+        'fpaZone' : '', 
+        'relatedObservedActivity' : '', 
+        'set' : '', 
+        'sample' : ''
+        }
+        
+        
+    print(Activity)
 
-
-
-
-
-
-print(Trip)

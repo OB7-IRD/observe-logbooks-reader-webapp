@@ -393,11 +393,15 @@ def extract_time(file_path):
     '''    
     num_page = 1
     df_donnees = read_excel(file_path, num_page)
-
+    
+    day = df_donnees.iloc[24:55, 0]
     df_time = df_donnees.iloc[24:55, 7:8]
     colnames = ['Time']
     df_time.columns = colnames
     df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
+    
+    np_time = np.column_stack((day, df_time))
+    df_time = pd.DataFrame(np_time, columns=['Day', 'Time'])
     
     df_time.reset_index(drop=True, inplace=True)
     return df_time
