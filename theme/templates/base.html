@@ -1,0 +1,34 @@
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>
+		{% block title %}
+		Django Tailwind
+		{% endblock title %}
+	</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	{% tailwind_css %}
+</head>
+
+<body>
+	<nav class="bg-gray-800">
+		{% block navigation %}
+		{% endblock navigation %} </nav>
+	<header class="bg-white shadow"> {% block heading %}
+		{% endblock heading %}</header>
+
+	<main>
+		{% block content %}
+		{% endblock content %}
+	</main>
+	<footer>
+		{% block footer %}
+		{% endblock footer %}
+	</footer>
+</body>
+
+</html>
