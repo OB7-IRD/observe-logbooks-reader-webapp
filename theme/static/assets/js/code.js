@@ -45,8 +45,9 @@ $(document).ready(function(){
 
         if ($this.val() == "senne") {
 
-            $("#apply select[name='ty_doc']").find('.after').after('<option class="orth" value="ps">Logbook ORTHONGEL</option>');
-            // $("#apply select[name='ty_doc']").find('.orth').after('<option value="ers">Données ERS</option>');
+            $("#apply select[name='ty_doc']").find('.after').after('<option class="orth" value="ps">Logbook ORTHONGEL v21</option>');
+            $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
+            $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
             $.ajax({
                 url: '/'+$this.val(),
                 type: 'GET',
@@ -93,30 +94,38 @@ $(document).ready(function(){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
+            if ($("#apply select[name='ty_doc']").val() == "ps"){
+                $.ajax({
+                    type: 'POST',
+                    url: 'logbook/'+$("#apply").attr('action'),
+                    data: data,
+                    dataType: "json",
+                    success: function(response){
 
-            $.ajax({
-                type: 'POST',
-                url: 'logbook/'+$("#apply").attr('action'),
-                data: data,
-                dataType: "json",
-                success: function(response){
+                        if (response.message == 'success'){
+                            console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
 
-                    if (response.message == 'success'){
-                        console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
-
-                    }else{
-                        console.log(response.message);
+                        }else{
+                            console.log(response.message);
+                        }
+                    },
+                    error: function(response){
+                        console.log('La configuration n\'a pas été enregistrer');
                     }
-                },
-                error: function(response){
-                    console.log('La configuration n\'a pas été enregistrer');
-                }
-            });
-            $("#div_upload").show(1500);
-            $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+                });
+                $("#div_upload").show(1500);
+                $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
 
-            var domaine = $("#domaine").val()
-            dropZone(domaine);
+                var domaine = $("#domaine").val()
+                dropZone(domaine);
+            }
+            else if (($("#apply select[name='ty_doc']").val() == "ps2") || ($("#apply select[name='ty_doc']").val() == "ers")){
+                $("#div_upload").hide(1500);
+                console.log('Rien pour l\'instant ');
+
+            }
+            console.log($("#apply select[name='ty_doc']").val())
+
         }
         else{
             alert('Veuillez selectionner tous les champs avant d\'appliquer');
