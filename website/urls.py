@@ -35,4 +35,4 @@ urlpatterns = [
     path("palangre_syc/", include("palangre_syc.urls")),
 ]
 
-handler404 = 'website.views.error_page.error_404_view'
+handler404 = 'webapps.views.error_404_view'
