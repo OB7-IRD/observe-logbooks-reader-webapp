@@ -12,6 +12,8 @@ import json
 from zipfile import ZipFile
 import os
 
+LOGBOOK_DIRECTORY_PATH = "media/logbooks"
+
 # Create your views here.
 def register(request):
     form = UserForm()
@@ -150,13 +152,17 @@ def logbook(request):
     if request.POST.get('submit'):
 
         message = tags = ''
-        logbooks = os.listdir("media/logbooks")
+        print(os.path.isdir(LOGBOOK_DIRECTORY_PATH), LOGBOOK_DIRECTORY_PATH)
+        if not os.path.isdir(LOGBOOK_DIRECTORY_PATH):
+            os.makedirs(LOGBOOK_DIRECTORY_PATH, exist_ok=False)
+        logbooks = os.listdir(LOGBOOK_DIRECTORY_PATH)
 
         if 0 < len(logbooks) <= 1:
-            info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
+            lb_filepath = os.path.join(LOGBOOK_DIRECTORY_PATH,logbooks[0])
+            info_Navir, data_logbook, data_observateur, message = read_data(lb_filepath)
 
             # Suprimer le ou les fichiers data logbooks
-            os.remove("media/logbooks/"+ logbooks[0])
+            os.remove(lb_filepath)
 
         if message == '' and len(logbooks) > 0:
             print("len log ", len(logbooks), " messa : ", message)
@@ -202,10 +208,10 @@ def logbook(request):
                 messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
                 tags = "error2"
 
-                logbooks = os.listdir("media/logbooks")
+                logbooks = os.listdir(LOGBOOK_DIRECTORY_PATH)
 
                 for logbook in logbooks:
-                    os.remove("media/logbooks/"+ logbook)
+                    os.remove(os.path.join(LOGBOOK_DIRECTORY_PATH, logbook))
 
 
         else:
@@ -259,10 +265,10 @@ def postProg_info(request):
 def domaineSelect(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
-        logbooks = os.listdir("media/logbooks")
+        logbooks = os.listdir(LOGBOOK_DIRECTORY_PATH)
 
         for logbook in logbooks:
-            os.remove("media/logbooks/"+ logbook)
+            os.remove(os.path.join(LOGBOOK_DIRECTORY_PATH, logbook))
 
         return JsonResponse({"domaine": request.session.get('dico_config')['domaine']})
 
@@ -355,7 +361,7 @@ def file_upload_view(request):
         file = request.FILES['file']
         fs = FileSystemStorage()
 
-        if (file.name not in os.listdir("media/logbooks")):
+        if (file.name not in os.listdir(LOGBOOK_DIRECTORY_PATH)):
             #To copy data to the base folder
             filename = fs.save("logbooks/"+file.name, file)
             uploaded_file_url = fs.url(filename)                 #To get the file`s url
@@ -379,7 +385,7 @@ def get_data_extract(request):
 
         messages = ''
 
-        logbooks = os.listdir("media/logbooks")
+        logbooks = os.listdir(LOGBOOK_DIRECTORY_PATH)
 
         print(logbooks)
 
