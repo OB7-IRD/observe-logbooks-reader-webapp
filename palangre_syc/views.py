@@ -353,7 +353,7 @@ def extract_bait_LL(file_path):
                         ('Sardine', df_sardine),
                         ('Mackerel', df_mackerel),
                         ('Muroaji', df_muroaji),
-                        ('Orther', df_other),], 
+                        ('Other', df_other),], 
                        dtype = [('Logbook_name', 'U10'), ('Value', 'U10')])
     df_bait = pd.DataFrame(np_bait)
    # df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'] )
