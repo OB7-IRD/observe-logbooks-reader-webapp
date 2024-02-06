@@ -1,6 +1,9 @@
 from views import * 
 import json, os
 import numpy as np
+import warnings
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 if os.path.exists("sample.json") : 
     os.remove("sample.json")
@@ -41,7 +44,6 @@ def get_vessel_topiaID(file_path):
         if 'nationalId' in vessel:
             vessel_json = vessel['nationalId']
             if vessel_Logbook == vessel_json :
-                print(vessel['label1'])
                 return vessel['topiaId']
     return None
 
@@ -85,7 +87,7 @@ def get_BaitType_topiaId(row):
     else : 
         return None
 
-def get_tunasSpecies_topiaID(FAO_code_logbook):
+def get_Species_topiaID(FAO_code_logbook):
     '''
     Fonction 
     '''
@@ -99,9 +101,94 @@ def get_tunasSpecies_topiaID(FAO_code_logbook):
                 return Specie["topiaId"]
     else : 
         return None
+    
+def get_catchFate_topiaID(catchFate_logbook):
+    '''
+    Fonction 
+    '''
+    Fates = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.CatchFate"]
+    for catchFate in Fates:
+        if 'code' in catchFate:
+            if catchFate.get("code") == catchFate_logbook:
+                return catchFate["topiaId"]
+    else : 
+        return None
 
 
-print(get_tunasSpecies_topiaID(file_path))
+# a voir si c'est pertinent en terme de gain de temps de découper la fonction ici en 2 
+# on pourrait avoir une fonctionn qui gère les lignes issues des noms de colonnes
+# et une seconde fonction qui remplirait les lignes count et totalWeight en allant chercher les infos dans le excel
+
+def create_catch_table_fish_perday(fish_file, row_number):
+    '''
+    Fonction qui prend en argument (1) une fonction d'extraction de données de poisson gardés à bord 
+    et (2) une ligne (ou un jour de pêche) à extraire
+    Elle ressort un dataframe (par type de poisson pêché et par jour de pêche) de 4 colonnes 
+    Ce dataframe continet les champs obligatoires à remplir dans la table 'catch' de Observe
+    '''
+    df_catches = pd.DataFrame(columns=['FAO_code', 'catchFate', 'count', 'totalWeight'])
+
+    # On récupère les données des colonnes de FAO et catchFate
+    for col in fish_file.columns:
+        FAO_code = col[-3:]
+        catchFate = col[-7:-4] 
+        df_catches.loc[len(df_catches)] = {'FAO_code': FAO_code, 'catchFate': catchFate}
+            
+    # Supprimer les doublons
+    df_catches = df_catches.drop_duplicates()
+    
+    # On rempli la suite du dataframe pour count et totalWeight (pour une ligne donnée)
+    for index, row in df_catches.iterrows():
+        col_end_name = df_catches.loc[index, 'catchFate'] + " " + df_catches.loc[index, 'FAO_code']
+        for col in fish_file.columns:
+            if col[-7:] == col_end_name : 
+                if col[:2] == 'No':
+                    fish_file_colname = 'No' + ' ' + col_end_name
+                    count = fish_file.loc[row_number, fish_file_colname]
+                    df_catches.loc[index, 'count'] = count
+                    df_catches.loc[index, 'count'] = int(df_catches.loc[index, 'count'])
+
+                if col[:2] == 'Kg':
+                    fish_file_colname = 'Kg' + ' ' + col_end_name
+                    totalWeight = fish_file.loc[row_number, fish_file_colname]
+                    df_catches.loc[index, 'totalWeight'] = totalWeight
+                    df_catches.loc[index, 'totalWeight'] = int(df_catches.loc[index, 'totalWeight'])
+                
+                # a voir si on veut des Nan car il n'y a pas de donnée ou des 0
+                else : 
+                    df_catches.loc[index, 'totalWeight'] = int(0)
+    return df_catches
+
+
+def create_catch_table_fishes(file_path, row_number):
+    liste_fct_extraction = [extract_tunas(file_path), 
+                            extract_billfishes(file_path), 
+                            extract_otherfish(file_path), 
+                            extract_sharksFAL(file_path), 
+                            extract_sharksBSH(file_path), 
+                            extract_sharksMAK(file_path), 
+                            extract_sharksSPN(file_path),
+                            extract_sharksTIG(file_path),
+                            extract_sharksPSK(file_path),
+                            extract_sharksTHR(file_path),
+                            extract_sharksOCS(file_path),
+                            extract_mammals(file_path),
+                            extract_seabird(file_path),
+                            extract_turtles(file_path)
+                            ]
+    df_catches = pd.DataFrame(columns=['FAO_code', 'catchFate', 'count', 'totalWeight'])
+    for fish_file in liste_fct_extraction :
+        df_per_extraction = create_catch_table_fish_perday(fish_file, row_number)
+        df_catches = pd.concat([df_catches, df_per_extraction], ignore_index=True)
+    
+    # Tester si les colonnes 'count' et 'totalWeight' contiennent des zéros
+    not_catch = df_catches[(df_catches['count'] == 0) & (df_catches['totalWeight'] == 0)]
+    # Supprimer les lignes qui contiennent des zéros dans ces colonnes
+    df_catches = df_catches.drop(not_catch.index)
+    df_catches.reset_index(drop=True, inplace=True)
+    return df_catches
+
+print(create_catch_table_fishes(file_path, 0))
 
 def create_branchelinesComposition(file_path):
     branchlinesComposition = {
@@ -203,12 +290,12 @@ LineType = {
     
 
 
-def create_catches(FAO_code_logbook):
+def create_catches(file_path, ligne_catch_table_fishes):
     catches = {
-        "homeId": '',
+        "homeId": ligne_catch_table_fishes + 1,
         "comment": '',
-        "count": extract_tunas(file_path).loc[index, column],
-        "totalWeight": '',
+        "count": create_catch_table_fishes(file_path, ligne_catch_table_fishes).loc[ligne_catch_table_fishes, 'count'],
+        "totalWeight": create_catch_table_fishes(file_path, ligne_catch_table_fishes).loc[ligne_catch_table_fishes, 'totalWeight'],
         "hookWhenDiscarded": '',
         "depredated": '',
         "beatDiameter": '',
@@ -218,39 +305,32 @@ def create_catches(FAO_code_logbook):
         "countDepredated": '',
         "depredatedProportion": '',
         "tagNumber": '',
-        "catchFate": "",
+        "catchFate": get_catchFate_topiaID(create_catch_table_fishes(file_path, ligne_catch_table_fishes).loc[ligne_catch_table_fishes, 'catchFate']),
         "discardHealthStatus": '',
-        "species": get_tunasSpecies_topiaID(FAO_code_logbook),
-        "predator": [
-        "fr.ird.referential.common.Species#1433499245237#0.58819441543892",
-        "fr.ird.referential.common.Species#1433499258033#0.552436746191233"
-        ],
+        "species": get_Species_topiaID(create_catch_table_fishes(file_path, ligne_catch_table_fishes).loc[ligne_catch_table_fishes, 'FAO_code']),
+        "predator": '',
         "catchHealthStatus": '',
         "onBoardProcessing": '',
         "weightMeasureMethod": ''
         }
     return catches
 
-
-
-
 # filtered_df = extract_time(file_path)[pd.to_datetime(extract_time(file_path)['Time'], errors='coerce').notna()]
 days_in_a_month = len(extract_time(file_path))
-for index in range(days_in_a_month):
+for days in range(days_in_a_month):
     # if extract_time(file_path).loc[extract_time(file_path)['Time']][index] != str:
-    
     Set = {
-        'homeId' : index + 1, 
+        'homeId' : days + 1, 
         'comment' : '',
         'number' : '',
-        'basketsPerSectionCount' : extract_fishingEffort(file_path).loc[index, 'Hooks'],
+        'basketsPerSectionCount' : extract_fishingEffort(file_path).loc[days, 'Hooks'],
         'branchlinesPerBasketCount': extract_gearInfo_LL(file_path).loc[extract_gearInfo_LL(file_path)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
         'totalSectionsCount' : '', 
         # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
         'totalBasketsCount' : '', 
-        'totalHooksCount' : extract_fishingEffort(file_path).loc[index, 'Total hooks'], 
+        'totalHooksCount' : extract_fishingEffort(file_path).loc[days, 'Total hooks'], 
         'lightsticksPerBasketCount' : '', 
-        'totalLightsticksCount' : extract_fishingEffort(file_path).loc[index, 'Total lightsticks'], 
+        'totalLightsticksCount' : extract_fishingEffort(file_path).loc[days, 'Total lightsticks'], 
         'weightedSnap' : '', 
         'snapWeight' : '', 
         'weightedSwivel' : '', 
@@ -259,9 +339,9 @@ for index in range(days_in_a_month):
         'shooterUsed' : '', 
         'shooterSpeed' : '', 
         'maxDepthTargeted' : '',
-        'settingStartTimeStamp' : extract_time(file_path).loc[index, 'Time'],
-        'settingStartLatitude' : extract_positions(file_path).loc[index, 'Latitute'],
-        'settingStartLongitude' : extract_positions(file_path).loc[index, 'Longitude'],
+        'settingStartTimeStamp' : extract_time(file_path).loc[days, 'Time'],
+        'settingStartLatitude' : extract_positions(file_path).loc[days, 'Latitute'],
+        'settingStartLongitude' : extract_positions(file_path).loc[days, 'Longitude'],
         'settingEndTimeStamp' : '', 
         'settingEndLatitude' : '', 
         'settingEndLongitude' : '', 
@@ -280,6 +360,7 @@ for index in range(days_in_a_month):
         'lengthBetweenBranchlines'  : ''}
     
     MultipleBaitComposition = []
+    
     for index, row in extract_bait_LL(file_path).iterrows():
         if create_BaitComposition(row)["baitType"] is not None:
             MultipleBaitComposition.append(create_BaitComposition(row))
@@ -290,11 +371,20 @@ for index in range(days_in_a_month):
         'settingShape' : '', })
                
     MultipleCatches = []
-    Numberof = extract_tunas(file_path).columns[::2]
-    for column in Numberof:
-        FAO_code_logbook = column[-3:]           
-        MultipleCatches.append(create_catches(FAO_code_logbook))
-        Set.update({'catches' : MultipleCatches,})
+    # Numberof = extract_tunas(file_path).columns[::2]
+    # for column in Numberof:
+    #     FAO_code_logbook = column[-3:]           
+    #     MultipleCatches.append(create_catches(FAO_code_logbook))
+    #     Set.update({'catches' : MultipleCatches,})
+    
+    datatable = create_catch_table_fishes(file_path, row_number = days)
+    for ligne_catch_table_fishes in range(len(datatable)) :
+        # FAO_code_logbook = column[-3:]     
+        print(ligne_catch_table_fishes) 
+        print(create_catch_table_fishes(file_path, ligne_catch_table_fishes).loc[ligne_catch_table_fishes, 'FAO_code'])
+        # MultipleCatches.append(create_catches(file_path, days))
+        # print(MultipleCatches)
+        # Set.update({'catches' : MultipleCatches,})
         
     Set.update({'lineType' : '', 
         'lightsticksUsed' : '', 

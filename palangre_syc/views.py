@@ -444,10 +444,10 @@ def extract_tunas(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_tunas = df_donnees.iloc[24:55, 12:20]
-    colnames = ['No SBF', 'Kg SBF', 
-                'No ALB', 'Kg ALB', 
-                'No BET', 'Kg BET', 
-                'No YFT', 'Kg YFT']
+    colnames = ['No RET SBF', 'Kg RET SBF', 
+                'No RET ALB', 'Kg RET ALB', 
+                'No RET BET', 'Kg RET BET', 
+                'No RET YFT', 'Kg RET YFT']
     df_tunas.columns = colnames
     
     df_tunas = df_tunas.map(zero_if_empty)
@@ -463,12 +463,12 @@ def extract_billfishes(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_billfishies = df_donnees.iloc[24:55, 20:32]
-    colnames = ['No SWO', 'Kg SWO', 
-                'No MLS', 'Kg MLS', 
-                'No BLZ', 'Kg BLZ', 
-                'No BLM', 'Kg BLM',
-                'No SFA', 'Kg SFA', 
-                'No SSP', 'Kg SSP']
+    colnames = ['No RET SWO', 'Kg RET SWO', 
+                'No RET MLS', 'Kg RET MLS', 
+                'No RET BLZ', 'Kg RET BLZ', 
+                'No RET BLM', 'Kg RET BLM',
+                'No RET SFA', 'Kg RET SFA', 
+                'No RET SSP', 'Kg RET SSP']
     df_billfishies.columns = colnames
     
     df_billfishies = df_billfishies.map(zero_if_empty)
@@ -484,8 +484,8 @@ def extract_otherfish(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_otherfish = df_donnees.iloc[24:55, 32:36]
-    colnames = ['No oil fish', 'Kg oil fish', 
-                'No other species', 'Kg other species']
+    colnames = ['No RET OIL', 'Kg RET OIL', 
+                'No RET XXX', 'Kg RET XXX']
     df_otherfish.columns = colnames
     
     df_otherfish = df_otherfish.map(zero_if_empty)
@@ -501,8 +501,8 @@ def extract_sharksFAL(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksFAL = df_donnees.iloc[15:46, 1:5]
-    colnames = ['FAL No Retained', 'FAL Kg Retained', 
-                'FAL No Released alive', 'FAL No Discarded dead']
+    colnames = ['No RET FAL', 'Kg RET FAL', 
+                'No ESC FAL', 'No DIS FAL']
     df_sharksFAL.columns = colnames
     
     df_sharksFAL = df_sharksFAL.map(zero_if_empty)
@@ -518,8 +518,8 @@ def extract_sharksBSH(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksBSH = df_donnees.iloc[15:46, 5:9]
-    colnames = ['BSH No Retained', 'BSH Kg Retained', 
-                'BSH No Released alive', 'BSH No Discarded dead']
+    colnames = ['No RET BSH', 'Kg RET BSH', 
+                'No ESC BSH', 'No DIS BSH']
     df_sharksBSH.columns = colnames
     
     df_sharksBSH = df_sharksBSH.map(zero_if_empty)
@@ -535,8 +535,8 @@ def extract_sharksMAK(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksMAK = df_donnees.iloc[15:46, 9:13]
-    colnames = ['MAK No Retained', 'MAK Kg Retained', 
-                'MAK No Released alive', 'MAK No Discarded dead']
+    colnames = ['No RET MAK', 'Kg RET MAK', 
+                'No ESC MAK', 'No DIS MAK']
     df_sharksMAK.columns = colnames
     
     df_sharksMAK = df_sharksMAK.map(zero_if_empty)
@@ -552,8 +552,8 @@ def extract_sharksSPN(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksSPN = df_donnees.iloc[15:46, 13:17]
-    colnames = ['SPN No Retained', 'SPN Kg Retained', 
-                'SPN No Released alive', 'SPN No Discarded dead']
+    colnames = ['No RET SPN', 'Kg RET SPN', 
+                'No ESC SPN', 'No DIS SPN']
     df_sharksSPN.columns = colnames
     
     df_sharksSPN = df_sharksSPN.map(zero_if_empty)
@@ -569,8 +569,8 @@ def extract_sharksTIG(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksTIG = df_donnees.iloc[15:46, 17:21]
-    colnames = ['TIG No Retained', 'TIG Kg Retained', 
-                'TIG No Released alive', 'TIG No Discarded dead']
+    colnames = ['No RET TIG', 'Kg RET TIG', 
+                'No ESC TIG', 'No DIS TIG']
     df_sharksTIG.columns = colnames
     
     df_sharksTIG = df_sharksTIG.map(zero_if_empty)
@@ -586,8 +586,9 @@ def extract_sharksPSK(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksPSK = df_donnees.iloc[15:46, 21:25]
-    colnames = ['PSK No Retained', 'PSK Kg Retained', 
-                'PSK No Released alive', 'PSK No Discarded dead']
+    colnames = ['No RET PSK', 'Kg RET PSK', 
+                'No ESC PSK', 'No DIS PSK']
+
     df_sharksPSK.columns = colnames
     
     df_sharksPSK = df_sharksPSK.map(zero_if_empty)
@@ -603,7 +604,7 @@ def extract_sharksTHR(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksFAL = df_donnees.iloc[15:46, 25:27]
-    colnames = ['THR No Released alive', 'THR No Discarded dead']
+    colnames = ['No ESC THR', 'No DIS THR']
     df_sharksFAL.columns = colnames
     
     df_sharksFAL = df_sharksFAL.map(zero_if_empty)
@@ -619,7 +620,7 @@ def extract_sharksOCS(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_sharksOCS = df_donnees.iloc[15:46, 27:29]
-    colnames = ['OCS No Released alive', 'OCS No Discarded dead']
+    colnames = ['No ESC OCS', 'No DIS OCS']
     df_sharksOCS.columns = colnames
     
     df_sharksOCS = df_sharksOCS.map(zero_if_empty)
@@ -635,9 +636,8 @@ def extract_mammals(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_mammals = df_donnees.iloc[15:46, 29:31]
-    colnames = ['Mammals No Released alive', 'Mammals No Discarded dead']
+    colnames = ['No ESC MAM', 'No DIS MAM']
     df_mammals.columns = colnames
-    
     df_mammals = df_mammals.map(zero_if_empty)
 
     df_mammals.reset_index(drop=True, inplace=True)
@@ -651,7 +651,7 @@ def extract_seabird(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_seabird = df_donnees.iloc[15:46, 31:33]
-    colnames = ['Seabird No Released alive', 'Seabird No Discarded dead']
+    colnames = ['No ESC SBD', 'No DIS SBD']
     df_seabird.columns = colnames
     
     df_seabird = df_seabird.map(zero_if_empty)
@@ -667,7 +667,7 @@ def extract_turtles(file_path):
     df_donnees = read_excel(file_path, num_page)
 
     df_turtles = df_donnees.iloc[15:46, 33:35]
-    colnames = ['Turtles No Released alive', 'Turtles No Discarded dead']
+    colnames = ['No ESC TTX', 'No DIS TTX']
     df_turtles.columns = colnames
     
     df_turtles = df_turtles.map(zero_if_empty)
