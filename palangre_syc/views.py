@@ -6,7 +6,7 @@ from json import dump
 import openpyxl 
 import pandas as pd
 import numpy as np
-import re
+import re, time
 import datetime
 
 def get_token():
@@ -166,15 +166,15 @@ def read_excel(file_path, num_page):
     df_donnees = pd.DataFrame(feuille.values)
     # fermer le classeur excel 
     classeur.close()
-    
     return df_donnees
     
-def extract_vesselInfo_LL(file_path):
+
+def extract_vesselInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives au bateau 'Vessel information'
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+    
+    
     
     # On extrait les données propres au 'Vessel information' 
     df_vessel = df_donnees.iloc[7:16,0]
@@ -189,12 +189,11 @@ def extract_vesselInfo_LL(file_path):
     
     return df_vessel
 
-def extract_cruiseInfo_LL(file_path):
+def extract_cruiseInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives à la marée
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_cruise1 = df_donnees.iloc[7:10,11:20]
@@ -218,12 +217,11 @@ def extract_cruiseInfo_LL(file_path):
 
     return df_cruise
 
-def extract_reportInfo_LL(file_path):
+def extract_reportInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux info de report
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_report = df_donnees.iloc[7:9,29:35]
@@ -241,12 +239,11 @@ def extract_reportInfo_LL(file_path):
 
     return df_report
 
-def extract_gearInfo_LL(file_path):
+def extract_gearInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives à l'équipement
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_gear = df_donnees.iloc[12:16,11:21]
@@ -268,12 +265,11 @@ def extract_gearInfo_LL(file_path):
 
     return df_gear
 
-def extract_lineMaterial_LL(file_path):
+def extract_lineMaterial_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux matériel des lignes
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_line = df_donnees.iloc[12:16,21:29]
@@ -292,12 +288,11 @@ def extract_lineMaterial_LL(file_path):
 
     return df_line
 
-def extract_target_LL(file_path):
+def extract_target_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux target spécifiques
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_target = df_donnees.iloc[12:16,29:34]
@@ -317,12 +312,11 @@ def extract_target_LL(file_path):
     
     return df_target
 
-def extract_logbookDate_LL(file_path):
+def extract_logbookDate_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe le mois et l'année du logbook
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_month = df_donnees.iloc[17,5]
@@ -335,12 +329,11 @@ def extract_logbookDate_LL(file_path):
     
     return df_date
 
-def extract_bait_LL(file_path):
+def extract_bait_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe le type de d'appat utilisé
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     # On extrait les données propres au 'Vessel information' 
     df_squid = df_donnees.iloc[19,16]
@@ -360,13 +353,12 @@ def extract_bait_LL(file_path):
     
     return df_bait
 
-def extract_positions(file_path):
+def extract_positions(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les position de chaque coup de peche par jour 
     en décimal type float
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     day = df_donnees.iloc[24:55, 0]
     df_lat_dms = df_donnees.iloc[24:55, 1:4]
@@ -386,13 +378,12 @@ def extract_positions(file_path):
     
     return df_position
 
-def extract_time(file_path):
+def extract_time(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
     Elle retourne un champ type horaire, sauf si le bateau est en mouvement
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     
     day = df_donnees.iloc[24:55, 0]
     df_time = df_donnees.iloc[24:55, 7:8]
@@ -406,13 +397,12 @@ def extract_time(file_path):
     df_time.reset_index(drop=True, inplace=True)
     return df_time
 
-def extract_temperature(file_path):
+def extract_temperature(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
     Elle retourne un champ type horaire, sauf si le bateau est en mouvement
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_temp = df_donnees.iloc[24:55, 8:9]
     colnames = ['Température']
@@ -421,12 +411,11 @@ def extract_temperature(file_path):
     df_temp.reset_index(drop=True, inplace=True)
     return df_temp
 
-def extract_fishingEffort(file_path):
+def extract_fishingEffort(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les efforts de peche
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
     day = df_donnees.iloc[24:55, 0]
     df_fishingEffort = df_donnees.iloc[24:55, 9:12]
     
@@ -436,12 +425,11 @@ def extract_fishingEffort(file_path):
     df_fishingEffort.reset_index(drop=True, inplace=True)
     return df_fishingEffort
 
-def extract_tunas(file_path):
+def extract_tunas(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_tunas = df_donnees.iloc[24:55, 12:20]
     colnames = ['No RET SBF', 'Kg RET SBF', 
@@ -455,12 +443,11 @@ def extract_tunas(file_path):
     df_tunas.reset_index(drop=True, inplace=True)
     return df_tunas
 
-def extract_billfishes(file_path):
+def extract_billfishes(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les billfishes 
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_billfishies = df_donnees.iloc[24:55, 20:32]
     colnames = ['No RET SWO', 'Kg RET SWO', 
@@ -476,12 +463,11 @@ def extract_billfishes(file_path):
     df_billfishies.reset_index(drop=True, inplace=True)
     return df_billfishies
 
-def extract_otherfish(file_path):
+def extract_otherfish(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les autres poissons 
     '''    
-    num_page = 1
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_otherfish = df_donnees.iloc[24:55, 32:36]
     colnames = ['No RET OIL', 'Kg RET OIL', 
@@ -493,12 +479,11 @@ def extract_otherfish(file_path):
     df_otherfish.reset_index(drop=True, inplace=True)
     return df_otherfish
 
-def extract_sharksFAL(file_path):
+def extract_sharksFAL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les blacks sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksFAL = df_donnees.iloc[15:46, 1:5]
     colnames = ['No RET FAL', 'Kg RET FAL', 
@@ -510,12 +495,11 @@ def extract_sharksFAL(file_path):
     df_sharksFAL.reset_index(drop=True, inplace=True)
     return df_sharksFAL
 
-def extract_sharksBSH(file_path):
+def extract_sharksBSH(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les blue sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksBSH = df_donnees.iloc[15:46, 5:9]
     colnames = ['No RET BSH', 'Kg RET BSH', 
@@ -527,12 +511,11 @@ def extract_sharksBSH(file_path):
     df_sharksBSH.reset_index(drop=True, inplace=True)
     return df_sharksBSH
 
-def extract_sharksMAK(file_path):
+def extract_sharksMAK(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les Mako 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksMAK = df_donnees.iloc[15:46, 9:13]
     colnames = ['No RET MAK', 'Kg RET MAK', 
@@ -544,12 +527,11 @@ def extract_sharksMAK(file_path):
     df_sharksMAK.reset_index(drop=True, inplace=True)
     return df_sharksMAK
 
-def extract_sharksSPN(file_path):
+def extract_sharksSPN(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksSPN = df_donnees.iloc[15:46, 13:17]
     colnames = ['No RET SPN', 'Kg RET SPN', 
@@ -561,12 +543,11 @@ def extract_sharksSPN(file_path):
     df_sharksSPN.reset_index(drop=True, inplace=True)
     return df_sharksSPN
 
-def extract_sharksTIG(file_path):
+def extract_sharksTIG(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les tiger sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksTIG = df_donnees.iloc[15:46, 17:21]
     colnames = ['No RET TIG', 'Kg RET TIG', 
@@ -578,12 +559,11 @@ def extract_sharksTIG(file_path):
     df_sharksTIG.reset_index(drop=True, inplace=True)
     return df_sharksTIG
 
-def extract_sharksPSK(file_path):
+def extract_sharksPSK(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les crocodile sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksPSK = df_donnees.iloc[15:46, 21:25]
     colnames = ['No RET PSK', 'Kg RET PSK', 
@@ -596,12 +576,11 @@ def extract_sharksPSK(file_path):
     df_sharksPSK.reset_index(drop=True, inplace=True)
     return df_sharksPSK
 
-def extract_sharksTHR(file_path):
+def extract_sharksTHR(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les thresher sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksFAL = df_donnees.iloc[15:46, 25:27]
     colnames = ['No ESC THR', 'No DIS THR']
@@ -612,12 +591,11 @@ def extract_sharksTHR(file_path):
     df_sharksFAL.reset_index(drop=True, inplace=True)
     return df_sharksFAL
 
-def extract_sharksOCS(file_path):
+def extract_sharksOCS(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les oceanic sharks 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_sharksOCS = df_donnees.iloc[15:46, 27:29]
     colnames = ['No ESC OCS', 'No DIS OCS']
@@ -628,12 +606,11 @@ def extract_sharksOCS(file_path):
     df_sharksOCS.reset_index(drop=True, inplace=True)
     return df_sharksOCS
 
-def extract_mammals(file_path):
+def extract_mammals(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les autres mammifères marins 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_mammals = df_donnees.iloc[15:46, 29:31]
     colnames = ['No ESC MAM', 'No DIS MAM']
@@ -643,12 +620,11 @@ def extract_mammals(file_path):
     df_mammals.reset_index(drop=True, inplace=True)
     return df_mammals
 
-def extract_seabird(file_path):
+def extract_seabird(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les sea birds
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_seabird = df_donnees.iloc[15:46, 31:33]
     colnames = ['No ESC SBD', 'No DIS SBD']
@@ -659,12 +635,11 @@ def extract_seabird(file_path):
     df_seabird.reset_index(drop=True, inplace=True)
     return df_seabird
 
-def extract_turtles(file_path):
+def extract_turtles(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les torutes 
     '''    
-    num_page = 2
-    df_donnees = read_excel(file_path, num_page)
+
 
     df_turtles = df_donnees.iloc[15:46, 33:35]
     colnames = ['No ESC TTX', 'No DIS TTX']
@@ -679,35 +654,39 @@ def extract_turtles(file_path):
 
 
 def index(request):
-    fp = FILE_PATH
-
-    df_vessel = extract_vesselInfo_LL(fp)
-    df_cruise = extract_cruiseInfo_LL(fp)
-    df_report = extract_reportInfo_LL(fp)
-    df_gear = extract_gearInfo_LL(fp)
-    df_line = extract_lineMaterial_LL(fp)
-    df_target = extract_target_LL(fp)
-    df_date = extract_logbookDate_LL(fp)
-    df_bait = extract_bait_LL(fp)
-    df_fishingEffort = extract_fishingEffort(fp)
     
-    df_position = extract_positions(fp)
-    df_time = extract_time(fp)
-    df_temperature = extract_temperature(fp)
-    df_tunas = extract_tunas(fp)
-    df_billfishes = extract_billfishes(fp)
-    df_otherfish = extract_otherfish(fp)
-    df_sharksFAL = extract_sharksFAL(fp)
-    df_sharksBSH = extract_sharksBSH(fp)
-    df_sharksMAK = extract_sharksMAK(fp)
-    df_sharksSPN = extract_sharksSPN(fp)
-    df_sharksTIG = extract_sharksTIG(fp)
-    df_sharksPSK = extract_sharksPSK(fp)
-    df_sharksTHR = extract_sharksTHR(fp)
-    df_sharksOCS = extract_sharksOCS(fp)
-    df_mammals = extract_mammals(fp)
-    df_seabirds = extract_seabird(fp)
-    df_turtles = extract_turtles(fp)
+    df_donnees_p1 = read_excel(FILE_PATH, 1)
+
+
+    df_vessel = extract_vesselInfo_LL(df_donnees_p1)
+    df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
+    df_report = extract_reportInfo_LL(df_donnees_p1)
+    df_gear = extract_gearInfo_LL(df_donnees_p1)
+    df_line = extract_lineMaterial_LL(df_donnees_p1)
+    df_target = extract_target_LL(df_donnees_p1)
+    df_date = extract_logbookDate_LL(df_donnees_p1)
+    df_bait = extract_bait_LL(df_donnees_p1)
+    df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+    
+    df_position = extract_positions(df_donnees_p1)
+    df_time = extract_time(df_donnees_p1)
+    df_temperature = extract_temperature(df_donnees_p1)
+    df_tunas = extract_tunas(df_donnees_p1)
+    df_billfishes = extract_billfishes(df_donnees_p1)
+    df_otherfish = extract_otherfish(df_donnees_p1)
+    
+    df_donnees_p2 = read_excel(FILE_PATH, 2)
+    df_sharksFAL = extract_sharksFAL(df_donnees_p2)
+    df_sharksBSH = extract_sharksBSH(df_donnees_p2)
+    df_sharksMAK = extract_sharksMAK(df_donnees_p2)
+    df_sharksSPN = extract_sharksSPN(df_donnees_p2)
+    df_sharksTIG = extract_sharksTIG(df_donnees_p2)
+    df_sharksPSK = extract_sharksPSK(df_donnees_p2)
+    df_sharksTHR = extract_sharksTHR(df_donnees_p2)
+    df_sharksOCS = extract_sharksOCS(df_donnees_p2)
+    df_mammals = extract_mammals(df_donnees_p2)
+    df_seabirds = extract_seabird(df_donnees_p2)
+    df_turtles = extract_turtles(df_donnees_p2)
     
     
     
