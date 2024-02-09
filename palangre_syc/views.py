@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import re, time
 import datetime
+import json
 
 def get_token():
     '''
@@ -49,8 +50,8 @@ def get_referential_ll():
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
         data_ref_ll = response.json()
-    #    with open('data_ll.json', 'w', encoding='utf-8') as f:
-    #        dump(data_ref_ll, f, ensure_ascii=False, indent=4)
+        with open('data_ll.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_ll, f, ensure_ascii=False, indent=4)
     else:
         data_ref_ll = None
 
@@ -71,8 +72,8 @@ def get_referential_common():
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
         data_ref_common = response.json()
-    #    with open('data_common.json', 'w', encoding='utf-8') as f:
-    #        dump(data_ref_common, f, ensure_ascii=False, indent=4)
+        with open('data_common.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_common, f, ensure_ascii=False, indent=4)
     else:
         data_ref_common = None
     
@@ -173,9 +174,6 @@ def extract_vesselInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives au bateau 'Vessel information'
     '''    
-    
-    
-    
     # On extrait les données propres au 'Vessel information' 
     df_vessel = df_donnees.iloc[7:16,0]
     np_vessel = np.array(df_vessel)
@@ -192,9 +190,7 @@ def extract_vesselInfo_LL(df_donnees):
 def extract_cruiseInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives à la marée
-    '''    
-
-    
+    '''  
     # On extrait les données propres au 'Vessel information' 
     df_cruise1 = df_donnees.iloc[7:10,11:20]
     df_cruise2 = df_donnees.iloc[7:10,20:29]
@@ -221,8 +217,6 @@ def extract_reportInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux info de report
     '''    
-
-    
     # On extrait les données propres au 'Vessel information' 
     df_report = df_donnees.iloc[7:9,29:35]
 
@@ -243,8 +237,6 @@ def extract_gearInfo_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives à l'équipement
     '''    
-
-    
     # On extrait les données propres au 'Vessel information' 
     df_gear = df_donnees.iloc[12:16,11:21]
 
@@ -268,9 +260,7 @@ def extract_gearInfo_LL(df_donnees):
 def extract_lineMaterial_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux matériel des lignes
-    '''    
-
-    
+    '''     
     # On extrait les données propres au 'Vessel information' 
     df_line = df_donnees.iloc[12:16,21:29]
 
@@ -292,8 +282,6 @@ def extract_target_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les données relatives aux target spécifiques
     '''    
-
-    
     # On extrait les données propres au 'Vessel information' 
     df_target = df_donnees.iloc[12:16,29:34]
 
@@ -316,8 +304,6 @@ def extract_logbookDate_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe le mois et l'année du logbook
     '''    
-
-    
     # On extrait les données propres au 'Vessel information' 
     df_month = df_donnees.iloc[17,5]
     df_year = df_donnees.iloc[17,11]
@@ -333,8 +319,6 @@ def extract_bait_LL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe le type de d'appat utilisé
     '''    
-
-    
     # On extrait les données propres au 'Vessel information' 
     df_squid = df_donnees.iloc[19,16]
     df_sardine = df_donnees.iloc[19,20]
@@ -358,8 +342,6 @@ def extract_positions(df_donnees):
     Fonction qui extrait et présente dans un dataframe les position de chaque coup de peche par jour 
     en décimal type float
     '''    
-
-    
     day = df_donnees.iloc[24:55, 0]
     df_lat_dms = df_donnees.iloc[24:55, 1:4]
     df_long_dms = df_donnees.iloc[24:55, 4:7]
@@ -378,23 +360,60 @@ def extract_positions(df_donnees):
     
     return df_position
 
-def extract_time(df_donnees):
+def get_VesselActivity_topiaID(startTimeStamp, data_ll):
+    '''
+    Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
+    cad si'il y a une heure - on est en activité de pêche,
+    En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
+    et s'il contient 'PORT' alors le bateau est au port 
+    'FISHING
+    '''
+    if ":" in startTimeStamp:
+        code = "FO"
+    
+    elif 'CRUIS' in startTimeStamp : 
+        code = "CRUISE"
+        
+    elif 'PORT' in startTimeStamp : 
+        code = "PORT"
+    
+    elif startTimeStamp == None:
+        return None  
+    
+    else : 
+        code = "OTH"
+    
+    VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
+    for VesselActivity in VesselActivities:
+        if VesselActivity.get("code") == code:
+            return VesselActivity["topiaId"]
+         
+    return None
+                
+
+
+def extract_time(df_donnees, data_ll):
     '''
     Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
     Elle retourne un champ type horaire, sauf si le bateau est en mouvement
     '''    
-
-    
     day = df_donnees.iloc[24:55, 0]
     df_time = df_donnees.iloc[24:55, 7:8]
     colnames = ['Time']
     df_time.columns = colnames
     df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
-    
-    np_time = np.column_stack((day, df_time))
-    df_time = pd.DataFrame(np_time, columns=['Day', 'Time'])
+    # df_time['Time'] = pd.to_datetime(df_time['Time'], errors='ignore')
     
     df_time.reset_index(drop=True, inplace=True)
+
+    VesselActivities = np.empty((len(day),1), dtype = object)
+    for ligne in range(len(day)):
+        VesselActivity = get_VesselActivity_topiaID(df_time.iloc[ligne]['Time'], data_ll)
+        VesselActivities[ligne, 0] = VesselActivity
+    np_time = np.column_stack((day, df_time, VesselActivities))
+    df_time = pd.DataFrame(np_time, columns=['Day', 'Time', 'VesselActivity'])
+    
+    # df_time.reset_index(drop=True, inplace=True)
     return df_time
 
 def extract_temperature(df_donnees):
@@ -402,8 +421,6 @@ def extract_temperature(df_donnees):
     Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
     Elle retourne un champ type horaire, sauf si le bateau est en mouvement
     '''    
-
-
     df_temp = df_donnees.iloc[24:55, 8:9]
     colnames = ['Température']
     df_temp.columns = colnames
@@ -415,7 +432,6 @@ def extract_fishingEffort(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les efforts de peche
     '''    
-
     day = df_donnees.iloc[24:55, 0]
     df_fishingEffort = df_donnees.iloc[24:55, 9:12]
     
@@ -429,8 +445,6 @@ def extract_tunas(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
     '''    
-
-
     df_tunas = df_donnees.iloc[24:55, 12:20]
     colnames = ['No RET SBF', 'Kg RET SBF', 
                 'No RET ALB', 'Kg RET ALB', 
@@ -447,8 +461,6 @@ def extract_billfishes(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les billfishes 
     '''    
-
-
     df_billfishies = df_donnees.iloc[24:55, 20:32]
     colnames = ['No RET SWO', 'Kg RET SWO', 
                 'No RET MLS', 'Kg RET MLS', 
@@ -467,8 +479,6 @@ def extract_otherfish(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les autres poissons 
     '''    
-
-
     df_otherfish = df_donnees.iloc[24:55, 32:36]
     colnames = ['No RET OIL', 'Kg RET OIL', 
                 'No RET XXX', 'Kg RET XXX']
@@ -654,7 +664,8 @@ def extract_turtles(df_donnees):
 
 
 def index(request):
-    
+    with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+        data_ll = json.load(f) 
     df_donnees_p1 = read_excel(FILE_PATH, 1)
 
 
@@ -669,7 +680,7 @@ def index(request):
     df_fishingEffort = extract_fishingEffort(df_donnees_p1)
     
     df_position = extract_positions(df_donnees_p1)
-    df_time = extract_time(df_donnees_p1)
+    df_time = extract_time(df_donnees_p1, data_ll)
     df_temperature = extract_temperature(df_donnees_p1)
     df_tunas = extract_tunas(df_donnees_p1)
     df_billfishes = extract_billfishes(df_donnees_p1)

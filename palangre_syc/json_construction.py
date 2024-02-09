@@ -1,7 +1,9 @@
+import pytz
 from views import * 
 import json, os
 import numpy as np
 import warnings
+import api
 
 
 
@@ -12,6 +14,23 @@ def get_captain_topiaID(df_donnees_p1, data_common):
         captain_json = captain['firstName'] + ' ' + captain['lastName']
         if captain_Logbook == captain_json :
             return captain['topiaId']
+        else : 
+            captain_Logbook = '[inconnu] [inconnu]'
+            if captain_Logbook == captain_json :
+                return captain['topiaId']
+    return None
+
+def get_lb_operator_topiaID(df_donnees_p1, data_common):
+    for person in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
+        
+        reported_Logbook = extract_reportInfo_LL(df_donnees_p1).loc[extract_reportInfo_LL(df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
+        reported_json = person['firstName'] + ' ' + person['lastName']
+        if reported_Logbook == reported_json :
+            return person['topiaId']
+        else : 
+            reported_Logbook = '[inconnu] [inconnu]'
+            if reported_Logbook == reported_json :
+                return person['topiaId']
     return None
 
 
@@ -26,35 +45,35 @@ def get_vessel_topiaID(df_donnees_p1, data_common):
                 return vessel['topiaId']
     return None
 
-def get_VesselActivity_topiaID(startTimeStamp, data_ll):
-    '''
-    Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
-    cad si'il y a une heure - on est en activité de pêche,
-    En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
-    et s'il contient 'PORT' alors le bateau est au port 
-    'FISHING
-    '''
-    if ":" in startTimeStamp:
-        code = "FO"
+# def get_VesselActivity_topiaID(startTimeStamp, data_ll):
+#     '''
+#     Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
+#     cad si'il y a une heure - on est en activité de pêche,
+#     En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
+#     et s'il contient 'PORT' alors le bateau est au port 
+#     'FISHING
+#     '''
+#     if ":" in startTimeStamp:
+#         code = "FO"
     
-    elif 'CRUIS' in startTimeStamp : 
-        code = "CRUISE"
+#     elif 'CRUIS' in startTimeStamp : 
+#         code = "CRUISE"
         
-    elif 'PORT' in startTimeStamp : 
-        code = "PORT"
+#     elif 'PORT' in startTimeStamp : 
+#         code = "PORT"
     
-    elif startTimeStamp == None:
-        return None  
+#     elif startTimeStamp == None:
+#         return None  
     
-    else : 
-        code = "OTH"
+#     else : 
+#         code = "OTH"
     
-    VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
-    for VesselActivity in VesselActivities:
-        if VesselActivity.get("code") == code:
-            return VesselActivity["topiaId"]
+#     VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
+#     for VesselActivity in VesselActivities:
+#         if VesselActivity.get("code") == code:
+#             return VesselActivity["topiaId"]
          
-    return None
+#     return None
                 
 def get_BaitType_topiaId(row, data_ll):
     BaitTypes = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.BaitType"]
@@ -150,7 +169,7 @@ def create_catch_table_fish_perday(fish_file, row_number):
 
 
 def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
-    print("create_catch_table_fishes")
+    # print("create_catch_table_fishes")
     liste_fct_extraction = [extract_tunas(df_donnees_p1), 
                             extract_billfishes(df_donnees_p1), 
                             extract_otherfish(df_donnees_p1), 
@@ -180,71 +199,88 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
 
     return df_catches
 
+# TopType et tracelineType sont unknown
 def create_branchelinesComposition(df_donnees_p1):
     branchlinesComposition = {
-        'homeId'  : '',
+        'homeId'  : None,
         'length' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
-        'proportion' : '', 
-        'tracelineLength' : '', 
-        'topType' : '', 
-        'tracelineType'  : '',
+        'proportion' : None, 
+        'tracelineLength' : None, 
+        'topType' : "fr.ird.referential.ll.common.LineType#1239832686157#0.9", 
+        'tracelineType'  : "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
         } 
     return branchlinesComposition
 
-def create_BaitComposition(row, data_ll):
-    BaitsComposition = {
-        "homeId": '',
-        "proportion": '',
-        "individualSize": '',
-        "individualWeight": '',
-        "baitSettingStatus": '',
-        "baitType": get_BaitType_topiaId(row, data_ll), 
+    
+def create_BaitComposition(bait_datatable, data_ll):
+    '''
+    Fonction qui prend en arguemnt la table extraite de Baits, filtre pour conserver uniquement les données non vides
+    et ressort le BaitsComposition
+    '''
+    baits_used = bait_datatable.loc[bait_datatable['Value'] != "None"]
+    total_baits = len(baits_used)
+    MultipleBaits = []
+            
+    for index, row in baits_used.iterrows() : 
+        BaitsComposition = {
+            "homeId": None,
+            "proportion": 100/total_baits,
+            "individualSize": None,
+            "individualWeight": None,
+            "baitSettingStatus": None,
+            "baitType": get_BaitType_topiaId(row, data_ll), 
+        }
+        MultipleBaits.append(BaitsComposition)
+
+    return MultipleBaits
+
+
+def create_FloatlineComposition(df_donnees_p1):
+    FloatlinesComposition = {
+        "homeId": None,
+        "length": extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
+        "proportion": None,
+        "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
     }
-    if BaitsComposition["baitType"] is not None:
-        return BaitsComposition
-    else :
-        return BaitsComposition 
+    return FloatlinesComposition
 
-
-
-
-
+# peut etre ajouter le healthStatus
 def create_catches(datatable, data_common, data_ll):
     MultipleCatches = []
     for n_ligne_datatable in range(len(datatable)):
         catches = {
-        "homeId": n_ligne_datatable + 1,
-        "comment": '',
-        "count" : datatable.loc[n_ligne_datatable, 'count'], 
-        "totalWeight": datatable.loc[n_ligne_datatable, 'totalWeight'],
-        "hookWhenDiscarded": '',
-        "depredated": '',
-        "beatDiameter": '',
-        "photoReferences": '',
-        "number": '',
-        "acquisitionMode": '',
-        "countDepredated": '',
-        "depredatedProportion": '',
-        "tagNumber": '',
-        "catchFate": get_catchFate_topiaID(datatable.loc[n_ligne_datatable, 'catchFate'], data_ll),
-        "discardHealthStatus": '',
-        "species": get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common,),
-        "predator": '',
-        "catchHealthStatus": '',
-        "onBoardProcessing": '',
-        "weightMeasureMethod": ''
+        "homeId" : None,
+        "comment": None,
+        # "count" : datatable.loc[n_ligne_datatable, 'count'], 
+        "count" : 7,
+        # "totalWeight": datatable.loc[n_ligne_datatable, 'totalWeight'],
+        "totalWeight": 35,
+        "hookWhenDiscarded": None,
+        "depredated": None,
+        "beatDiameter": None,
+        "photoReferences": None,
+        "number": None,
+        "acquisitionMode": None,
+        "countDepredated": None,
+        "depredatedProportion": None,
+        "tagNumber": None,
+        # "catchFate": get_catchFate_topiaID(datatable.loc[n_ligne_datatable, 'catchFate'], data_ll),
+        "catchFate": 'fr.ird.referential.ll.common.CatchFate#1239832686125#0.2', 
+        "discardHealthStatus": None,
+        # "species": get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common,),
+        "species": 'fr.ird.referential.common.Species#1239832683725#0.39445809291491807', 
+        "predator": [],
+        "catchHealthStatus": None,
+        "onBoardProcessing": None,
+        "weightMeasureMethod": None 
         }
         MultipleCatches.append(catches)
     return MultipleCatches
 
-def pretty_print(json_data):
+def pretty_print(json_data, file = "sample.json", mode ="a"):
     print(json_data)
-    def convert_to_serializable(obj):
-        if isinstance(obj, np.int64):
-            return int(obj)
-        raise TypeError("Type not serializable")
-    json_formatted_str = json.dumps(json_data, indent=2, default=convert_to_serializable)
-    with open("sample.json", "a") as outfile:
+    json_formatted_str = json.dumps(json_data, indent=2, default=api.serialize)
+    with open(file, mode) as outfile:
         outfile.write(json_formatted_str)
 
 
@@ -265,182 +301,368 @@ def main():
     with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
         data_ll = json.load(f) 
 
-    if 'content' in data_common and 'fr.ird.observe.entities.referential.common.Vessel' in data_common['content']:
-        vessel_data = data_common['content']['fr.ird.observe.entities.referential.common.Vessel']
+    # if 'content' in data_common and 'fr.ird.observe.entities.referential.common.Vessel' in data_common['content']:
+    #     vessel_data = data_common['content']['fr.ird.observe.entities.referential.common.Vessel']
     
     print("="*80)
     print("Read excel file")
     
-    
     df_donnees_p1 = read_excel(file_path, 1)
     df_donnees_p2 = read_excel(file_path, 2)
-    
-    print("="*80)
-    print("Create Trip")
-    
-    
-    Trip = {
-        'homeId' : 1, 
-        'startDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Departure Date', 'Value'].values[0],
-        'endDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Arrival Date', 'Value'].values[0],
-        'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
-        'ersId' : '', 
-        'gearUseFeatures' : '', 
-        'activityObs' : '', 
-        'activityLogbook' : '', 
-        'landing' : '', 
-        'sample' : '', 
-        'tripType' : '', 
-        'observationMethod' : '', 
-        'observer' : '', 
-        'vessel' : get_vessel_topiaID(df_donnees_p1, data_common), 
-        'observationsProgram' : '', 
-        'logbookProgram' : '', 
-        'captain' : '', 
-        'observationsDataEntryOperator' : '',
-        'logbookDataEntryOperator' : '',
-        'sampleDataEntryOperator' : '',
-        'landingDataEntryOperator' :'',
-        'ocean' : 'fr.ird.referential.common.Ocean#1239832686152#0.8325731048817705', 
-        'departureHarbour' : '', 
-        'landingHarbour' : '', 
-        'observationsDataQuality'  : '', 
-        'logbookDataQuality' : '', 
-        'generalComment' : '', 
-        'observationsComment' : '', 
-        'logbookComment' : '', 
-        'species' : '', 
-        'observationsAvailability' : '', 
-        'logbookAvailability'  : '',
-    }
-
-    pretty_print(Trip)
-    
-    # def get_LineType_topiaId(file_path):
-        
-    LineType = {
-        "code": 'MON',
-        "uri": '',
-        "homeId": '',
-        "needComment": '',
-        "status": "enabled",
-        "label1": "Monofilament nylon",
-        "label2": "Nylon Monofilament",
-        "label3": "Monofilament nylon",
-        "label4": '',
-        "label5": '',
-        "label6": '',
-        "label7": '',
-        "label8": ''
-    }
-        
-
-    # for index, row in extract_bait_LL(file_path).iterrows():
-    #     print(index)
-    #     print(row)
-    #     BaitsComposition = {
-    #         "homeId": index,
-    #         "proportion": '',
-    #         "individualSize": '',
-    #         "individualWeight": '',
-    #         "baitSettingStatus": '',
-    #         "baitType": get_BaitType_topiaId(row)
-    #     }
-
-        # print(BaitsComposition)
-        
         
     print("="*80)
     print("Create Activity and Set")
             
         
-    # filtered_df = extract_time(file_path)[pd.to_datetime(extract_time(file_path)['Time'], errors='coerce').notna()]
-    days_in_a_month = len(extract_time(df_donnees_p1))
+    days_in_a_month = len(extract_positions(df_donnees_p1))
+    # MultipleSet = []
+    MultipleActivity = []
     for days in range(0, days_in_a_month):
-        # if extract_time(file_path).loc[extract_time(file_path)['Time']][index] != str:
-        Set = {
-            'homeId' : days + 1, 
-            'comment' : '',
-            'number' : '',
-            'basketsPerSectionCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Hooks'],
-            'branchlinesPerBasketCount': extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
-            'totalSectionsCount' : '', 
+        set = {
+            'homeId' : None, 
+            'comment' : None,
+            'number' : None,
+            # 'basketsPerSectionCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Hooks'],
+            'basketsPerSectionCount' : None,
+            # 'branchlinesPerBasketCount': extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
+            'branchlinesPerBasketCount': None,
+            'totalSectionsCount' : None, 
             # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
-            'totalBasketsCount' : '', 
-            'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total hooks'], 
-            'lightsticksPerBasketCount' : '', 
-            'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total lightsticks'], 
-            'weightedSnap' : '', 
-            'snapWeight' : '', 
-            'weightedSwivel' : '', 
-            'swivelWeight' :'', 
-            'timeBetweenHooks' : '', 
-            'shooterUsed' : '', 
-            'shooterSpeed' : '', 
-            'maxDepthTargeted' : '',
-            'settingStartTimeStamp' : extract_time(df_donnees_p1).loc[days, 'Time'],
-            'settingStartLatitude' : extract_positions(df_donnees_p1).loc[days, 'Latitute'],
-            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[days, 'Longitude'],
-            'settingEndTimeStamp' : '', 
-            'settingEndLatitude' : '', 
-            'settingEndLongitude' : '', 
-            'settingVesselSpeed'  : '', 
-            'haulingDirectionSameAsSetting' : '', 
-            'haulingStartTimeStamp' : '', 
-            'haulingStartLatitude' : '', 
-            'haulingStartLongitude' : '', 
-            'haulingEndTimeStamp' : '', 
-            'haulingEndLatitude' : '', 
-            'haulingEndLongitud'  : '',
-            'haulingBreaks' : '', 
-            'monitored' : '', 
-            'totalLineLength' : '', 
-            'basketLineLength' : '', 
-            'lengthBetweenBranchlines'  : ''}
-        
-        MultipleBaitComposition = []
-        
-        for index, row in extract_bait_LL(df_donnees_p1).iterrows():
-            if create_BaitComposition(row, data_ll)["baitType"] is not None:
-                MultipleBaitComposition.append(create_BaitComposition(row, data_ll))
-                Set.update({'baitsComposition' : MultipleBaitComposition})
+            # Lui je sais pas si la valeur correspond bien enft
+            'totalBasketsCount' : None, 
+            # 'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total hooks'], 
+            'totalHooksCount' : None,
+            'lightsticksPerBasketCount' : None, 
+            # 'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total lightsticks'], 
+            'totalLightsticksCount' : None, 
+            'weightedSnap' : None, 
+            'snapWeight' : None, 
+            'weightedSwivel' : None, 
+            'swivelWeight' : None, 
+            'timeBetweenHooks' : None, 
+            'shooterUsed' : None, 
+            'shooterSpeed' : None, 
+            'maxDepthTargeted' : None,}
             
-        Set.update({'floatlinesComposition' : '', 
-            'hooksComposition' : '', 
-            'settingShape' : '', })
+        if extract_time(df_donnees_p1, data_ll).iloc[days]['VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+            # set.update({'settingStartTimeStamp' : extract_time(df_donnees_p1, data_ll).loc[days, 'Time'],})
+            set.update({'startTimeStamp' : '2023-04-30T06:00:00.000Z',})
+        else : 
+            # set.update({'settingStartTimeStamp' : '00:00:00',})
+            set.update({'startTimeStamp' : '2023-04-30T00:00:00.000Z',})
+        
+        set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[days, 'Latitute'],
+            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[days, 'Longitude'],
+            'settingEndTimeStamp' : None, 
+            'settingEndLatitude' : None, 
+            'settingEndLongitude' : None, 
+            'settingVesselSpeed'  : None, 
+            'haulingDirectionSameAsSetting' : None, 
+            'haulingStartTimeStamp' : None, 
+            'haulingStartLatitude' : None, 
+            'haulingStartLongitude' : None, 
+            'haulingEndTimeStamp' : None, 
+            'haulingEndLatitude' : None, 
+            'haulingEndLongitude'  : None,
+            'haulingBreaks' : None, 
+            'monitored' : None, 
+            # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
+            'totalLineLength' : None,
+            'basketLineLength' : None, 
+            # 'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
+            'lengthBetweenBranchlines' : None
+            })
+            
+        bait_datatable = extract_bait_LL(df_donnees_p1)
+        set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll)})
+        # set.update({'baitsComposition' : [], })
+        
+        set.update({#'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1), 
+            'floatlinesComposition' : [],   
+            'hooksComposition' : [], 
+            'settingShape' : None, })
         
         datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = days)
-        Set.update({'catches' : create_catches(datatable, data_common, data_ll),})
+        set.update({'catches' : create_catches(datatable, data_common, data_ll),})
+        # set.update({'catches' : [], })
             
-        Set.update({'lineType' : '', 
-            'lightsticksUsed' : '', 
-            'lightsticksType' : '', 
-            'lightsticksColor' : '', 
-            'mitigationType' : '',
-            'branchlinesComposition': create_branchelinesComposition(df_donnees_p1)
+        set.update({'lineType' : None, 
+            'lightsticksUsed' : False, 
+            'lightsticksType' : None, 
+            'lightsticksColor' : None, 
+            'mitigationType' : [],
+            # 'branchlinesComposition': create_branchelinesComposition(df_donnees_p1)
+            'branchlinesComposition': []
         })
         
-        Activity = {
-            'homeId' : days + 1, 
-            'comment' : '',
-            'startTimeStamp' : extract_time(df_donnees_p1).loc[days, 'Time'],
-            'endTimeStamp' : '',
+        # MultipleSet.append(set)
+        
+        
+        
+        
+        ######
+        # on va copier coller un code de la documentation, voir si c'est ok ! 
+        set2 = {
+            "homeId": "FINSS-1093484",
+            "comment": None,
+            "number": None,
+            "basketsPerSectionCount": None,
+            "branchlinesPerBasketCount": None,
+            "totalSectionsCount": None,
+            "totalBasketsCount": None,
+            "totalHooksCount": None,
+            "lightsticksPerBasketCount": None,
+            "totalLightsticksCount": None,
+            "weightedSnap": False,
+            "snapWeight": None,
+            "weightedSwivel": False,
+            "swivelWeight": None,
+            "timeBetweenHooks": None,
+            "shooterUsed": False,
+            "shooterSpeed": None,
+            "maxDepthTargeted": None,
+            "settingStartTimeStamp": '2023-04-30T06:00:00.000Z',
+            "settingStartLatitude": -2.116667,
+            "settingStartLongitude": 55.05,
+            "settingEndTimeStamp": None,
+            "settingEndLatitude": None,
+            "settingEndLongitude": None,
+            "settingVesselSpeed": None,
+            "haulingDirectionSameAsSetting": None,
+            "haulingStartTimeStamp": None,
+            "haulingStartLatitude": None,
+            "haulingStartLongitude": None,
+            "haulingEndTimeStamp": None,
+            "haulingEndLatitude": -1.65,
+            "haulingEndLongitude": 54.816666,
+            "haulingBreaks": None,
+            "monitored": False,
+            "totalLineLength": None,
+            "basketLineLength": None,
+            "lengthBetweenBranchlines": None,
+            "baitsComposition": [
+        # {
+        #     "homeId": None,
+        #     "proportion": 34.0,
+        #     "individualSize": 1.0,
+        #     "individualWeight": 0.49,
+        #     "baitSettingStatus": "fr.ird.referential.ll.common.BaitSettingStatus#1239832686123#0.1",
+        #     "baitType": "fr.ird.referential.ll.common.BaitType#1239832686124#0.1"
+        #     },
+        #     {
+        #     "homeId": None,
+        #     "proportion": 66.0,
+        #     "individualSize": 2.0,
+        #     "individualWeight": 1.0,
+        #     "baitSettingStatus": "fr.ird.referential.ll.common.BaitSettingStatus#1239832686123#0.3",
+        #     "baitType": "fr.ird.referential.ll.common.BaitType#1239832686124#1.0"
+        #     }
+        ],
+            "floatlinesComposition": [
+            # {
+            # "homeId": None,
+            # "length": 12.0,
+            # "proportion": 90.0,
+            # "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
+            # },
+            # {
+            # "homeId": None,
+            # "length": 1.0,
+            # "proportion": 10.0,
+            # "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
+            # }
+        ],
+            "hooksComposition": [
+            # {
+            #     "homeId": None,
+            #     "proportion": 23.0,
+            #     "hookOffset": 12.0,
+            #     "hookType": "fr.ird.referential.ll.common.HookType#1433499457247#0.796845980919898",
+            #     "hookSize": "fr.ird.referential.ll.common.HookSize#1239832686151#0.2"
+            #     },
+            # {
+            #     "homeId": None,
+            #     "proportion": 77.0,
+            #     "hookOffset": 1.0,
+            #     "hookType": "fr.ird.referential.ll.common.HookType#1239832686152#0.5",
+            #     "hookSize": "fr.ird.referential.ll.common.HookSize#1239832686151#0.3"
+            # }
+            ],
+            "settingShape": None,
+            "catches": [
+            {
+                "homeId": None,
+                "comment": None,
+                "count": 1.0,
+                "totalWeight": 18.0,
+                "hookWhenDiscarded": None,
+                "depredated": None,
+                "beatDiameter": None,
+                "photoReferences": None,
+                "number": None,
+                "acquisitionMode": None,
+                "countDepredated": None,
+                "depredatedProportion": None,
+                "tagNumber": None,
+                "catchFate": "fr.ird.referential.ll.common.CatchFate#1239832686125#0.2",
+                "discardHealthStatus": None,
+                "species": "fr.ird.referential.common.Species#1239832685474#0.8943253454598569",
+                "predator": None,
+                # "catchHealthStatus": "fr.ird.referential.ll.common.HealthStatus#1239832686128#0.4",
+                "catchHealthStatus": None,
+                "onBoardProcessing": None,
+                # "onBoardProcessing": "fr.ird.referential.ll.common.OnBoardProcessing#1464000000000#0.3",
+                "weightMeasureMethod": None,
+                # "weightMeasureMethod": "fr.ird.referential.common.WeightMeasureMethod#666#03"
+            },
+            {
+                "homeId": None,
+                "comment": None,
+                "count": 1.0,
+                "totalWeight": 6.0,
+                "hookWhenDiscarded": None,
+                "depredated": None,
+                "beatDiameter": None,
+                "photoReferences": None,
+                "number": None,
+                "acquisitionMode": None,
+                "countDepredated": None,
+                "depredatedProportion": None,
+                "tagNumber": None,
+                "catchFate": "fr.ird.referential.ll.common.CatchFate#1239832686125#0.2",
+                "discardHealthStatus": None,
+                "species": "fr.ird.referential.common.Species#1239832683725#0.39445809291491807",
+                "predator": [],
+                "catchHealthStatus": None,
+                # "catchHealthStatus": "fr.ird.referential.ll.common.HealthStatus#1239832686128#0.4",
+                "onBoardProcessing": None,
+                # "onBoardProcessing": "fr.ird.referential.ll.common.OnBoardProcessing#1464000000000#0.3",
+                "weightMeasureMethod": None,
+                # "weightMeasureMethod": "fr.ird.referential.common.WeightMeasureMethod#666#03"
+                }
+             ],
+            "lineType": None,
+            "lightsticksUsed": False,
+            "lightsticksType": None,
+            "lightsticksColor": None,
+            "mitigationType": [
+            #     "fr.ird.referential.ll.common.MitigationType#1239832686140#0.12",
+            #     "fr.ird.referential.ll.common.MitigationType#1239832686140#0.14"
+            ],
+            "branchlinesComposition": [
+                # {
+                # "homeId": None,
+                # "length": 12.0,
+                # "proportion": 97.0,
+                # "tracelineLength": None,
+                # "topType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
+                # "tracelineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
+                # },
+                # {
+                # "homeId": None,
+                # "length": 1.0,
+                # "proportion": 3.0,
+                # "tracelineLength": None,
+                # "topType": "fr.ird.referential.ll.common.LineType#1239832686157#0.5",
+                # "tracelineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.6"
+                # }
+        ]
+        }
+            
+            
+            
+            ######
+            
+            
+        activity = {
+            'homeId' : None, 
+            'comment' : None,}
+        if extract_time(df_donnees_p1, data_ll).loc[days, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+            # activity.update({'startTimeStamp' : extract_time(df_donnees_p1, data_ll).loc[days, 'Time'],})
+            activity.update({'startTimeStamp' : '2023-04-26T06:00:00.000Z',})
+        else : 
+            activity.update({'startTimeStamp' : '2023-04-26T00:00:00.000Z',})
+            
+        activity.update({'endTimeStamp' : None,
             'latitude' : extract_positions(df_donnees_p1).loc[days, 'Latitute'],
             'longitude' : extract_positions(df_donnees_p1).loc[days, 'Longitude'], 
             'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[days, 'Température'], 
-            'wind' : '', 
-            'windDirection' : '', 
-            'currentSpeed' : '', 
-            'currentDirection' : '', 
-            'vesselActivity' : get_VesselActivity_topiaID(extract_time(df_donnees_p1).loc[days, 'Time'], data_ll), 
-            'dataQuality' : '', 
-            'fpaZone' : '', 
-            'relatedObservedActivity' : '', 
-            'set' : Set, 
-            'sample' : ''
-            }
-            
-        pretty_print(Activity)
+            'wind' : None, 
+            'windDirection' : None, 
+            'currentSpeed' : None, 
+            'currentDirection' : None, 
+            'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[days, 'VesselActivity'], 
+            'dataQuality' : None, 
+            'fpaZone' : None, 
+            'relatedObservedActivity' : None, 
+            # 'set' : MultipleSet, 
+            'set' : set,
+            # 'set' : None,
+            'sample' : None
+            })
+        
+        MultipleActivity.append(activity)
+         
+    print("="*80)
+    print("Create Trip")
+    
+    # Dans le trip on a fixé :
+    # ocean = Océan indien
+    # tripType = Marée de pêche commerciale 
+    # observer = unknown car non présent
+    # logbookProgram = Sandbox
+    # startDate et endDate sont entrées en dur aussi
+    
+    # species semble être TargetSpecies - a voir si on développe
+    trip = {
+        'homeId' : None, 
+        # 'startDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Departure Date', 'Value'].values[0],
+        # 'endDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Arrival Date', 'Value'].values[0],
+        # 'startDate' : datetime.datetime(2023,4,26,2,0, tzinfo=pytz.utc),
+        # 'endDate' :  datetime.datetime(2023,5,26,5,9, tzinfo=pytz.utc),
+        "startDate": "2023-04-26T00:00:00.000Z",
+        "endDate": "2023-05-26T00:00:00.000Z",
+        'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
+        'ersId' : None, 
+        'gearUseFeatures' : None, 
+        'activityObs' : None, 
+        'activityLogbook' : MultipleActivity, 
+        # 'activityLogbook' : None,
+        'landing' : None, 
+        'sample' : None, 
+        'tripType' : 'fr.ird.referential.ll.common.TripType#1464000000000#02', 
+        'observationMethod' : None, 
+        'observer' : 'fr.ird.referential.common.Person#1254317601353#0.6617065204572095', 
+        'vessel' : get_vessel_topiaID(df_donnees_p1, data_common), 
+        'observationsProgram' : None, 
+        'logbookProgram' : 'fr.ird.referential.ll.common.Program#1707391938404#0.8314199988069012', 
+        'captain' : get_captain_topiaID(df_donnees_p1, data_common),
+        'observationsDataEntryOperator' : None,
+        'logbookDataEntryOperator' : get_lb_operator_topiaID(df_donnees_p1, data_common),
+        'sampleDataEntryOperator' : None,
+        'landingDataEntryOperator' : None,
+        'ocean' : 'fr.ird.referential.common.Ocean#1239832686152#0.8325731048817705', 
+        # departureHarbour et landingHarbour à remplir
+        'departureHarbour' : None, 
+        'landingHarbour' : None, 
+        'observationsDataQuality'  : None, 
+        'logbookDataQuality' : None, 
+        'generalComment' : None, 
+        'observationsComment' : None, 
+        'logbookComment' : None, 
+        'species' : None, 
+        'observationsAvailability' : False, 
+        'logbookAvailability'  : True,
+    }
+
+    # pretty_print(trip)
+    
+    token = get_token()
+    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+
+    api.send_trip(token, trip, url_base)
+    api.close(token)
+       
     
 
 if __name__ == "__main__":

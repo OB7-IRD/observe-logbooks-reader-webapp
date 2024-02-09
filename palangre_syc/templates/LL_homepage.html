@@ -18,13 +18,13 @@
         <p>
             en chargant cette page, normalement on se connecte à la base et on génère un TOKEN
         </p>
-        <!-- div>
+        <div>
             {% if token %}
                 <p>Sortie json de la connexion et extraction du token: {{ token }}</p>
             {% else %}
                 <p>Failed to fetch data from the API.</p>
             {% endif %}
-        </div -->
+        </div>
     
         <!-- Button to trigger data update -->
         <form method="post" action="{% url 'index' %}">
