@@ -44,36 +44,6 @@ def get_vessel_topiaID(df_donnees_p1, data_common):
             if vessel_Logbook == vessel_json :
                 return vessel['topiaId']
     return None
-
-# def get_VesselActivity_topiaID(startTimeStamp, data_ll):
-#     '''
-#     Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
-#     cad si'il y a une heure - on est en activité de pêche,
-#     En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
-#     et s'il contient 'PORT' alors le bateau est au port 
-#     'FISHING
-#     '''
-#     if ":" in startTimeStamp:
-#         code = "FO"
-    
-#     elif 'CRUIS' in startTimeStamp : 
-#         code = "CRUISE"
-        
-#     elif 'PORT' in startTimeStamp : 
-#         code = "PORT"
-    
-#     elif startTimeStamp == None:
-#         return None  
-    
-#     else : 
-#         code = "OTH"
-    
-#     VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
-#     for VesselActivity in VesselActivities:
-#         if VesselActivity.get("code") == code:
-#             return VesselActivity["topiaId"]
-         
-#     return None
                 
 def get_BaitType_topiaId(row, data_ll):
     BaitTypes = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.BaitType"]
@@ -95,7 +65,8 @@ def get_Species_topiaID(FAO_code_logbook, data_common):
             # faoCode_json = Specie['faoCode']
             # if FAO_code_logbook == faoCode_json :
             #     return Specie['topiaId']
-            if Specie.get("faoCode") == FAO_code_logbook:
+            if FAO_code_logbook in Specie.get("faoCode") :
+                print(Specie['topiaId'])
                 return Specie["topiaId"]
     else : 
         return None
@@ -201,14 +172,14 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
 
 # TopType et tracelineType sont unknown
 def create_branchelinesComposition(df_donnees_p1):
-    branchlinesComposition = {
+    branchlinesComposition = [{
         'homeId'  : None,
         'length' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
         'proportion' : None, 
         'tracelineLength' : None, 
         'topType' : "fr.ird.referential.ll.common.LineType#1239832686157#0.9", 
         'tracelineType'  : "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
-        } 
+        }]
     return branchlinesComposition
 
     
@@ -236,12 +207,12 @@ def create_BaitComposition(bait_datatable, data_ll):
 
 
 def create_FloatlineComposition(df_donnees_p1):
-    FloatlinesComposition = {
+    FloatlinesComposition = [{
         "homeId": None,
         "length": extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
-        "proportion": None,
+        "proportion": 100,
         "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
-    }
+    }]
     return FloatlinesComposition
 
 # peut etre ajouter le healthStatus
@@ -251,10 +222,10 @@ def create_catches(datatable, data_common, data_ll):
         catches = {
         "homeId" : None,
         "comment": None,
-        # "count" : datatable.loc[n_ligne_datatable, 'count'], 
-        "count" : 7,
-        # "totalWeight": datatable.loc[n_ligne_datatable, 'totalWeight'],
-        "totalWeight": 35,
+        "count" : datatable.loc[n_ligne_datatable, 'count'], 
+        # "count" : 7,
+        "totalWeight": datatable.loc[n_ligne_datatable, 'totalWeight'],
+        # "totalWeight": 35,
         "hookWhenDiscarded": None,
         "depredated": None,
         "beatDiameter": None,
@@ -264,11 +235,11 @@ def create_catches(datatable, data_common, data_ll):
         "countDepredated": None,
         "depredatedProportion": None,
         "tagNumber": None,
-        # "catchFate": get_catchFate_topiaID(datatable.loc[n_ligne_datatable, 'catchFate'], data_ll),
-        "catchFate": 'fr.ird.referential.ll.common.CatchFate#1239832686125#0.2', 
+        "catchFate": get_catchFate_topiaID(datatable.loc[n_ligne_datatable, 'catchFate'], data_ll),
+        # "catchFate": 'fr.ird.referential.ll.common.CatchFate#1239832686125#0.2', 
         "discardHealthStatus": None,
-        # "species": get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common,),
-        "species": 'fr.ird.referential.common.Species#1239832683725#0.39445809291491807', 
+        "species": get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common),
+        # "species": 'fr.ird.referential.common.Species#1239832683725#0.39445809291491807', 
         "predator": [],
         "catchHealthStatus": None,
         "onBoardProcessing": None,
@@ -276,6 +247,31 @@ def create_catches(datatable, data_common, data_ll):
         }
         MultipleCatches.append(catches)
     return MultipleCatches
+
+def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour = bool):
+    """ Fonction qui permet d'avoir le bon format de date-time pour envoyer le json
+
+    Args:
+        df_donnees_p1 (_type_): ma page excel 1
+        data_ll (_type_): Données de ref pour ll
+        index_day (_type_): le numero de la ligne de mon datatable
+        need_hour (bool) : si true - on va chercher l'heure correspondante dans le datatable, 
+        si false - on ajoute '00:00:00' cad que le bateau n'est pas en train de p9^cher donc il nous faut une horaire juste pour convenir au format demandé
+
+    Returns:
+        _type_: la datetime au format qui permet l'insersion dans la bdd
+    """
+    if need_hour == True : 
+        time_ = extract_time(df_donnees_p1, data_ll).loc[index_day, 'Time']
+    else : 
+        time_ = '00:00:00'
+        
+    date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
+        extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0],
+        extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0],
+        extract_time(df_donnees_p1, data_ll).loc[index_day, 'Day'],
+        time_) 
+    return date_formated
 
 def pretty_print(json_data, file = "sample.json", mode ="a"):
     print(json_data)
@@ -301,58 +297,47 @@ def main():
     with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
         data_ll = json.load(f) 
 
-    # if 'content' in data_common and 'fr.ird.observe.entities.referential.common.Vessel' in data_common['content']:
-    #     vessel_data = data_common['content']['fr.ird.observe.entities.referential.common.Vessel']
-    
     print("="*80)
     print("Read excel file")
     
     df_donnees_p1 = read_excel(file_path, 1)
     df_donnees_p2 = read_excel(file_path, 2)
-        
+    
     print("="*80)
     print("Create Activity and Set")
-            
         
     days_in_a_month = len(extract_positions(df_donnees_p1))
     # MultipleSet = []
     MultipleActivity = []
-    for days in range(0, days_in_a_month):
+    for i in range(0, days_in_a_month):
         set = {
             'homeId' : None, 
             'comment' : None,
             'number' : None,
-            # 'basketsPerSectionCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Hooks'],
             'basketsPerSectionCount' : None,
-            # 'branchlinesPerBasketCount': extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
-            'branchlinesPerBasketCount': None,
+            'branchlinesPerBasketCount': extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
             'totalSectionsCount' : None, 
             # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
             # Lui je sais pas si la valeur correspond bien enft
-            'totalBasketsCount' : None, 
-            # 'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total hooks'], 
-            'totalHooksCount' : None,
-            'lightsticksPerBasketCount' : None, 
-            # 'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[days, 'Total lightsticks'], 
+            'totalBasketsCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Hooks'], 
+            'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],             
+            'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'], 
             'totalLightsticksCount' : None, 
-            'weightedSnap' : None, 
+            'weightedSnap' : False, 
             'snapWeight' : None, 
-            'weightedSwivel' : None, 
+            'weightedSwivel' : False, 
             'swivelWeight' : None, 
             'timeBetweenHooks' : None, 
-            'shooterUsed' : None, 
+            'shooterUsed' : False, 
             'shooterSpeed' : None, 
             'maxDepthTargeted' : None,}
             
-        if extract_time(df_donnees_p1, data_ll).iloc[days]['VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
-            # set.update({'settingStartTimeStamp' : extract_time(df_donnees_p1, data_ll).loc[days, 'Time'],})
-            set.update({'startTimeStamp' : '2023-04-30T06:00:00.000Z',})
-        else : 
-            # set.update({'settingStartTimeStamp' : '00:00:00',})
-            set.update({'startTimeStamp' : '2023-04-30T00:00:00.000Z',})
-        
-        set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[days, 'Latitute'],
-            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[days, 'Longitude'],
+        set.update({'settingStartTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)
+                # '2023-04-30T06:00:00.000Z',
+            })
+   
+        set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[i, 'Latitute'],
+            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'],
             'settingEndTimeStamp' : None, 
             'settingEndLatitude' : None, 
             'settingEndLongitude' : None, 
@@ -365,26 +350,76 @@ def main():
             'haulingEndLatitude' : None, 
             'haulingEndLongitude'  : None,
             'haulingBreaks' : None, 
-            'monitored' : None, 
-            # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
-            'totalLineLength' : None,
+            'monitored' : False, 
+            'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
             'basketLineLength' : None, 
-            # 'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
-            'lengthBetweenBranchlines' : None
+            'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
             })
             
         bait_datatable = extract_bait_LL(df_donnees_p1)
-        set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll)})
-        # set.update({'baitsComposition' : [], })
+        set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll),})
         
-        set.update({#'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1), 
-            'floatlinesComposition' : [],   
+        set.update({'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1),   
             'hooksComposition' : [], 
             'settingShape' : None, })
         
-        datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = days)
+        datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = i)
+        print(datatable)
         set.update({'catches' : create_catches(datatable, data_common, data_ll),})
         # set.update({'catches' : [], })
+        # set.update({"catches": [
+        #     {
+        #         "homeId": None,
+        #         "comment": None,
+        #         "count": 1.0,
+        #         "totalWeight": 18.0,
+        #         "hookWhenDiscarded": None,
+        #         "depredated": None,
+        #         "beatDiameter": None,
+        #         "photoReferences": None,
+        #         "number": None,
+        #         "acquisitionMode": None,
+        #         "countDepredated": None,
+        #         "depredatedProportion": None,
+        #         "tagNumber": None,
+        #         "catchFate": "fr.ird.referential.ll.common.CatchFate#1239832686125#0.2",
+        #         "discardHealthStatus": None,
+        #         "species": "fr.ird.referential.common.Species#1239832685474#0.8943253454598569",
+        #         "predator": None,
+        #         # "catchHealthStatus": "fr.ird.referential.ll.common.HealthStatus#1239832686128#0.4",
+        #         "catchHealthStatus": None,
+        #         "onBoardProcessing": None,
+        #         # "onBoardProcessing": "fr.ird.referential.ll.common.OnBoardProcessing#1464000000000#0.3",
+        #         "weightMeasureMethod": None,
+        #         # "weightMeasureMethod": "fr.ird.referential.common.WeightMeasureMethod#666#03"
+        #     },
+        #     {
+        #         "homeId": None,
+        #         "comment": None,
+        #         "count": 1.0,
+        #         "totalWeight": 6.0,
+        #         "hookWhenDiscarded": None,
+        #         "depredated": None,
+        #         "beatDiameter": None,
+        #         "photoReferences": None,
+        #         "number": None,
+        #         "acquisitionMode": None,
+        #         "countDepredated": None,
+        #         "depredatedProportion": None,
+        #         "tagNumber": None,
+        #         "catchFate": "fr.ird.referential.ll.common.CatchFate#1239832686125#0.2",
+        #         "discardHealthStatus": None,
+        #         "species": "fr.ird.referential.common.Species#1239832683725#0.39445809291491807",
+        #         "predator": [],
+        #         "catchHealthStatus": None,
+        #         # "catchHealthStatus": "fr.ird.referential.ll.common.HealthStatus#1239832686128#0.4",
+        #         "onBoardProcessing": None,
+        #         # "onBoardProcessing": "fr.ird.referential.ll.common.OnBoardProcessing#1464000000000#0.3",
+        #         "weightMeasureMethod": None,
+        #         # "weightMeasureMethod": "fr.ird.referential.common.WeightMeasureMethod#666#03"
+        #         }
+        #      ],})
+        
             
         set.update({'lineType' : None, 
             'lightsticksUsed' : False, 
@@ -421,7 +456,7 @@ def main():
             "shooterUsed": False,
             "shooterSpeed": None,
             "maxDepthTargeted": None,
-            "settingStartTimeStamp": '2023-04-30T06:00:00.000Z',
+            "settingStartTimeStamp": create_starttimestamp(df_donnees_p1, data_ll, index_day= 1, need_hour=True),
             "settingStartLatitude": -2.116667,
             "settingStartLongitude": 55.05,
             "settingEndTimeStamp": None,
@@ -577,27 +612,37 @@ def main():
         activity = {
             'homeId' : None, 
             'comment' : None,}
-        if extract_time(df_donnees_p1, data_ll).loc[days, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+        if extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
             # activity.update({'startTimeStamp' : extract_time(df_donnees_p1, data_ll).loc[days, 'Time'],})
-            activity.update({'startTimeStamp' : '2023-04-26T06:00:00.000Z',})
+            activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)
+                # '2023-04-26T06:00:00.000Z',
+                })
         else : 
-            activity.update({'startTimeStamp' : '2023-04-26T00:00:00.000Z',})
+            activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=False)
+                # 'startTimeStamp' : '2022-07-26T00:00:00.000Z'
+                ,})
             
         activity.update({'endTimeStamp' : None,
-            'latitude' : extract_positions(df_donnees_p1).loc[days, 'Latitute'],
-            'longitude' : extract_positions(df_donnees_p1).loc[days, 'Longitude'], 
-            'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[days, 'Température'], 
+            'latitude' : extract_positions(df_donnees_p1).loc[i, 'Latitute'],
+            'longitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'], 
+            'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[i, 'Température'], 
             'wind' : None, 
             'windDirection' : None, 
             'currentSpeed' : None, 
             'currentDirection' : None, 
-            'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[days, 'VesselActivity'], 
+            'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'], 
+            # 'vesselActivity' : 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1',
             'dataQuality' : None, 
             'fpaZone' : None, 
             'relatedObservedActivity' : None, 
             # 'set' : MultipleSet, 
-            'set' : set,
-            # 'set' : None,
+            })
+        
+        if activity.get('vesselActivity') == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+            activity.update({'set' : set,})
+        else :
+            activity.update({
+            'set' : None,
             'sample' : None
             })
         
@@ -620,8 +665,8 @@ def main():
         # 'endDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Arrival Date', 'Value'].values[0],
         # 'startDate' : datetime.datetime(2023,4,26,2,0, tzinfo=pytz.utc),
         # 'endDate' :  datetime.datetime(2023,5,26,5,9, tzinfo=pytz.utc),
-        "startDate": "2023-04-26T00:00:00.000Z",
-        "endDate": "2023-05-26T00:00:00.000Z",
+        "startDate": "2022-07-01T00:00:00.000Z",
+        "endDate": "2022-07-31T00:00:00.000Z",
         'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId' : None, 
         'gearUseFeatures' : None, 

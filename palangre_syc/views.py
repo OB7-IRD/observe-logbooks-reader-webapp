@@ -464,7 +464,7 @@ def extract_billfishes(df_donnees):
     df_billfishies = df_donnees.iloc[24:55, 20:32]
     colnames = ['No RET SWO', 'Kg RET SWO', 
                 'No RET MLS', 'Kg RET MLS', 
-                'No RET BLZ', 'Kg RET BLZ', 
+                'No RET BUM', 'Kg RET BUM', 
                 'No RET BLM', 'Kg RET BLM',
                 'No RET SFA', 'Kg RET SFA', 
                 'No RET SSP', 'Kg RET SSP']
