@@ -66,7 +66,6 @@ def get_Species_topiaID(FAO_code_logbook, data_common):
             # if FAO_code_logbook == faoCode_json :
             #     return Specie['topiaId']
             if FAO_code_logbook in Specie.get("faoCode") :
-                print(Specie['topiaId'])
                 return Specie["topiaId"]
     else : 
         return None
@@ -220,9 +219,13 @@ def create_catches(datatable, data_common, data_ll):
     MultipleCatches = []
     for n_ligne_datatable in range(len(datatable)):
         catches = {
-        "homeId" : None,
-        "comment": None,
-        "count" : datatable.loc[n_ligne_datatable, 'count'], 
+        "homeId" : None,}
+        # if  get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common) == 'fr.ird.referential.common.Species#1433499266610#0.696541526820511' or get_Species_topiaID(datatable.loc[n_ligne_datatable, 'FAO_code'], data_common) == 'fr.ird.referential.common.Species#1239832685020#0.7691470969492022' :
+            # catches.update({"comment": "Other fish non specified",})
+        # else :
+            # catches.update({"comment": None,})
+        catches.update({"comment": "Other fish non specified",}) 
+        catches.update({"count" : datatable.loc[n_ligne_datatable, 'count'], 
         # "count" : 7,
         "totalWeight": datatable.loc[n_ligne_datatable, 'totalWeight'],
         # "totalWeight": 35,
@@ -244,7 +247,7 @@ def create_catches(datatable, data_common, data_ll):
         "catchHealthStatus": None,
         "onBoardProcessing": None,
         "weightMeasureMethod": None 
-        }
+        })
         MultipleCatches.append(catches)
     return MultipleCatches
 
@@ -364,7 +367,6 @@ def main():
             'settingShape' : None, })
         
         datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = i)
-        print(datatable)
         set.update({'catches' : create_catches(datatable, data_common, data_ll),})
         # set.update({'catches' : [], })
         # set.update({"catches": [
