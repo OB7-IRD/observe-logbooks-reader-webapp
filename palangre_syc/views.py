@@ -10,74 +10,75 @@ import re, time
 import datetime
 import json
 
-def get_token():
-    '''
-    Fonction qui sort un Token 
-    Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
-    '''
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
-    api_modelVersion = 'config.modelVersion=9.2.1&'
-    api_login = 'config.login=technicienweb&'
-    api_password = 'config.password=wpF3NITE&'
-    api_databaseName = 'config.databaseName=test&'
-    api_referential = 'referentialLocale=FR'
+# def get_token():
+#     '''
+#     Fonction qui sort un Token 
+#     Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
+#     '''
+#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
+#     api_modelVersion = 'config.modelVersion=9.2.1&'
+#     api_login = 'config.login=technicienweb&'
+#     api_password = 'config.password=wpF3NITE&'
+#     api_databaseName = 'config.databaseName=test&'
+#     api_referential = 'referentialLocale=FR'
     
-    # Constitution du lien url pour accéder à l'API et donc générer un token
-    api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
-    response = requests.get(api_url)
+#     # Constitution du lien url pour accéder à l'API et donc générer un token
+#     api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
+#     response = requests.get(api_url)
     
-    # si la réponse est un succès, on extrait que le Token
-    if response.status_code == 200:
-        data_from_api = response.json()
-        token = data_from_api['authenticationToken']
-    else:
-        token = None
+#     # si la réponse est un succès, on extrait que le Token
+#     if response.status_code == 200:
+#         data_from_api = response.json()
+#         token = data_from_api['authenticationToken']
+#     else:
+#         token = None
 
-    return token
+#     print(token)
+#     return token
 
-def get_referential_ll():
-    '''
-    Fonction qui récupère le référentiel longliners 
-    ''' 
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
-    api_Token = 'authenticationToken=' + get_token() +'&'
-    api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
+# def get_referential_ll():
+#     '''
+#     Fonction qui récupère le référentiel longliners 
+#     ''' 
+#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
+#     api_Token = 'authenticationToken=' + get_token() +'&'
+#     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
     
-    # Constitution du lien url pour accéder à l'API et donc générer un token
-    api_url = api_base + api_Token + api_infos 
-    response = requests.get(api_url)
+#     # Constitution du lien url pour accéder à l'API et donc générer un token
+#     api_url = api_base + api_Token + api_infos 
+#     response = requests.get(api_url)
     
-    # si la réponse est un succès, on extrait que le Token
-    if response.status_code == 200:
-        data_ref_ll = response.json()
-        with open('data_ll.json', 'w', encoding='utf-8') as f:
-            dump(data_ref_ll, f, ensure_ascii=False, indent=4)
-    else:
-        data_ref_ll = None
+#     # si la réponse est un succès, on extrait que le Token
+#     if response.status_code == 200:
+#         data_ref_ll = response.json()
+#         with open('data_ll.json', 'w', encoding='utf-8') as f:
+#             dump(data_ref_ll, f, ensure_ascii=False, indent=4)
+#     else:
+#         data_ref_ll = None
 
-    return data_ref_ll
+#     return data_ref_ll
     
-def get_referential_common():
-    '''
-    Fonction qui récupère le référentiel common 
-    ''' 
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
-    api_Token = 'authenticationToken=' + get_token() +'&'
-    api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
+# def get_referential_common():
+#     '''
+#     Fonction qui récupère le référentiel common 
+#     ''' 
+#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
+#     api_Token = 'authenticationToken=' + get_token() +'&'
+#     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
         
-    # Constitution du lien url pour accéder à l'API et donc générer un token    
-    api_url = api_base + api_Token + api_infos 
-    response = requests.get(api_url)
+#     # Constitution du lien url pour accéder à l'API et donc générer un token    
+#     api_url = api_base + api_Token + api_infos 
+#     response = requests.get(api_url)
         
-    # si la réponse est un succès, on extrait que le Token
-    if response.status_code == 200:
-        data_ref_common = response.json()
-        with open('data_common.json', 'w', encoding='utf-8') as f:
-            dump(data_ref_common, f, ensure_ascii=False, indent=4)
-    else:
-        data_ref_common = None
+#     # si la réponse est un succès, on extrait que le Token
+#     if response.status_code == 200:
+#         data_ref_common = response.json()
+#         with open('data_common.json', 'w', encoding='utf-8') as f:
+#             dump(data_ref_common, f, ensure_ascii=False, indent=4)
+#     else:
+#         data_ref_common = None
     
-    return data_ref_common
+#     return data_ref_common
     
 def del_empty_col(dataframe):
     '''
@@ -152,8 +153,10 @@ def zero_if_empty(value):
         return int(value)
 
 # FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
+# FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
 # FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
+FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-APR2021.xlsx'
+
 
 def read_excel(file_path, num_page): 
     '''
@@ -184,7 +187,9 @@ def extract_vesselInfo_LL(df_donnees):
     # On applique un filtre pour les caractères spéciaux
     np_vessel_clean['Logbook_name'] = remove_spec_char_from_list(np_vessel_clean['Logbook_name'] )
     df_vessel = pd.DataFrame(np_vessel_clean)
-    
+    df_vessel['Logbook_name'] = df_vessel['Logbook_name'].apply(lambda x: x.strip())
+
+
     return df_vessel
 
 def extract_cruiseInfo_LL(df_donnees):
@@ -210,6 +215,7 @@ def extract_cruiseInfo_LL(df_donnees):
     
     df_cruise = pd.DataFrame(np_cruise, columns = ['Logbook_name', 'Value'])
     df_cruise['Logbook_name'] = remove_spec_char_from_list(df_cruise['Logbook_name'] )
+    df_cruise['Logbook_name'] = df_cruise['Logbook_name'].apply(lambda x: x.strip())
 
     return df_cruise
 
@@ -254,7 +260,9 @@ def extract_gearInfo_LL(df_donnees):
     
     df_gear = pd.DataFrame(np_gear, columns = ['Logbook_name', 'Value'])
     df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'] )
-
+    # df_gear['Logbook_name'] = strip_if_string(df_gear['Logbook_name'])
+    df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
+    
     return df_gear
 
 def extract_lineMaterial_LL(df_donnees):
@@ -275,6 +283,7 @@ def extract_lineMaterial_LL(df_donnees):
     
     df_line = pd.DataFrame(np_line, columns = ['Logbook_name', 'Value'])
     df_line['Logbook_name'] = remove_spec_char_from_list(df_line['Logbook_name'] )
+    df_line['Logbook_name'] = df_line['Logbook_name'].apply(lambda x: x.strip())
 
     return df_line
 
@@ -297,7 +306,8 @@ def extract_target_LL(df_donnees):
     
     df_target = pd.DataFrame(np_target, columns = ['Logbook_name', 'Value'])
     df_target['Logbook_name'] = remove_spec_char_from_list(df_target['Logbook_name'] )
-    
+    df_target['Logbook_name'] = df_target['Logbook_name'].apply(lambda x: x.strip())
+
     return df_target
 
 def extract_logbookDate_LL(df_donnees):
@@ -349,14 +359,28 @@ def extract_positions(df_donnees):
     df_lat_dms.columns = colnames
     df_long_dms.columns = colnames
     
-    df_lat_dms['Latitute'] = df_lat_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
-    Latitute = round(df_lat_dms['Latitute'], 2).values
+    df_lat_dms['Latitude'] = np.where(df_lat_dms.isnull().any(axis=1), np.nan, 
+                                       df_lat_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1))
     
-    df_long_dms['Longitude'] = df_long_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
-    Longitude = round(df_long_dms['Longitude'], 2).values
+    # df_lat_dms['Latitute'] = df_lat_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
+
+    # df_long_dms['Longitude'] = df_long_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1)
+    df_long_dms['Longitude'] = np.where(df_long_dms.isnull().any(axis=1), np.nan, 
+                                         df_long_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1))
     
-    np_position = np.column_stack((day, Latitute, Longitude))
-    df_position = pd.DataFrame(np_position, columns=['Day', 'Latitute', 'Longitude'])
+    df_position = pd.DataFrame({'Day': day,
+                                'Latitude': df_lat_dms['Latitude'],
+                                'Longitude': df_long_dms['Longitude']})
+    
+    df_position = df_position.dropna()
+
+    df_position['Latitude'] = df_position['Latitude'].round(2)
+    df_position['Longitude'] = df_position['Longitude'].round(2)
+    
+    # np_position = np.column_stack((day, Latitute, Longitude))
+    # df_position = pd.DataFrame(np_position, columns=['Day', 'Latitute', 'Longitude'])
+    
+    df_position.reset_index(drop=True, inplace=True)
     
     return df_position
 
@@ -436,8 +460,11 @@ def extract_fishingEffort(df_donnees):
     df_fishingEffort = df_donnees.iloc[24:55, 9:12]
     
     np_fishingEffort = np.column_stack((day, df_fishingEffort))
+        
+    df_fishingEffort = pd.DataFrame(np_fishingEffort, columns=['Day', 'Hooks per basket', 'Total hooks', 'Total lightsticks'])
     
-    df_fishingEffort = pd.DataFrame(np_fishingEffort, columns=['Day', 'Hooks', 'Total hooks', 'Total lightsticks'])
+    df_fishingEffort['Total hooks / Hooks per basket'] = df_fishingEffort['Total hooks'] / df_fishingEffort['Hooks per basket']
+
     df_fishingEffort.reset_index(drop=True, inplace=True)
     return df_fishingEffort
 
@@ -493,8 +520,6 @@ def extract_sharksFAL(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les blacks sharks 
     '''    
-
-
     df_sharksFAL = df_donnees.iloc[15:46, 1:5]
     colnames = ['No RET FAL', 'Kg RET FAL', 
                 'No ESC FAL', 'No DIS FAL']
@@ -509,8 +534,6 @@ def extract_sharksBSH(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les blue sharks 
     '''    
-
-
     df_sharksBSH = df_donnees.iloc[15:46, 5:9]
     colnames = ['No RET BSH', 'Kg RET BSH', 
                 'No ESC BSH', 'No DIS BSH']
@@ -525,8 +548,6 @@ def extract_sharksMAK(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les Mako 
     '''    
-
-
     df_sharksMAK = df_donnees.iloc[15:46, 9:13]
     colnames = ['No RET MAK', 'Kg RET MAK', 
                 'No ESC MAK', 'No DIS MAK']
@@ -537,13 +558,25 @@ def extract_sharksMAK(df_donnees):
     df_sharksMAK.reset_index(drop=True, inplace=True)
     return df_sharksMAK
 
+def extract_sharksMSK(df_donnees):
+    '''
+    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
+    '''    
+    df_sharksSPN = df_donnees.iloc[15:46, 13:17]
+    colnames = ['No RET SPN', 'Kg RET SPN', 
+                'No ESC SPN', 'No DIS SPN']
+    df_sharksSPN.columns = colnames
+    
+    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
+
+    df_sharksSPN.reset_index(drop=True, inplace=True)
+    return df_sharksSPN
+
 def extract_sharksSPN(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
     '''    
-
-
-    df_sharksSPN = df_donnees.iloc[15:46, 13:17]
+    df_sharksSPN = df_donnees.iloc[15:46, 17:21]
     colnames = ['No RET SPN', 'Kg RET SPN', 
                 'No ESC SPN', 'No DIS SPN']
     df_sharksSPN.columns = colnames
@@ -556,10 +589,8 @@ def extract_sharksSPN(df_donnees):
 def extract_sharksTIG(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les tiger sharks 
-    '''    
-
-
-    df_sharksTIG = df_donnees.iloc[15:46, 17:21]
+    '''   
+    df_sharksTIG = df_donnees.iloc[15:46, 21:25]
     colnames = ['No RET TIG', 'Kg RET TIG', 
                 'No ESC TIG', 'No DIS TIG']
     df_sharksTIG.columns = colnames
@@ -573,9 +604,7 @@ def extract_sharksPSK(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les crocodile sharks 
     '''    
-
-
-    df_sharksPSK = df_donnees.iloc[15:46, 21:25]
+    df_sharksPSK = df_donnees.iloc[15:46, 25:29]
     colnames = ['No RET PSK', 'Kg RET PSK', 
                 'No ESC PSK', 'No DIS PSK']
 
@@ -590,9 +619,7 @@ def extract_sharksTHR(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les thresher sharks 
     '''    
-
-
-    df_sharksFAL = df_donnees.iloc[15:46, 25:27]
+    df_sharksFAL = df_donnees.iloc[15:46, 29:31]
     colnames = ['No ESC THR', 'No DIS THR']
     df_sharksFAL.columns = colnames
     
@@ -605,9 +632,7 @@ def extract_sharksOCS(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les oceanic sharks 
     '''    
-
-
-    df_sharksOCS = df_donnees.iloc[15:46, 27:29]
+    df_sharksOCS = df_donnees.iloc[15:46, 31:33]
     colnames = ['No ESC OCS', 'No DIS OCS']
     df_sharksOCS.columns = colnames
     
@@ -620,9 +645,7 @@ def extract_mammals(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les autres mammifères marins 
     '''    
-
-
-    df_mammals = df_donnees.iloc[15:46, 29:31]
+    df_mammals = df_donnees.iloc[15:46, 33:35]
     colnames = ['No ESC MAM', 'No DIS MAM']
     df_mammals.columns = colnames
     df_mammals = df_mammals.map(zero_if_empty)
@@ -634,9 +657,7 @@ def extract_seabird(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les sea birds
     '''    
-
-
-    df_seabird = df_donnees.iloc[15:46, 31:33]
+    df_seabird = df_donnees.iloc[15:46, 35:37]
     colnames = ['No ESC SBD', 'No DIS SBD']
     df_seabird.columns = colnames
     
@@ -649,9 +670,7 @@ def extract_turtles(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les torutes 
     '''    
-
-
-    df_turtles = df_donnees.iloc[15:46, 33:35]
+    df_turtles = df_donnees.iloc[15:46, 37:39]
     colnames = ['No ESC TTX', 'No DIS TTX']
     df_turtles.columns = colnames
     
@@ -712,14 +731,14 @@ def index(request):
         
     if request.method == 'POST':
         
-        token = get_token()
-        data_ref_ll = get_referential_ll()
-        data_ref_common = get_referential_common()
+        # token = get_token()
+        # data_ref_ll = get_referential_ll()
+        # data_ref_common = get_referential_common()
 
         context = {
-            'token': token, 
-            'data_ref_ll': data_ref_ll, 
-            'data_ref_common' : data_ref_common, 
+            # 'token': token, 
+            # 'data_ref_ll': data_ref_ll, 
+            # 'data_ref_common' : data_ref_common, 
         }
         
     else : 

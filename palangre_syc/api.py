@@ -5,6 +5,35 @@ import requests
 from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
 
+def get_token():
+    '''
+    Fonction qui sort un Token 
+    Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
+    '''
+    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
+    api_modelVersion = 'config.modelVersion=9.2.1&'
+    api_login = 'config.login=technicienweb&'
+    api_password = 'config.password=wpF3NITE&'
+    api_databaseName = 'config.databaseName=test&'
+    api_referential = 'referentialLocale=FR'
+    
+    # Constitution du lien url pour accéder à l'API et donc générer un token
+    api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
+    
+    response = requests.get(api_url)
+    
+    # si la réponse est un succès, on extrait que le Token
+    if response.status_code == 200:
+        data_from_api = response.json()
+        token = data_from_api['authenticationToken']
+    else:
+        token = None
+    return token
+
+
+
+
+
 def close(token):
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/close?'
     # api_modelVersion = 'config.modelVersion=9.2.1&'
@@ -16,7 +45,9 @@ def close(token):
     # Constitution du lien url pour accéder à l'API et fermer la connexion
     api_url = api_base + token
     response = requests.get(api_url)
-    
+    print("reponse of close function")
+    print("="*80)
+    print(response.status_code)
     return response.status_code
         
 def serialize(obj): 
