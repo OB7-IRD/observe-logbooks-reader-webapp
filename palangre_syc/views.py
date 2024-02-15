@@ -129,6 +129,32 @@ def convert_to_time_or_text(value):
     Fonction qui convertit la cellule en time - si elle est au format type time ou type date dans le excel
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
     '''
+    if type(value) is str:
+        # print("="*3, value)
+        if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
+            # print("first match")
+            # return date_time.strftime('%H:%M:%S')  
+            return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
+        elif re.match("[0-9]{2}:[0-9]{2}", value.strip()):
+            # print("sd match")
+            return value.strip() +':00'
+            # return date_time.strftime('%H:%M:%S')  
+            # return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
+        return value  
+    elif type(value) is datetime.datetime:
+        date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
+        if hasattr(date_time, 'strftime'): 
+            return date_time.strftime('%H:%M:%S')  
+        return str(date_time)
+    return str(value)
+  
+
+def convert_to_time_or_text2(value):
+    '''
+    Fonction qui convertit la cellule en time - si elle est au format type time ou type date dans le excel
+    et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
+    '''
+    print(value)
     try:
         if ' ' in value or ':' in value:
             date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
@@ -139,12 +165,17 @@ def convert_to_time_or_text(value):
             if re.match("%H:%M:%S", value):
                 # return date_time.strftime('%H:%M:%S')  
                 return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
+            elif re.match("%H:%M", value.strip()):
+                value =value.strip() +':00'
+                # return date_time.strftime('%H:%M:%S')  
+                return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
             return value  
         
     except (ValueError, TypeError):
         if hasattr(value, 'strftime'): 
             return value.strftime('%H:%M:%S')  
         return str(value)
+
 
 def zero_if_empty(value):
     if value == "None" or pd.isna(value):
@@ -155,7 +186,8 @@ def zero_if_empty(value):
 # FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
 # FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
 # FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
-FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-APR2021.xlsx'
+# FILE_PATH = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
+FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
 
 
 def read_excel(file_path, num_page): 
@@ -392,7 +424,7 @@ def get_VesselActivity_topiaID(startTimeStamp, data_ll):
     et s'il contient 'PORT' alors le bateau est au port 
     'FISHING
     '''
-    if ":" in startTimeStamp:
+    if ":" in str(startTimeStamp):
         code = "FO"
     
     elif 'CRUIS' in startTimeStamp : 

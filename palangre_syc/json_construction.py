@@ -1,13 +1,21 @@
-import pytz
 from views import * 
 import json, os
-import numpy as np
 import warnings
 import api
 
 
 
 def get_captain_topiaID(df_donnees_p1, data_common):
+    """
+    Fonction qui propose le topiaID associé au capitaine du logbook (ou inconnu is non présent dans les données de référence)
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+        data_common (json): Données de références 'common'
+
+    Returns:
+        _type_: topiaID du capitaine présenté dans le logbook
+    """
     for captain in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
         
         captain_Logbook = extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
@@ -21,6 +29,16 @@ def get_captain_topiaID(df_donnees_p1, data_common):
     return None
 
 def get_lb_operator_topiaID(df_donnees_p1, data_common):
+    """
+    Fonction qui propose le topiaID de la personne qui a saisi les données du logbook (ou inconnu is non présent dans les données de référence)
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+        data_common (json): Données de références 'common'
+        
+    Returns:
+        _type_: topiaID de l'opérateur 
+    """
     for person in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
         
         reported_Logbook = extract_reportInfo_LL(df_donnees_p1).loc[extract_reportInfo_LL(df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
@@ -33,10 +51,17 @@ def get_lb_operator_topiaID(df_donnees_p1, data_common):
                 return person['topiaId']
     return None
 
-
 def get_vessel_topiaID(df_donnees_p1, data_common):
-    ''' Fonction qui propose le topiaId du navire cité dans le logbook à partir de son 'nationlId' s'il existe 
-    '''
+    """
+    Fonction qui propose le topiaId du navire cité dans le logbook à partir de son 'nationlId' s'il existe 
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+        data_common (json): Données de références 'common'
+
+    Returns:
+        _type_: topiaID du navire (vessel)
+    """
     vessel_Logbook = extract_vesselInfo_LL(df_donnees_p1).loc[extract_vesselInfo_LL(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     for vessel in data_common["content"]["fr.ird.observe.entities.referential.common.Vessel"]:
         if 'nationalId' in vessel:
@@ -46,6 +71,16 @@ def get_vessel_topiaID(df_donnees_p1, data_common):
     return None
                 
 def get_BaitType_topiaId(row, data_ll):
+    """
+    Fonction qui propose le topiaId de l'appat coché dans le logbook 
+
+    Args:
+        row (dataframe): nom de l'appât 
+        data_ll (json):  Données de références 'longliners'
+
+    Returns:
+        str: topiaID de l'appât utilisé
+    """
     BaitTypes = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.BaitType"]
     if row['Value'] == 'V' : 
         Bait_logbook = row['Logbook_name']
@@ -56,23 +91,39 @@ def get_BaitType_topiaId(row, data_ll):
         return None
 
 def get_Species_topiaID(FAO_code_logbook, data_common):
-    '''
-    Fonction 
-    '''
+    """
+    Fonction qui propose le topiaId pour une espèce à partir de son code FAO (saisi manuellement dans la trascription du excel)
+
+    Args:
+        FAO_code_logbook (_type_): Code FAO (3 caractères) extrait du datatable de prises créé depuis la page 1 et 2
+        data_common (json): Données de références 'common'
+
+    Returns:
+        str: topiaID de l'espèce demandée
+    """
+    
     Species = data_common["content"]["fr.ird.observe.entities.referential.common.Species"]
     for Specie in Species:
         lambda Specie: 'fao_code' in Specie
         if FAO_code_logbook == Specie.get("faoCode"):
             return Specie["topiaId"]
-        # On part du principe que si le code fao n'est pas exactement trouv", c'est qu'il s'agit d'un poisson non identifié
+        # On part du principe que si le code fao n'est pas exactement trouvé, c'est qu'il s'agit d'une espèce non identifié
         elif Specie.get("faoCode") == "XXX*":
             return Specie["topiaId"]
     return None
     
 def get_catchFate_topiaID(catchFate_logbook, data_ll):
-    '''
-    Fonction 
-    '''
+    """
+    Fonction qui propose le topiaId du devenir de l'espèce (associé manuellement à l'espèce dans la trascription du excel)
+
+    Args:
+        catchFate_logbook (str): Code catchFate (3 caractères) extrait du datatable de prises créé depuis la page 1 et 2
+        data_ll (json): Données de références 'longliners'
+
+    Returns:
+        str: topiaID du devenir de l'espèce demandée
+    """
+    
     Fates = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.CatchFate"]
     for catchFate in Fates:
         if 'code' in catchFate:
@@ -86,6 +137,14 @@ def get_catchFate_topiaID(catchFate_logbook, data_ll):
 # notamment si les by catch son relachées A alive ou D dead
 
 def construction_catch_table(fish_file):
+    """
+
+    Args:
+        fish_file (dataframe): Issu des fonction d'extraction propre à chaque espèce ou groupe d'espèce
+
+    Returns:
+        dataframe: Construction d'un df avec chaque code FAO et le catchfate associée en lignes
+    """
     df_catches = pd.DataFrame(columns=['FAO_code', 'catchFate', 'count', 'totalWeight'])
 
     # On récupère les données des colonnes de FAO et catchFate
@@ -105,12 +164,16 @@ def construction_catch_table(fish_file):
 # et une seconde fonction qui remplirait les lignes count et totalWeight en allant chercher les infos dans le excel
 
 def create_catch_table_fish_perday(fish_file, row_number):
-    '''
-    Fonction qui prend en argument (1) une fonction d'extraction de données de poisson gardés à bord 
-    et (2) une ligne (ou un jour de pêche) à extraire
-    Elle ressort un dataframe (par type de poisson pêché et par jour de pêche) de 4 colonnes 
-    Ce dataframe continet les champs obligatoires à remplir dans la table 'catch' de Observe
-    '''
+    """
+    Args:
+        fish_file (datatable): issu des extraction, donc un datatable par groupe d'espèce
+        row_number (int): ligne (ou un jour de pêche) à extraire
+
+    Returns:
+        dataframe: par type de poisson pêché et par jour de pêche de 4 colonnes 
+    Ce dataframe contient les champs obligatoires à remplir dans la table 'catch' de Observe
+    """
+
     df_catches = construction_catch_table(fish_file)
     
     # On rempli la suite du dataframe pour count et totalWeight (pour une ligne donnée)
@@ -138,7 +201,16 @@ def create_catch_table_fish_perday(fish_file, row_number):
 
 
 def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
-    # print("create_catch_table_fishes")
+    """
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+        df_donnees_p2 (dataframe): page 2 du doc excel
+        row_number (int): ligne ou jour du set
+
+    Returns:
+        dataframe: avec les prises réalisées pour une journée de pêche (code FAO, catchFate, nombre de prise et Poids tot)
+    """
     liste_fct_extraction = [extract_tunas(df_donnees_p1), 
                             extract_billfishes(df_donnees_p1), 
                             extract_otherfish(df_donnees_p1), 
@@ -170,6 +242,15 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
 
 # TopType et tracelineType sont unknown
 def create_branchelinesComposition(df_donnees_p1):
+    """
+    Fonction de construction du json pour les branchlineComposition
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+
+    Returns:
+        _type_: le json rempli à partir des infos de mon logbook
+    """
     branchlinesComposition = [{
         'homeId'  : None,
         'length' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
@@ -180,12 +261,17 @@ def create_branchelinesComposition(df_donnees_p1):
         }]
     return branchlinesComposition
 
-    
 def create_BaitComposition(bait_datatable, data_ll):
-    '''
-    Fonction qui prend en arguemnt la table extraite de Baits, filtre pour conserver uniquement les données non vides
-    et ressort le BaitsComposition
-    '''
+    """
+    Fonction de construction du json pour les BaitComposition
+
+    Args:
+        bait_datatable (datatable): datatable non vide 'Baits' construite in views.py
+        data_ll (json):  Données de références 'longliners'
+
+    Returns:
+        _type_: le json rempli à partir des infos de mon logbook
+    """
     baits_used = bait_datatable.loc[bait_datatable['Value'] != "None"]
     total_baits = len(baits_used)
     MultipleBaits = []
@@ -205,6 +291,15 @@ def create_BaitComposition(bait_datatable, data_ll):
 
 
 def create_FloatlineComposition(df_donnees_p1):
+    """
+    Fonction de construction du json pour les FloatlineComposition
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+
+    Returns:
+        _type_: le json rempli à partir des infos de mon logbook
+    """
     FloatlinesComposition = [{
         "homeId": None,
         "length": extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
@@ -215,6 +310,17 @@ def create_FloatlineComposition(df_donnees_p1):
 
 # peut etre ajouter le healthStatus
 def create_catches(datatable, data_common, data_ll):
+    """
+    Fonction de construction du json pour les catches
+
+    Args:
+        datatable (datatable): datatable créé pour une journée / un set
+        data_common (json):  Données de références 'common'
+        data_ll (json):  Données de références 'longliners'
+
+    Returns:
+        _type_: le json rempli à partir des infos de mon logbook
+    """
     MultipleCatches = []
     for n_ligne_datatable in range(len(datatable)):
         catches = {"homeId" : None,}
@@ -244,16 +350,15 @@ def create_catches(datatable, data_common, data_ll):
         MultipleCatches.append(catches)
     return MultipleCatches
 
-
 def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour = bool):
     """ Fonction qui permet d'avoir le bon format de date-time pour envoyer le json
 
     Args:
         df_donnees_p1 (_type_): ma page excel 1
-        data_ll (_type_): Données de ref pour ll
-        index_day (_type_): le numero de la ligne de mon datatable
+        data_ll (json):  Données de références 'longliners'
+        index_day (int): le numero de la ligne de mon datatable
         need_hour (bool) : si true - on va chercher l'heure correspondante dans le datatable, 
-        si false - on ajoute '00:00:00' cad que le bateau n'est pas en train de p9^cher donc il nous faut une horaire juste pour convenir au format demandé
+        si false - on ajoute '00:00:00' cad que le bateau n'est pas en train de pêcher donc il nous faut une horaire juste pour convenir au format demandé
 
     Returns:
         _type_: la datetime au format qui permet l'insersion dans la bdd
@@ -271,6 +376,13 @@ def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour = bool):
     return date_formated
 
 def pretty_print(json_data, file = "sample.json", mode ="a"):
+    """ Fonction qui affiche avec les bonnes indentations un fichier json
+
+    Args:
+        json_data (json): Données json en entrée
+        file (str, optional): Nom de fichier json de sortie "sample.json".
+        mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
+    """
     # print(json_data)
     json_formatted_str = json.dumps(json_data, indent=2, default=api.serialize)
     with open(file, mode) as outfile:
@@ -288,16 +400,15 @@ def main():
 
     print("="*80)
     print("Load JSON data file")
-    
-    # file_path = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
-    
-
+        
 
     for file in os.listdir(DIR) :
         if '~$' not in file : 
             file_path = DIR + '/' + file
             
-            file_path = './palangre_syc/media/S 35-CHUN YING NO.212-JUN2021.xlsx'
+            # file_path = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
+            # file_path = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
+            file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
     
             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
                 data_common = json.load(f)
@@ -324,7 +435,6 @@ def main():
                     'number' : None,
                     'basketsPerSectionCount' : None,
                     'branchlinesPerBasketCount': None,
-                    # 'branchlinesPerBasketCount': extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Branchline length m', 'Value'].values[0], 
                     'totalSectionsCount' : None, 
                     # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
                     # Lui je sais pas si la valeur correspond bien enft
@@ -373,16 +483,15 @@ def main():
                     'settingShape' : None, })
                 
                 datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = i)
-                set.update({'catches' : create_catches(datatable, data_common, data_ll),
+                set.update({
+                    'catches' : create_catches(datatable, data_common, data_ll),
                     'lineType' : None, 
                     'lightsticksUsed' : False, 
                     'lightsticksType' : None, 
                     'lightsticksColor' : None, 
                     'mitigationType' : [],
-                    # 'branchlinesComposition': create_branchelinesComposition(df_donnees_p1)
                     'branchlinesComposition': []
                 })
-                
                 # MultipleSet.append(set)
                 
                     
@@ -390,7 +499,6 @@ def main():
                     'homeId' : None, 
                     'comment' : None,}
                 if extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
-                    # activity.update({'startTimeStamp' : extract_time(df_donnees_p1, data_ll).loc[days, 'Time'],})
                     activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
                 else : 
                     activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=False)
@@ -435,10 +543,6 @@ def main():
             # species semble être TargetSpecies - a voir si on développe
             trip = {
                 'homeId' : None, 
-                # 'startDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Departure Date', 'Value'].values[0],
-                # 'endDate' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Arrival Date', 'Value'].values[0],
-                # 'startDate' : datetime.datetime(2023,4,26,2,0, tzinfo=pytz.utc),
-                # 'endDate' :  datetime.datetime(2023,5,26,5,9, tzinfo=pytz.utc),  
                 'startDate': create_starttimestamp(df_donnees_p1, data_ll, 0, need_hour = False), 
                 'endDate': create_starttimestamp(df_donnees_p1, data_ll, days_in_a_month-1, need_hour = False),
                 'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
@@ -476,10 +580,11 @@ def main():
             # pretty_print(trip)
             
             token = api.get_token()
+            print(token)
             url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
             api.send_trip(token, trip, url_base)
-            api.close(token)
+            # api.close(token)
     
 
 if __name__ == "__main__":

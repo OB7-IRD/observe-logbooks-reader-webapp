@@ -2,35 +2,109 @@ import datetime
 import json
 import numpy as np
 import requests
+import yaml
+from json import dump
 from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
+
+def is_valid(token):
+    """
+    Args:
+        token (_type_): _description_
+    """
+    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
+    # Constitution du lien url pour accéder à l'API et fermer la connexion
+    api_url = api_base + 'authenticationToken=' + token
+    response = requests.get(api_url)
+    print("reponse of is valid function ", response.status_code)
+    return response.status_code == 200
+
 
 def get_token():
     '''
     Fonction qui sort un Token 
     Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
     '''
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
-    api_modelVersion = 'config.modelVersion=9.2.1&'
-    api_login = 'config.login=technicienweb&'
-    api_password = 'config.password=wpF3NITE&'
-    api_databaseName = 'config.databaseName=test&'
-    api_referential = 'referentialLocale=FR'
+    try:
+        with open('token.yml', 'r') as file :
+            data = yaml.safe_load(file)
+        token = data['token']
+    except:
+        token = None
+    if not is_valid(token):
+        print("Token not valid", token)
+        api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
+        api_modelVersion = 'config.modelVersion=9.2.1&'
+        api_login = 'config.login=technicienweb&'
+        api_password = 'config.password=wpF3NITE&'
+        api_databaseName = 'config.databaseName=test&'
+        api_referential = 'referentialLocale=FR'
+        
+        # Constitution du lien url pour accéder à l'API et donc générer un token
+        api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
+        
+        response = requests.get(api_url)
+        
+        # si la réponse est un succès, on extrait que le Token
+        if response.status_code == 200:
+            data_from_api = response.json()
+            token = data_from_api['authenticationToken']
+        else:
+            token = None
+        
+        data = {'token' : token}
+        
+        with open('token.yml', 'w') as outfile:
+            yaml.dump(data, outfile, default_flow_style=False)        
+    
+    return token
+
+
+
+def get_referential_ll():
+    '''
+    Fonction qui récupère le référentiel longliners 
+    ''' 
+    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
+    api_Token = 'authenticationToken=' + get_token() +'&'
+    api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
     
     # Constitution du lien url pour accéder à l'API et donc générer un token
-    api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
-    
+    api_url = api_base + api_Token + api_infos 
     response = requests.get(api_url)
     
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
-        data_from_api = response.json()
-        token = data_from_api['authenticationToken']
+        data_ref_ll = response.json()
+        with open('data_ll.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_ll, f, ensure_ascii=False, indent=4)
     else:
-        token = None
-    return token
+        data_ref_ll = None
 
-
+    return data_ref_ll
+    
+def get_referential_common():
+    '''
+    Fonction qui récupère le référentiel common 
+    ''' 
+    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
+    api_Token = 'authenticationToken=' + get_token() +'&'
+    api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
+        
+    # Constitution du lien url pour accéder à l'API et donc générer un token    
+    api_url = api_base + api_Token + api_infos 
+    response = requests.get(api_url)
+        
+    # si la réponse est un succès, on extrait que le Token
+    if response.status_code == 200:
+        data_ref_common = response.json()
+        with open('data_common.json', 'w', encoding='utf-8') as f:
+            dump(data_ref_common, f, ensure_ascii=False, indent=4)
+    else:
+        data_ref_common = None
+    
+    return data_ref_common
+    
 
 
 
@@ -43,11 +117,9 @@ def close(token):
     # api_referential = 'referentialLocale=FR'
     
     # Constitution du lien url pour accéder à l'API et fermer la connexion
-    api_url = api_base + token
+    api_url = api_base + 'authenticationToken=' + token
     response = requests.get(api_url)
-    print("reponse of close function")
-    print("="*80)
-    print(response.status_code)
+    print("reponse of close function ", response.status_code)
     return response.status_code
         
 def serialize(obj): 
@@ -61,15 +133,14 @@ def send_trip(token, data, url_base):
     """_summary_
 
     Args:
-        token (_type_): _description_
+        token (_type_): token valide
         data (_type_): _description_
-        url_base (_type_): _description_
+        url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
 
     Returns:
         _type_: _description_
     """
 
-    # dict = content
     data_json = json.dumps(data, default=serialize)
 
     headers = {
@@ -86,12 +157,11 @@ def send_trip(token, data, url_base):
     print("Code resultat de la requete", res.status_code)
 
     if res.status_code == 200:
-        # return json.loads(res.text)
         return ("Logbook inséré avec success", 1)
     else:
         with open(file = "error.json", mode = "w") as outfile:
             outfile.write(res.text)
-        # pretty_print(res.text, file = "error.json", mode = "w")
+
 
 def errorFilter(response):
     """
