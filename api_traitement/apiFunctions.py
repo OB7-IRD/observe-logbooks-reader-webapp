@@ -32,7 +32,7 @@ def getToken(baseUrl, data):
 
 
 # recuperer toutes les données de la senne
-def getAll_for_Mod_ps_and_common(token, module, baseUrl):
+def get_all_referential_data(token, module, baseUrl):
     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
     ac_cap = requests.get(url)
     if ac_cap.status_code == 200:
@@ -55,11 +55,13 @@ def load_data(token, baseUrl, forceUpdate=False):
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
-        ref_common = getAll_for_Mod_ps_and_common(token, "common", url)
-        ps_logbook = getAll_for_Mod_ps_and_common(token, "ps/logbook", url)
-        ps_common = getAll_for_Mod_ps_and_common(token, "ps/common", url)
+        ref_common = get_all_referential_data(token, "common", url)
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)
+        # ll_logbook = getAll_for_Mod_ps_and_common(token, "ll/logbook", url)
 
-        allData = {**ref_common, **ps_logbook, **ps_common}
+        allData = {**ref_common, **ps_logbook, 'seine' :ps_common, 'longline':ll_common}
 
         file_name = "media/data/data_" + str(day) + ".json"
 
@@ -152,13 +154,14 @@ def getId(allData, module, argment, nbArg=False):
     return Id
 
 
-def getOcean_Program(allData, search="Ocean"):
+def search_in(allData, search="Ocean"):
     """
         search => Ocean ou Program
     """
     prog_dic = {}
     for val in allData[search]:
         prog_dic[val["topiaId"]] = val["label2"]
+    # print("search_in", prog_dic)
     return prog_dic
 
 

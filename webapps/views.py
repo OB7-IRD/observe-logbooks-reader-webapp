@@ -89,10 +89,11 @@ def auth_login(request):
                     login(request, user)
                     request.session['token'] = token
                     request.session['baseUrl'] = baseUrl
-
+                    ll = search_in(allData['seine'], search="Program")
+                    ll = search_in(allData['longline'], search="Program")
                     datat_0c_Pr = {
-                        "ocean": getOcean_Program(allData),
-                        "program": getOcean_Program(allData, search="Program")
+                        "ocean": search_in(allData),
+                        'senne' : allData['seine'], "palangre" : allData['longline']
                     }
                     request.session['data_Oc_Pr'] = datat_0c_Pr
                     request.session['table_files'] = []
@@ -117,9 +118,12 @@ def update_data(request):
     baseUrl = request.session.get('baseUrl')
 
     allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
+    print(allData)
+    seine = search_in(allData['seine'], search="Program")
+    ll = search_in(allData['longline'], search="Program")
     datat_0c_Pr = {
-        "ocean": getOcean_Program(allData),
-        "program": getOcean_Program(allData, search="Program")
+        "ocean": search_in(allData),
+        "programmes": {'senne' : allData['seine'], "palangre" : allData['longline']}
     }
     request.session['data_Oc_Pr'] = datat_0c_Pr
 
@@ -143,6 +147,7 @@ def home(request):
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+    ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     apply_conf  = request.session.get('dico_config')
 
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -214,29 +219,30 @@ def logbook(request):
 
         return render(request, "logbook.html",{
             "tags": tags,
-            "ocean_data": datat_0c_Pr["ocean"]
+            "ocean_data": datat_0c_Pr["ocean"],
         })
 
     return render(request, "logbook.html", context={
+        "program_data": ll_programs,
         "ocean_data": datat_0c_Pr["ocean"]
     })
 
 @login_required
 def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
-    if domaine == 'senne':
+    
+    if datat_0c_Pr != None:
+        datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
+        print("getProgram", datat_0c_Pr)    
         dataPro = {
             "id":[],
             "value":[]
         }
-        for key, value in datat_0c_Pr["program"].items():
+        for key, value in datat_0c_Pr.items():
             # print(key, value)
             dataPro["id"].append(key)
             dataPro["value"].append(value)
         return JsonResponse({"dataPro": dataPro})
-    elif domaine == 'palangre':
-        # dataPro = datat_0c_Pr["program"]
-        return JsonResponse({"dataPro": None})
     else:
         return JsonResponse({})
 
