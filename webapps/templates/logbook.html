@@ -87,7 +87,10 @@
             </select>
 
             <select id="programme" name="programme" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                <option class="after">Programmes du domaine...</option>
+                <option>Programmes du domaine...</option>
+                {% for key, value in program_data.items %}
+                <option value="{{ key }}">{{ value }}</option>
+              {% endfor %}
             </select>
             <select id="ocean" name="ocean" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
                 <option>Ocean...</option>
