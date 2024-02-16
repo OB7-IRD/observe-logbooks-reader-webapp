@@ -375,6 +375,163 @@ def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour = bool):
         time_) 
     return date_formated
 
+
+def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH):
+    # days_in_a_month = len(extract_positions(df_donnees_p1))
+            # MultipleSet = []
+    MultipleActivity = []
+    for i in range(0, DAYS_IN_A_MONTH):
+        set = {
+            'homeId' : None, 
+            'comment' : None,
+            'number' : None,
+            'basketsPerSectionCount' : None,
+            'branchlinesPerBasketCount': None,
+            'totalSectionsCount' : None, 
+            # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
+            # Lui je sais pas si la valeur correspond bien enft
+            'totalBasketsCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'], 
+            'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],             
+            'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'], 
+            'totalLightsticksCount' : None, 
+            'weightedSnap' : False, 
+            'snapWeight' : None, 
+            'weightedSwivel' : False, 
+            'swivelWeight' : None, 
+            'timeBetweenHooks' : None, 
+            'shooterUsed' : False, 
+            'shooterSpeed' : None, 
+            'maxDepthTargeted' : None,}
+            
+        set.update({'settingStartTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
+        
+        set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'],
+            'settingEndTimeStamp' : None, 
+            'settingEndLatitude' : None, 
+            'settingEndLongitude' : None, 
+            'settingVesselSpeed'  : None, 
+            'haulingDirectionSameAsSetting' : None, 
+            'haulingStartTimeStamp' : None, 
+            'haulingStartLatitude' : None, 
+            'haulingStartLongitude' : None, 
+            'haulingEndTimeStamp' : None, 
+            'haulingEndLatitude' : None, 
+            'haulingEndLongitude'  : None,
+            'haulingBreaks' : None, 
+            'monitored' : False, 
+            # En fait "totalLineLength" serait de plusierus km, ce qui ne correspond pas avec le champ "Set Line length m"
+            # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
+            'totalLineLength' : None,
+            'basketLineLength' : None, 
+            'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
+            })
+            
+        bait_datatable = extract_bait_LL(df_donnees_p1)
+        set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll),})
+        
+        set.update({'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1),   
+            'hooksComposition' : [], 
+            'settingShape' : None, })
+        
+        datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = i)
+        set.update({
+            'catches' : create_catches(datatable, data_common, data_ll),
+            'lineType' : None, 
+            'lightsticksUsed' : False, 
+            'lightsticksType' : None, 
+            'lightsticksColor' : None, 
+            'mitigationType' : [],
+            'branchlinesComposition': []
+        })
+        # MultipleSet.append(set)
+        
+            
+        activity = {
+            'homeId' : None, 
+            'comment' : None,}
+        if extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+            activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
+        else : 
+            activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=False)
+                # 'startTimeStamp' : '2022-07-26T00:00:00.000Z'
+                ,})
+            
+        activity.update({'endTimeStamp' : None,
+            'latitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+            'longitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'], 
+            'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[i, 'Température'], 
+            'wind' : None, 
+            'windDirection' : None, 
+            'currentSpeed' : None, 
+            'currentDirection' : None, 
+            'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'], 
+            'dataQuality' : None, 
+            'fpaZone' : None, 
+            'relatedObservedActivity' : None, 
+            # 'set' : MultipleSet, 
+            })
+        
+        if activity.get('vesselActivity') == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+            activity.update({'set' : set,})
+        else :
+            activity.update({
+            'set' : None,
+            'sample' : None
+            })
+        
+        MultipleActivity.append(activity)
+                
+    return MultipleActivity
+
+
+def create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, days_in_a_month):
+    # Dans le trip on a fixé :
+        # ocean = Océan indien
+        # tripType = Marée de pêche commerciale 
+        # observer = unknown car non présent
+        # logbookProgram = Sandbox
+        # startDate et endDate sont entrées en dur aussi
+
+        # species semble être TargetSpecies - a voir si on développe
+    
+    trip = {
+        'homeId' : None, 
+        'startDate': create_starttimestamp(df_donnees_p1, data_ll, 0, need_hour = False), 
+        'endDate': create_starttimestamp(df_donnees_p1, data_ll, days_in_a_month-1, need_hour = False),
+        'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
+        'ersId' : None, 
+        'gearUseFeatures' : None, 
+        'activityObs' : None, 
+        'activityLogbook' : MultipleActivity, 
+        'landing' : None, 
+        'sample' : None, 
+        'tripType' : 'fr.ird.referential.ll.common.TripType#1464000000000#02', 
+        'observationMethod' : None, 
+        'observer' : 'fr.ird.referential.common.Person#1254317601353#0.6617065204572095', 
+        'vessel' : get_vessel_topiaID(df_donnees_p1, data_common), 
+        'observationsProgram' : None, 
+        'logbookProgram' : 'fr.ird.referential.ll.common.Program#1707391938404#0.8314199988069012', 
+        'captain' : get_captain_topiaID(df_donnees_p1, data_common),
+        'observationsDataEntryOperator' : None,
+        'logbookDataEntryOperator' : get_lb_operator_topiaID(df_donnees_p1, data_common),
+        'sampleDataEntryOperator' : None,
+        'landingDataEntryOperator' : None,
+        'ocean' : 'fr.ird.referential.common.Ocean#1239832686152#0.8325731048817705', 
+        # departureHarbour et landingHarbour à remplir
+        'departureHarbour' : None, 
+        'landingHarbour' : None, 
+        'observationsDataQuality'  : None, 
+        'logbookDataQuality' : None, 
+        'generalComment' : None, 
+        'observationsComment' : None, 
+        'logbookComment' : None, 
+        'species' : None, 
+        'observationsAvailability' : False, 
+        'logbookAvailability'  : True,
+    }
+    return trip
+
 def pretty_print(json_data, file = "sample.json", mode ="a"):
     """ Fonction qui affiche avec les bonnes indentations un fichier json
 
@@ -408,7 +565,7 @@ def main():
             
             # file_path = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
             # file_path = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
-            file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+            # file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
     
             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
                 data_common = json.load(f)
@@ -424,158 +581,15 @@ def main():
             
             print("="*80)
             print("Create Activity and Set")
+                
+            DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+
+            MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
             
-            days_in_a_month = len(extract_positions(df_donnees_p1))
-            # MultipleSet = []
-            MultipleActivity = []
-            for i in range(0, days_in_a_month):
-                set = {
-                    'homeId' : None, 
-                    'comment' : None,
-                    'number' : None,
-                    'basketsPerSectionCount' : None,
-                    'branchlinesPerBasketCount': None,
-                    'totalSectionsCount' : None, 
-                    # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
-                    # Lui je sais pas si la valeur correspond bien enft
-                    'totalBasketsCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'], 
-                    'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],             
-                    'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'], 
-                    'totalLightsticksCount' : None, 
-                    'weightedSnap' : False, 
-                    'snapWeight' : None, 
-                    'weightedSwivel' : False, 
-                    'swivelWeight' : None, 
-                    'timeBetweenHooks' : None, 
-                    'shooterUsed' : False, 
-                    'shooterSpeed' : None, 
-                    'maxDepthTargeted' : None,}
-                    
-                set.update({'settingStartTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
-                
-                set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-                    'settingStartLongitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'],
-                    'settingEndTimeStamp' : None, 
-                    'settingEndLatitude' : None, 
-                    'settingEndLongitude' : None, 
-                    'settingVesselSpeed'  : None, 
-                    'haulingDirectionSameAsSetting' : None, 
-                    'haulingStartTimeStamp' : None, 
-                    'haulingStartLatitude' : None, 
-                    'haulingStartLongitude' : None, 
-                    'haulingEndTimeStamp' : None, 
-                    'haulingEndLatitude' : None, 
-                    'haulingEndLongitude'  : None,
-                    'haulingBreaks' : None, 
-                    'monitored' : False, 
-                    # En fait "totalLineLength" serait de plusierus km, ce qui ne correspond pas avec le champ "Set Line length m"
-                    # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
-                    'totalLineLength' : None,
-                    'basketLineLength' : None, 
-                    'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
-                    })
-                    
-                bait_datatable = extract_bait_LL(df_donnees_p1)
-                set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll),})
-                
-                set.update({'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1),   
-                    'hooksComposition' : [], 
-                    'settingShape' : None, })
-                
-                datatable = create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number = i)
-                set.update({
-                    'catches' : create_catches(datatable, data_common, data_ll),
-                    'lineType' : None, 
-                    'lightsticksUsed' : False, 
-                    'lightsticksType' : None, 
-                    'lightsticksColor' : None, 
-                    'mitigationType' : [],
-                    'branchlinesComposition': []
-                })
-                # MultipleSet.append(set)
-                
-                    
-                activity = {
-                    'homeId' : None, 
-                    'comment' : None,}
-                if extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
-                    activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
-                else : 
-                    activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=False)
-                        # 'startTimeStamp' : '2022-07-26T00:00:00.000Z'
-                        ,})
-                    
-                activity.update({'endTimeStamp' : None,
-                    'latitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-                    'longitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'], 
-                    'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[i, 'Température'], 
-                    'wind' : None, 
-                    'windDirection' : None, 
-                    'currentSpeed' : None, 
-                    'currentDirection' : None, 
-                    'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'], 
-                    'dataQuality' : None, 
-                    'fpaZone' : None, 
-                    'relatedObservedActivity' : None, 
-                    # 'set' : MultipleSet, 
-                    })
-                
-                if activity.get('vesselActivity') == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
-                    activity.update({'set' : set,})
-                else :
-                    activity.update({
-                    'set' : None,
-                    'sample' : None
-                    })
-                
-                MultipleActivity.append(activity)
-                
             print("="*80)
             print("Create Trip")
             
-            # Dans le trip on a fixé :
-            # ocean = Océan indien
-            # tripType = Marée de pêche commerciale 
-            # observer = unknown car non présent
-            # logbookProgram = Sandbox
-            # startDate et endDate sont entrées en dur aussi
-            
-            # species semble être TargetSpecies - a voir si on développe
-            trip = {
-                'homeId' : None, 
-                'startDate': create_starttimestamp(df_donnees_p1, data_ll, 0, need_hour = False), 
-                'endDate': create_starttimestamp(df_donnees_p1, data_ll, days_in_a_month-1, need_hour = False),
-                'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
-                'ersId' : None, 
-                'gearUseFeatures' : None, 
-                'activityObs' : None, 
-                'activityLogbook' : MultipleActivity, 
-                'landing' : None, 
-                'sample' : None, 
-                'tripType' : 'fr.ird.referential.ll.common.TripType#1464000000000#02', 
-                'observationMethod' : None, 
-                'observer' : 'fr.ird.referential.common.Person#1254317601353#0.6617065204572095', 
-                'vessel' : get_vessel_topiaID(df_donnees_p1, data_common), 
-                'observationsProgram' : None, 
-                'logbookProgram' : 'fr.ird.referential.ll.common.Program#1707391938404#0.8314199988069012', 
-                'captain' : get_captain_topiaID(df_donnees_p1, data_common),
-                'observationsDataEntryOperator' : None,
-                'logbookDataEntryOperator' : get_lb_operator_topiaID(df_donnees_p1, data_common),
-                'sampleDataEntryOperator' : None,
-                'landingDataEntryOperator' : None,
-                'ocean' : 'fr.ird.referential.common.Ocean#1239832686152#0.8325731048817705', 
-                # departureHarbour et landingHarbour à remplir
-                'departureHarbour' : None, 
-                'landingHarbour' : None, 
-                'observationsDataQuality'  : None, 
-                'logbookDataQuality' : None, 
-                'generalComment' : None, 
-                'observationsComment' : None, 
-                'logbookComment' : None, 
-                'species' : None, 
-                'observationsAvailability' : False, 
-                'logbookAvailability'  : True,
-            }
+            trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
 
             # pretty_print(trip)
             

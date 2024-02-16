@@ -187,7 +187,9 @@ def zero_if_empty(value):
 # FILE_PATH = './palangre_syc/media/july2022-FV GOLDEN FULL NO.168.xlsx'
 # FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
 # FILE_PATH = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
-FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+# FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
+FILE_PATH = './palangre_syc/media/Février2023-FV JUMANJI.xlsx'
+
 
 
 def read_excel(file_path, num_page): 
@@ -287,13 +289,16 @@ def extract_gearInfo_LL(df_donnees):
     np_gear[:, 0] = np_removing_semicolon(np_gear, 0)
     
     # On applique la fonction strip sur les cellules de la colonnes Valeur, si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)    
+    vect = np.vectorize(strip_if_string) 
     np_gear[:, 1] = vect(np_gear[:, 1])
-    
+        
     df_gear = pd.DataFrame(np_gear, columns = ['Logbook_name', 'Value'])
     df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'] )
-    # df_gear['Logbook_name'] = strip_if_string(df_gear['Logbook_name'])
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
+
+    # Ici on passe en "None" quand les données présentes ne sont pas de type numeric
+    # Plus tars, il faudra gérer l'affichage pour préciser à l'utilisateur qu'il doit enlever qq chose ou revoir cette case
+    df_gear['Value'] = df_gear['Value'].apply(lambda x: x if str(x).isnumeric() else None)
     
     return df_gear
 

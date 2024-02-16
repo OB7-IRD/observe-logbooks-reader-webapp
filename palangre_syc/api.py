@@ -34,7 +34,7 @@ def get_token():
     if not is_valid(token):
         print("Token not valid", token)
         api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
-        api_modelVersion = 'config.modelVersion=9.2.1&'
+        api_modelVersion = 'config.modelVersion=9.2.3&'
         api_login = 'config.login=technicienweb&'
         api_password = 'config.password=wpF3NITE&'
         api_databaseName = 'config.databaseName=test&'
@@ -110,11 +110,6 @@ def get_referential_common():
 
 def close(token):
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/close?'
-    # api_modelVersion = 'config.modelVersion=9.2.1&'
-    # api_login = 'config.login=technicienweb&'
-    # api_password = 'config.password=wpF3NITE&'
-    # api_databaseName = 'config.databaseName=test&'
-    # api_referential = 'referentialLocale=FR'
     
     # Constitution du lien url pour accéder à l'API et fermer la connexion
     api_url = api_base + 'authenticationToken=' + token
