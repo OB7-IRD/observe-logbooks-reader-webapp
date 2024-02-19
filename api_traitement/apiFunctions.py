@@ -1368,7 +1368,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                                   bool_tuple=("true", "true"), argment="code=11")
                     tab3_floatingObject.append(js_floatingObjects)
 
-                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" is not str(data['bouee_inst_act_bou']).lower())):
+                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
                     allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
 
             except TransmitException as e:
