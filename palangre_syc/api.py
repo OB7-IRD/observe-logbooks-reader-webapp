@@ -8,9 +8,9 @@ from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
 
 def is_valid(token):
-    """
+    """ Fonction qui teste si le token est encore valide
     Args:
-        token (_type_): _description_
+        token (str): _description_
     """
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
     # Constitution du lien url pour accéder à l'API et fermer la connexion
@@ -21,10 +21,11 @@ def is_valid(token):
 
 
 def get_token():
-    '''
-    Fonction qui sort un Token 
-    Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
-    '''
+    """ Fonction qui regarde s'il existe un token, s'il est valide, ou en créé un le cas échéant
+    
+    Returns:
+        str: valid token
+    """
     try:
         with open('token.yml', 'r') as file :
             data = yaml.safe_load(file)
@@ -62,9 +63,12 @@ def get_token():
 
 
 def get_referential_ll():
-    '''
-    Fonction qui récupère le référentiel longliners 
-    ''' 
+    """ Fonction qui récupère les données issues du référentiel de palangre
+
+    Returns:
+        json: referentiel palangre
+    """
+
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
     api_Token = 'authenticationToken=' + get_token() +'&'
     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
@@ -84,9 +88,11 @@ def get_referential_ll():
     return data_ref_ll
     
 def get_referential_common():
-    '''
-    Fonction qui récupère le référentiel common 
-    ''' 
+    """ fonction qui récupères les données issues du référentiel commun
+    
+    Returns:
+        json: referentiel commun 
+    """
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
     api_Token = 'authenticationToken=' + get_token() +'&'
     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
@@ -105,8 +111,7 @@ def get_referential_common():
     
     return data_ref_common
     
-
-
+    
 
 def close(token):
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/close?'
@@ -128,12 +133,12 @@ def send_trip(token, data, url_base):
     """_summary_
 
     Args:
-        token (_type_): token valide
-        data (_type_): _description_
+        token (str): token valide
+        data (json): json file
         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
 
     Returns:
-        _type_: _description_
+        text message: logbook bien inséré, ou bien un json d'erreur
     """
 
     data_json = json.dumps(data, default=serialize)

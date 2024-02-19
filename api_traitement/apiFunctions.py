@@ -159,6 +159,11 @@ def search_in(allData, search="Ocean"):
         search => Ocean ou Program
     """
     prog_dic = {}
+    if allData == [] : 
+        return prog_dic
+    
+    print(allData)
+    
     for val in allData[search]:
         prog_dic[val["topiaId"]] = val["label2"]
     # print("search_in", prog_dic)

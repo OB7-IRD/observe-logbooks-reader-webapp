@@ -89,8 +89,7 @@ def auth_login(request):
                     login(request, user)
                     request.session['token'] = token
                     request.session['baseUrl'] = baseUrl
-                    ll = search_in(allData['seine'], search="Program")
-                    ll = search_in(allData['longline'], search="Program")
+                    # print(allData)
                     datat_0c_Pr = {
                         "ocean": search_in(allData),
                         'senne' : allData['seine'], "palangre" : allData['longline']
@@ -232,8 +231,9 @@ def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     
     if datat_0c_Pr != None:
+        print("getProgram", datat_0c_Pr)   
         datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
-        print("getProgram", datat_0c_Pr)    
+ 
         dataPro = {
             "id":[],
             "value":[]
