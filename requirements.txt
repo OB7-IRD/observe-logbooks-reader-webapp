@@ -2,7 +2,7 @@ argcomplete @ file:///private/tmp/python-argcomplete-20231211-42231-mc1bv2/argco
 asgiref==3.7.2
 certifi==2023.11.17
 charset-normalizer==3.3.2
-Django==4.2
+django>=4.2.10
 django-tailwind==3.8.0
 et-xmlfile==1.1.0
 idna==3.6
@@ -11,7 +11,7 @@ numpy==1.26.3
 openpyxl==3.1.2
 packaging @ file:///private/tmp/python-packaging-20231211-10905-adsfgp/packaging-23.2
 pandas==2.1.4
-Pygments==2.14.0
+Pygments>=2.15.0
 python-dateutil==2.8.2
 pytz==2023.3.post1
 PyYAML @ file:///private/tmp/pyyaml-20231018-5610-1rdh755/PyYAML-6.0.1
