@@ -7,7 +7,8 @@ Application web pour l'interprétation automatisée des livres de bord
 Il faut péralablement installer [MkDocs](https://www.mkdocs.org) :
 
 ```         
-pip install mkdocs 
+pip install mkdocs
+pip install mkdocs-material
 ```
 
 Pour lancer la documentation :
