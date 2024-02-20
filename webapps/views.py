@@ -231,7 +231,7 @@ def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     
     if datat_0c_Pr != None:
-        print("getProgram", datat_0c_Pr)   
+        # print("getProgmram", datat_0c_Pr)   
         datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
  
         dataPro = {

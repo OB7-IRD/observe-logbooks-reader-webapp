@@ -10,80 +10,24 @@ import re, time
 import datetime
 import json
 
-# def get_token():
-#     '''
-#     Fonction qui sort un Token 
-#     Amélioration : on passe en entrée les données, obtenues à partir du formulaire de connexion 
-#     '''
-#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/open?'
-#     api_modelVersion = 'config.modelVersion=9.2.1&'
-#     api_login = 'config.login=technicienweb&'
-#     api_password = 'config.password=wpF3NITE&'
-#     api_databaseName = 'config.databaseName=test&'
-#     api_referential = 'referentialLocale=FR'
-    
-#     # Constitution du lien url pour accéder à l'API et donc générer un token
-#     api_url = api_base + api_modelVersion + api_login + api_password + api_databaseName + api_referential
-#     response = requests.get(api_url)
-    
-#     # si la réponse est un succès, on extrait que le Token
-#     if response.status_code == 200:
-#         data_from_api = response.json()
-#         token = data_from_api['authenticationToken']
-#     else:
-#         token = None
+from IPython.display import display, HTML
 
-#     print(token)
-#     return token
-
-# def get_referential_ll():
-#     '''
-#     Fonction qui récupère le référentiel longliners 
-#     ''' 
-#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
-#     api_Token = 'authenticationToken=' + get_token() +'&'
-#     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
-    
-#     # Constitution du lien url pour accéder à l'API et donc générer un token
-#     api_url = api_base + api_Token + api_infos 
-#     response = requests.get(api_url)
-    
-#     # si la réponse est un succès, on extrait que le Token
-#     if response.status_code == 200:
-#         data_ref_ll = response.json()
-#         with open('data_ll.json', 'w', encoding='utf-8') as f:
-#             dump(data_ref_ll, f, ensure_ascii=False, indent=4)
-#     else:
-#         data_ref_ll = None
-
-#     return data_ref_ll
-    
-# def get_referential_common():
-#     '''
-#     Fonction qui récupère le référentiel common 
-#     ''' 
-#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/common?'
-#     api_Token = 'authenticationToken=' + get_token() +'&'
-#     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
-        
-#     # Constitution du lien url pour accéder à l'API et donc générer un token    
-#     api_url = api_base + api_Token + api_infos 
-#     response = requests.get(api_url)
-        
-#     # si la réponse est un succès, on extrait que le Token
-#     if response.status_code == 200:
-#         data_ref_common = response.json()
-#         with open('data_common.json', 'w', encoding='utf-8') as f:
-#             dump(data_ref_common, f, ensure_ascii=False, indent=4)
-#     else:
-#         data_ref_common = None
-    
-#     return data_ref_common
+# from palangre_syc import api
+# from palangre_syc.json_construction import create_activity_and_set, create_trip
+# from json_construction import create_activity_and_set, create_trip
+# from 
+# import api
+# from .json_construction import create_activity_and_set, create_trip
     
 def del_empty_col(dataframe):
-    '''
-    Fonction qui supprime une colonne si elle est vide ('None')
-    '''
+    """ Fonction qui supprime la colonne si elle ne contient pas d'information
+
+    Args:
+        dataframe: avec des potentielles colonnes vides (cellules mergées)
+
+    Returns:
+        dataframe: uniquement avec des éléments
+    """
     colonnes_a_supprimer = [colonne for colonne in dataframe.columns if all(dataframe[colonne].isna())]
     dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
     return dataframe  
@@ -129,10 +73,11 @@ def convert_to_time_or_text(value):
     Fonction qui convertit la cellule en time - si elle est au format type time ou type date dans le excel
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
     '''
+    # print("heure askip : ", value)
     if type(value) is str:
         # print("="*3, value)
         if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
-            # print("first match")
+            print("first match")
             # return date_time.strftime('%H:%M:%S')  
             return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         elif re.match("[0-9]{2}:[0-9]{2}", value.strip()):
@@ -142,7 +87,9 @@ def convert_to_time_or_text(value):
             # return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         return value  
     elif type(value) is datetime.datetime:
-        date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
+        # print("="*3, value)
+        # date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
+        date_time = value.time()
         if hasattr(date_time, 'strftime'): 
             return date_time.strftime('%H:%M:%S')  
         return str(date_time)
@@ -179,6 +126,10 @@ def convert_to_time_or_text2(value):
 
 def zero_if_empty(value):
     if value == "None" or pd.isna(value):
+        # print("value empty")
+        return 0
+    elif type(value) is str and (value == "" or re.search("\S*", value)) :
+        # print("value blank space")
         return 0
     else :
         return int(value)
@@ -188,13 +139,12 @@ def zero_if_empty(value):
 # FILE_PATH = './palangre_syc/media/S 08-TORNG TAY NO.1-MAR2021.xlsx'
 # FILE_PATH = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
 # FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-FILE_PATH = './palangre_syc/media/Février2023-FV JUMANJI.xlsx'
-
+# FILE_PATH = './palangre_syc/media/août2023-FV JUMANJI.xlsx'
+FILE_PATH = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
 
 
 def read_excel(file_path, num_page): 
-    '''
-    Fonction qui prend en argument un chemin d'accès d'un document excel et un numéro de page à extraire
+    '''    Fonction qui prend en argument un chemin d'accès d'un document excel et un numéro de page à extraire
     et qui renvoie un tableau (dataframe) des données 
     Attention -- num_page correspond au numéro de la page (1, 2, 3 etc ...)
     '''
@@ -296,10 +246,22 @@ def extract_gearInfo_LL(df_donnees):
     df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'] )
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
 
-    # Ici on passe en "None" quand les données présentes ne sont pas de type numeric
-    # Plus tars, il faudra gérer l'affichage pour préciser à l'utilisateur qu'il doit enlever qq chose ou revoir cette case
-    df_gear['Value'] = df_gear['Value'].apply(lambda x: x if str(x).isnumeric() else None)
+    # if df_gear['Value'].apply(lambda x: isinstance(x, str)).any():
+    #     error_message = """
+    #         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    #         <strong class="font-bold">Error:</strong>
+    #         <span class="block sm:inline">At least one value in the 'value' column is of type str.</span>
+    #         <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+    #             <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 1 1-1.697 1.697l-3.651-3.65-3.65 3.65a1.2 1.2 0 1 1-1.697-1.697l3.65-3.65-3.65-3.651a1.2 1.2 0 1 1 1.697-1.697l3.651 3.65 3.65-3.65a1.2 1.2 0 1 1 1.697 1.697l-3.65 3.651 3.65 3.65z"/></svg>
+    #         </span>
+    #         </div>
+    #         """
+    #         # Afficher le message d'erreur
+    #     display(HTML(error_message))
+    #     print("on est dans le if")
+    #     return df_gear
     
+
     return df_gear
 
 def extract_lineMaterial_LL(df_donnees):
@@ -503,6 +465,7 @@ def extract_fishingEffort(df_donnees):
     df_fishingEffort['Total hooks / Hooks per basket'] = df_fishingEffort['Total hooks'] / df_fishingEffort['Hooks per basket']
 
     df_fishingEffort.reset_index(drop=True, inplace=True)
+    
     return df_fishingEffort
 
 def extract_tunas(df_donnees):
@@ -515,10 +478,12 @@ def extract_tunas(df_donnees):
                 'No RET BET', 'Kg RET BET', 
                 'No RET YFT', 'Kg RET YFT']
     df_tunas.columns = colnames
-    
+    # print(df_tunas)
+    df_tunas = df_tunas.map(strip_if_string)
     df_tunas = df_tunas.map(zero_if_empty)
-
+    # print(df_tunas)
     df_tunas.reset_index(drop=True, inplace=True)
+    # print(df_tunas)
     return df_tunas
 
 def extract_billfishes(df_donnees):
@@ -717,7 +682,7 @@ def extract_turtles(df_donnees):
     return df_turtles
 
 
-
+DIR = "./palangre_syc/media"
 
 def index(request):
     with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
@@ -766,34 +731,148 @@ def index(request):
                             axis = 1)
     
         
-    if request.method == 'POST':
-        
-        # token = get_token()
-        # data_ref_ll = get_referential_ll()
-        # data_ref_common = get_referential_common()
+    # if request.method == 'POST':
 
-        context = {
-            # 'token': token, 
-            # 'data_ref_ll': data_ref_ll, 
-            # 'data_ref_common' : data_ref_common, 
-        }
+    # else : 
+    context = { 
+        'df_vessel' : df_vessel, 
+        'df_cruise' : df_cruise, 
+        'df_report' : df_report,
+        'df_gear' : df_gear, 
+        'df_line' : df_line, 
+        'df_target' : df_target, 
+        'df_date' : df_date, 
+        'df_bait' : df_bait,
         
-    else : 
-        context = { 
-            'df_vessel' : df_vessel, 
-            'df_cruise' : df_cruise, 
-            'df_report' : df_report,
-            'df_gear' : df_gear, 
-            'df_line' : df_line, 
-            'df_target' : df_target, 
-            'df_date' : df_date, 
-            'df_bait' : df_bait,
-            
-            'df_position' : df_position,   
-            'df_time' : df_time,       
-            'df_activity' : df_activity, 
-        }
+        'df_position' : df_position,   
+        'df_time' : df_time,       
+        'df_activity' : df_activity, 
+    }
     
     return render(request, 'LL_homepage.html', context)
 
  
+ 
+ 
+
+# def index(request):
+    
+#     warnings.simplefilter(action='ignore', category=FutureWarning)
+
+#     if os.path.exists("sample.json") : 
+#         print("="*80)
+#         os.remove("sample.json")
+        
+#     token = api.get_token()
+        
+#     for file in os.listdir(DIR) :
+#         if '~$' not in file : 
+#             file_path = DIR + '/' + file
+            
+#             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
+#                 data_common = json.load(f)
+#             with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+#                 data_ll = json.load(f) 
+#             print(file_path)
+            
+#             if request.method == 'POST' :
+#                 df_donnees_p1 = read_excel(file_path, 1)
+#                 df_donnees_p2 = read_excel(file_path, 2)
+                
+            
+#                 df_vessel = extract_vesselInfo_LL(df_donnees_p1)
+#                 df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
+#                 df_report = extract_reportInfo_LL(df_donnees_p1)
+#                 df_gear = extract_gearInfo_LL(df_donnees_p1)
+#                 df_line = extract_lineMaterial_LL(df_donnees_p1)
+#                 df_target = extract_target_LL(df_donnees_p1)
+#                 df_date = extract_logbookDate_LL(df_donnees_p1)
+#                 df_bait = extract_bait_LL(df_donnees_p1)
+#                 df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+                
+#                 df_position = extract_positions(df_donnees_p1)
+#                 df_time = extract_time(df_donnees_p1, data_ll)
+#                 df_temperature = extract_temperature(df_donnees_p1)
+#                 df_tunas = extract_tunas(df_donnees_p1)
+#                 df_billfishes = extract_billfishes(df_donnees_p1)
+#                 df_otherfish = extract_otherfish(df_donnees_p1)
+                
+#                 df_sharksFAL = extract_sharksFAL(df_donnees_p2)
+#                 df_sharksBSH = extract_sharksBSH(df_donnees_p2)
+#                 df_sharksMAK = extract_sharksMAK(df_donnees_p2)
+#                 df_sharksSPN = extract_sharksSPN(df_donnees_p2)
+#                 df_sharksTIG = extract_sharksTIG(df_donnees_p2)
+#                 df_sharksPSK = extract_sharksPSK(df_donnees_p2)
+#                 df_sharksTHR = extract_sharksTHR(df_donnees_p2)
+#                 df_sharksOCS = extract_sharksOCS(df_donnees_p2)
+#                 df_mammals = extract_mammals(df_donnees_p2)
+#                 df_seabirds = extract_seabird(df_donnees_p2)
+#                 df_turtles = extract_turtles(df_donnees_p2)
+        
+#                 df_activity = pd.concat([df_position, df_time, df_temperature, 
+#                                 df_fishingEffort, df_tunas, df_billfishes, df_otherfish, 
+#                                 df_sharksFAL, df_sharksBSH, df_sharksMAK, 
+#                                 df_sharksSPN, df_sharksTIG, df_sharksPSK, 
+#                                 df_sharksTHR, df_sharksOCS, 
+#                                 df_mammals, df_seabirds, df_turtles],
+#                                 axis = 1)
+
+#                 print("="*80)
+#                 print("Create Activity and Set")
+                    
+#                 DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+
+#                 MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
+                
+#                 print("="*80)
+#                 print("Create Trip")
+                
+#                 trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
+
+                
+                
+#                 df_donnees_p1 = read_excel(file_path, 1)
+#                 df_donnees_p2 = read_excel(file_path, 2)
+                
+#                 print("="*80)
+#                 print("Create Activity and Set")
+                    
+#                 DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+
+#                 MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
+                
+#                 print("="*80)
+#                 print("Create Trip")
+                
+#                 trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
+
+#                 # pretty_print(trip)
+                
+#                 # token = api.get_token()
+#                 print("le token qu'on test dansla boucle json", token)
+#                 url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+
+#                 api.send_trip(token, trip, url_base)
+            
+#                 context = { 
+#                     'df_vessel' : df_vessel, 
+#                     'df_cruise' : df_cruise, 
+#                     'df_report' : df_report,
+#                     'df_gear' : df_gear, 
+#                     'df_line' : df_line, 
+#                     'df_target' : df_target, 
+#                     'df_date' : df_date, 
+#                     'df_bait' : df_bait,
+                    
+#                     'df_position' : df_position,   
+#                     'df_time' : df_time,       
+#                     'df_activity' : df_activity, 
+#                 }
+                
+#             else : 
+#                 context = {}
+            
+#     api.close(token)
+     
+#     return render(request, 'LL_homepage.html', context)
+

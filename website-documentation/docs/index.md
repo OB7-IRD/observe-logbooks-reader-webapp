@@ -47,16 +47,16 @@ Here we present the hierarchical structure of the webapp
         
         api-traitement # Code for conecting, getting infos for the Observe api
 
-        media
+        media # Where the referential are stocked 
 
         palangre-syc  # Code related to the Seychelles' longliners logbooks
         
-        webapps # Code for the common parts 
-        
-        website # Where the specificities of development are
+        webapps # Code for the common parts - when the operator get to fill the the form
         
             media # temporary files - where the dropped logbooks are stocked before being send
-
-            ...
+        
+        website # Where the settings are - (?)
+        
+        manage.py # file needed to launch the app 
 
 

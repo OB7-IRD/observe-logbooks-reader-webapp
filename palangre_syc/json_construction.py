@@ -68,6 +68,9 @@ def get_vessel_topiaID(df_donnees_p1, data_common):
             vessel_json = vessel['nationalId']
             if vessel_Logbook == vessel_json :
                 return vessel['topiaId']
+
+    # il faudrait faire un message qui dit de vérifier si le bateau est bien existant et présent dans la base
+    # si 'nationalId' n'est pas dans vessel
     return None
                 
 def get_BaitType_topiaId(row, data_ll):
@@ -82,13 +85,11 @@ def get_BaitType_topiaId(row, data_ll):
         str: topiaID de l'appât utilisé
     """
     BaitTypes = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.BaitType"]
-    if row['Value'] == 'V' : 
-        Bait_logbook = row['Logbook_name']
-        for BaitType in BaitTypes:
-            if BaitType.get("label1")[:len(Bait_logbook)] == Bait_logbook :
-                return BaitType["topiaId"]
-    else : 
-        return None
+    Bait_logbook = row['Logbook_name']
+    for BaitType in BaitTypes:
+        if BaitType.get("label1")[:len(Bait_logbook)] == Bait_logbook :
+            return BaitType["topiaId"]
+
 
 def get_Species_topiaID(FAO_code_logbook, data_common):
     """
@@ -558,15 +559,19 @@ def main():
     print("="*80)
     print("Load JSON data file")
         
-
+    token = api.get_token()
+    
     for file in os.listdir(DIR) :
         if '~$' not in file : 
             file_path = DIR + '/' + file
             
             # file_path = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
             # file_path = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
+            # file_path = './palangre_syc/media/Mars2023-FV GOLDEN FULL NO.168.xlsx'
             # file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-    
+
+            # file_path = './palangre_syc/media/S 30-KEIFUKU MARU NO.1-JAN2023.xlsx'
+            
             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
                 data_common = json.load(f)
             with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
@@ -593,13 +598,15 @@ def main():
 
             # pretty_print(trip)
             
-            token = api.get_token()
-            print(token)
+            # token = api.get_token()
+            print("le token qu'on test dansla boucle json", token)
             url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
             api.send_trip(token, trip, url_base)
             # api.close(token)
+            
     
+    api.close(token)
 
 if __name__ == "__main__":
     start_time = time.time()

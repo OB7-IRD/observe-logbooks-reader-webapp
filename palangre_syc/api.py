@@ -4,7 +4,9 @@ import numpy as np
 import requests
 import yaml
 from json import dump
+
 from json_construction import pretty_print
+# from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
 
 def is_valid(token):
@@ -30,6 +32,7 @@ def get_token():
         with open('token.yml', 'r') as file :
             data = yaml.safe_load(file)
         token = data['token']
+        print("ancien token", token)
     except:
         token = None
     if not is_valid(token):
@@ -155,6 +158,7 @@ def send_trip(token, data, url_base):
     res = requests.post(url, data=data_json, headers=headers)
 
     print("Code resultat de la requete", res.status_code)
+    print("url envoyé : ", url)
 
     if res.status_code == 200:
         return ("Logbook inséré avec success", 1)
