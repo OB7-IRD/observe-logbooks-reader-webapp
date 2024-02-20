@@ -9,6 +9,7 @@ Il faut péralablement installer [MkDocs](https://www.mkdocs.org) :
 ```         
 pip install mkdocs
 pip install mkdocs-material
+pip install mkdocstrings
 ```
 
 Pour lancer la documentation :

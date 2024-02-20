@@ -3,6 +3,7 @@ site_url: https://example.com/
 
 plugins:
   - search
+  - mkdocstrings
 
 theme:
   name: 'material'
