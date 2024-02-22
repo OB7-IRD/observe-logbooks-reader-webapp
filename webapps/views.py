@@ -240,7 +240,7 @@ def logbook(request):
                 tags = "error"
 
         ######################### PALANGRE ################################"
-        # Traitement Ll
+        # Traitement palangre
         else:
             message = "Traitement pour palangre ici"
             messages.error(request, message)
