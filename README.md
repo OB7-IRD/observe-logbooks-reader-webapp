@@ -19,3 +19,15 @@ cd website-documentation
 mkdocs serve --dev-addr 127.0.0.1:8005
 mkdocs -h # Print help message and exit.
 ```
+
+## Documentation réalisée par le biais de Sphinx
+```
+pip install pydata-sphinx-themesphinx-quickstart docs
+```
+Pour lancer la documentation :
+
+```         
+cd docs
+make html # Build the documentation 
+sphinx-serve & # Lance le serveur 
+```
