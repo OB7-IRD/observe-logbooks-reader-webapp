@@ -32,12 +32,20 @@ def relordToken(req, username, password):
 
     baseUrl = data_user.url
 
-    data_user_connect = {
-        "config.login": user,
-        "config.password": password,
-        "config.databaseName": data_user.database,
-        "referentialLocale": data_user.ref_language,
-    }
+    if str(user) == "test":
+        data_user_connect = {
+            "config.login": "technicienweb",
+            "config.password": password,
+            "config.databaseName": data_user.database,
+            "referentialLocale": data_user.ref_language,
+            }
+    else:
+         data_user_connect = {
+             "config.login": user,
+             "config.password": password,
+             "config.databaseName": data_user.database,
+            "referentialLocale": data_user.ref_language,
+        }
 
     return getToken(baseUrl, data_user_connect)
 
@@ -58,18 +66,31 @@ def auth_login(request):
         print(user)
 
         if user is not None and user.is_active:
+            print(user)
             data_user = User.objects.get(username=user)
+
+            print("Basename 1", data_user.basename.lower())
+            print("Basename 2", basename)
+
             if basename == data_user.basename.lower():
                 token = ""
                 allData = []
                 baseUrl = data_user.url
 
-                data_user_connect = {
-                    "config.login": user,
-                    "config.password": password,
-                    "config.databaseName": data_user.database,
-                    "referentialLocale": data_user.ref_language,
-                }
+                if str(user) == "test":
+                    data_user_connect = {
+                        "config.login": "technicienweb",
+                        "config.password": password,
+                        "config.databaseName": data_user.database,
+                        "referentialLocale": data_user.ref_language,
+                    }
+                else:
+                    data_user_connect = {
+                        "config.login": user,
+                        "config.password": password,
+                        "config.databaseName": data_user.database,
+                        "referentialLocale": data_user.ref_language,
+                    }
 
                 # print(data_user_connect)
 
@@ -145,77 +166,90 @@ def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     apply_conf  = request.session.get('dico_config')
 
+    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
+
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
 
-        message = tags = ''
-        logbooks = os.listdir("media/logbooks")
+        # traintement senne
+        if apply_conf["domaine"] == "senne":
 
-        if 0 < len(logbooks) <= 1:
-            info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
+            message = tags = ''
+            logbooks = os.listdir("media/logbooks")
 
-            # Suprimer le ou les fichiers data logbooks
-            os.remove("media/logbooks/"+ logbooks[0])
+            if 0 < len(logbooks) <= 1:
+                info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
 
-        if message == '' and len(logbooks) > 0:
-            print("len log ", len(logbooks), " messa : ", message)
-            try:
-                file_name = "media/data/" + os.listdir('media/data')[0]
-                # Opening JSON file
-                f = open(file_name, encoding="utf8")
-                # returns JSON object as  a dictionary
-                allData = json.load(f)
+                # Suprimer le ou les fichiers data logbooks
+                os.remove("media/logbooks/"+ logbooks[0])
+                # print(data_observateur)
 
-                allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
+            if message == '' and len(logbooks) > 0:
+                print("len log ", len(logbooks), " messa : ", message)
+                try:
+                    file_name = "media/data/" + os.listdir('media/data')[0]
+                    # Opening JSON file
+                    f = open(file_name, encoding="utf8")
+                    # returns JSON object as  a dictionary
+                    allData = json.load(f)
 
-                # print(content_json,'\n')
+                    allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
 
-                if os.path.exists("media/content_json/content_json.json"):
-                    os.remove("media/content_json/content_json.json")
-                    # creer le nouveau content
-                    file_name = "media/content_json/content_json.json"
+                    #print(content_json,'\n')
 
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
-                else:
-                    # creer le nouveau content
-                    file_name = "media/content_json/content_json.json"
+                    if os.path.exists("media/content_json/content_json.json"):
+                        os.remove("media/content_json/content_json.json")
+                        # creer le nouveau content
+                        file_name = "media/content_json/content_json.json"
 
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+                        with open(file_name, 'w', encoding='utf-8') as f:
+                            f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+                    else:
+                        # creer le nouveau content
+                        file_name = "media/content_json/content_json.json"
 
-                if allMessages == []:
-                    messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
-                else:
-                    for msg in allMessages:
-                        messages.error(request, msg)
-                        tags = "error"
+                        with open(file_name, 'w', encoding='utf-8') as f:
+                            f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
 
-                    # Mettre les messages d'erreurs dans un fichier log
-                    file_log_name = "media/log/log.txt"
+                    if allMessages == []:
+                        messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
+                    else:
+                        for msg in allMessages:
+                            messages.error(request, msg)
+                            tags = "error"
 
-                    with open(file_log_name, 'w', encoding='utf-8') as f_log:
-                        log_mess = "\r\r".join(allMessages)
-                        f_log.write(log_mess)
-            except UnboundLocalError:
-                messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
-                tags = "error2"
+                        # Mettre les messages d'erreurs dans un fichier log
+                        file_log_name = "media/log/log.txt"
 
-                logbooks = os.listdir("media/logbooks")
+                        with open(file_log_name, 'w', encoding='utf-8') as f_log:
+                            log_mess = "\r\r".join(allMessages)
+                            f_log.write(log_mess)
+                except UnboundLocalError:
+                    messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
+                    tags = "error2"
 
-                for logbook in logbooks:
-                    os.remove("media/logbooks/"+ logbook)
+                    logbooks = os.listdir("media/logbooks")
+
+                    for logbook in logbooks:
+                        os.remove("media/logbooks/"+ logbook)
 
 
+            else:
+                messages.error(request, message)
+                tags = "error"
+
+        ######################### PALANGRE ################################"
+        # Traitement Ll
         else:
+            message = "Traitement pour palangre ici"
             messages.error(request, message)
             tags = "error"
 
         return render(request, "logbook.html",{
             "tags": tags,
             "ocean_data": datat_0c_Pr["ocean"]
-        })
+         })
 
     return render(request, "logbook.html", context={
         "ocean_data": datat_0c_Pr["ocean"]

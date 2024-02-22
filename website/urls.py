@@ -33,6 +33,9 @@ urlpatterns = [
     
     # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
     path("palangre_syc/", include("palangre_syc.urls")),
+
+    # Tailwind
+    path("__reload__/", include("django_browser_reload.urls")),
 ]
 
 handler404 = 'webapps.views.error_404_view'
