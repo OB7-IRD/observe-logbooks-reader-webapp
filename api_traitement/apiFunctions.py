@@ -134,11 +134,12 @@ def load_data2():
 
 
 # Retourne ID d'un module en fonction des arguments donnés
-def getId(allData, module, argment, nbArg=False):
+def getId(allData, module, argment, nbArg=False, domaine=None):
     """
         :param allData:
         :param module:
         :param argment:
+        :param domaine: "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
         :param nbArg: permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
                      par defaut quand c'est False nous avons 1 argument en paramentre
                      si c'est egale True, nous avons 2 arguments en parametre
@@ -148,7 +149,10 @@ def getId(allData, module, argment, nbArg=False):
     dataKey = [k for (k, v) in allData.items()]
 
     if module in dataKey:
-        tempDic = allData[module]
+        if domaine != None:
+            tempDic = allData[module][domaine]
+        else:
+            tempDic = allData[module]
 
         if nbArg:
             # 2 arguments
@@ -961,10 +965,12 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     code_conser = getId(allData, "SpeciesFate", argment="code=6")
     code_conser_autre = getId(allData, "SpeciesFate", argment="code=15")
     code_reje = getId(allData, "SpeciesFate", argment="code=11")
-    vers_code_6 = getId(allData, "VesselActivity", argment="code=6")
-    vers_code_13 = getId(allData, "VesselActivity", argment="code=13")
-    vers_code_21 = getId(allData, "VesselActivity", argment="code=21")
-    vers_code_99 = getId(allData, "VesselActivity", argment="code=99")
+
+    vers_code_6 = getId(allData, "VesselActivity", argment="code=6", domaine="seine")
+    vers_code_13 = getId(allData, "VesselActivity", argment="code=13", domaine="seine")
+    vers_code_21 = getId(allData, "VesselActivity", argment="code=21", domaine="seine")
+    vers_code_99 = getId(allData, "VesselActivity", argment="code=99", domaine="seine")
+
     id_infoSource = getId(allData, "InformationSource", argment="code=S")
     id_dataQua = getId(allData, "DataQuality", argment="code=A")
 
