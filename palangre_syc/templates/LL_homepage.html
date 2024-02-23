@@ -44,6 +44,17 @@ Palangre aux Seychelles
 <div class ="bg-danger">
 
     <div class = "container-fluid bg-success">
+        <div class ="bg_warning">
+            <h3> Données sélectionnées </h3>
+           
+            <ul>
+                {% for key, value in apply_conf.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
+                {% endfor %}
+
+            </ul>
+        </div>    
+
         <div class = "row">
             <div class = "col-md-4">
                 <div class= "table-responsive">
@@ -246,7 +257,7 @@ Palangre aux Seychelles
       </div>
   
       <div class="col-md-6 text-end">
-        <a href="/vue-succes" class="btn btn-success"> Envoyer le logbook </a>
+        <a href="send_logbook2Observe" class="btn btn-success"> Envoyer le logbook </a>
       </div>
     </div>
   </div>

@@ -692,26 +692,20 @@ DIR = "./media/logbooks"
 def checking_logbook(request) :
     
     selected_file = request.GET.get('selected_file')
-    apply_conf = request.GET.get('apply_conf')
+    apply_conf = request.session.get('dico_config')
     
     print("="*20, "checking_logbook how to get kwargs", "="*20)
     print(apply_conf)
     
     if selected_file is not None and apply_conf is not None:
         
-        # request.session['selected_file'] = request.POST.get('selected_file')
-        # Traitement à faire avec le fichier sélectionné
-        # Redirection vers une autre page
-        # selected_file = request.session.get('selected_file') 
-        print(type(selected_file))
-        file_name = selected_file.strip("['']")
-        print(file_name)
+        file_name = selected_file.strip("['']")        
+        file_path = DIR + "/" + file_name
+        
+        request.session['file_path'] = file_path
         
         print("="*20, "checking_logbook selected_file", "="*20)
-        
-        file_path = DIR + "/" + file_name
         print(file_path)
-        
         
         with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
             data_ll = json.load(f) 
@@ -775,6 +769,8 @@ def checking_logbook(request) :
             'df_position' : df_position,   
             'df_time' : df_time,       
             'df_activity' : df_activity, 
+            
+            'apply_conf' : apply_conf,
         }
         
         
@@ -797,54 +793,54 @@ def listing_files(request):
 def send_logbook2Observe(request):
     warnings.simplefilter(action='ignore', category=FutureWarning)
     
-    if request.method == 'POST':
-        request.session['send_logbook2Observe'] = request.POST.get('send_logbook2Observe')
+    # if request.method == 'POST':
+    file_path = request.session.get('file_path')
+    apply_conf = request.session.get('dico_config')
+    print(apply_conf)
+        # request.session['send_logbook2Observe'] = request.POST.get('send_logbook2Observe')
         # Traitement à faire avec le fichier sélectionné
         # Redirection vers une autre page
-        selected_file = request.session.get('selected_file')
-        file_path = DIR + "/" + selected_file
     
-        if os.path.exists("sample.json") : 
-            print("="*80)
-            os.remove("sample.json")
-
+    if os.path.exists("sample.json") : 
         print("="*80)
-        print("Load JSON data file")
-            
-        token = api.get_token()
+        os.remove("sample.json")
+
+    print("="*80)
+    print("Load JSON data file")
+        
+    token = api.get_token()
+
+
+    with open('./data_common.json', 'r', encoding = 'utf-8') as f:
+        data_common = json.load(f)
+    with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+        data_ll = json.load(f) 
+
+    print("="*80)
+    print("Read excel file")
+    print(file_path)
+        
+    df_donnees_p1 = read_excel(file_path, 1)
+    df_donnees_p2 = read_excel(file_path, 2)
     
-
-        with open('./data_common.json', 'r', encoding = 'utf-8') as f:
-            data_common = json.load(f)
-        with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
-            data_ll = json.load(f) 
-
-        print("="*80)
-        print("Read excel file")
-        print(file_path)
+    print("="*80)
+    print("Create Activity and Set")
         
-        df_donnees_p1 = read_excel(file_path, 1)
-        df_donnees_p2 = read_excel(file_path, 2)
-        
-        print("="*80)
-        print("Create Activity and Set")
-            
-        DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+    DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
 
-        MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
-        
-        print("="*80)
-        print("Create Trip")
-        
-        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
-
-        
-        print("le token qu'on test dansla boucle json", token)
-        url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-        api.send_trip(token, trip, url_base)
-            # api.close(token)
-            
+    MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
     
-    # api.close(token)
+    print("="*80)
+    print("Create Trip")
     
+    trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
+
+        
+    print("le token qu'on test dansla boucle json", token)
+    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+
+    api.send_trip(token, trip, url_base)
+        # api.close(token)
+    
+    
+    return render(request, 'LL_send_data.html', {'info': api.send_trip(token, trip, url_base)}) 

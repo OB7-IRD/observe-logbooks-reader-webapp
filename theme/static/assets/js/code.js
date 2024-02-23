@@ -57,7 +57,7 @@ $(document).ready(function(){
 
                     let option = '';
                     for (var i = 0; i < response.dataPro.id.length; i++) {
-                        // println(response.dataPro.id[i]);
+                        //println(response.dataPro.id[i]);
                         option += '<option value='+response.dataPro.id[i]+'>'+response.dataPro.value[i]+'</option>';
                     }
                     $("#apply select[name='programme']").find('.after').after(option);

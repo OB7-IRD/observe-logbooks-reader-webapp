@@ -18,7 +18,7 @@ def get_captain_topiaID(df_donnees_p1, data_common):
     """
     for captain in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
         
-        captain_Logbook = extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
+        captain_Logbook = palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
         captain_json = captain['firstName'] + ' ' + captain['lastName']
         if captain_Logbook == captain_json :
             return captain['topiaId']
@@ -41,7 +41,7 @@ def get_lb_operator_topiaID(df_donnees_p1, data_common):
     """
     for person in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
         
-        reported_Logbook = extract_reportInfo_LL(df_donnees_p1).loc[extract_reportInfo_LL(df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
+        reported_Logbook = palangre_syc.views.extract_reportInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_reportInfo_LL(df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
         reported_json = person['firstName'] + ' ' + person['lastName']
         if reported_Logbook == reported_json :
             return person['topiaId']
@@ -62,7 +62,7 @@ def get_vessel_topiaID(df_donnees_p1, data_common):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    vessel_Logbook = extract_vesselInfo_LL(df_donnees_p1).loc[extract_vesselInfo_LL(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
+    vessel_Logbook = palangre_syc.views.extract_vesselInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_vesselInfo_LL(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     for vessel in data_common["content"]["fr.ird.observe.entities.referential.common.Vessel"]:
         if 'nationalId' in vessel:
             vessel_json = vessel['nationalId']
@@ -212,20 +212,20 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
     Returns:
         dataframe: avec les prises réalisées pour une journée de pêche (code FAO, catchFate, nombre de prise et Poids tot)
     """
-    liste_fct_extraction = [extract_tunas(df_donnees_p1), 
-                            extract_billfishes(df_donnees_p1), 
-                            extract_otherfish(df_donnees_p1), 
-                            extract_sharksFAL(df_donnees_p2), 
-                            extract_sharksBSH(df_donnees_p2), 
-                            extract_sharksMAK(df_donnees_p2), 
-                            extract_sharksSPN(df_donnees_p2),
-                            extract_sharksTIG(df_donnees_p2),
-                            extract_sharksPSK(df_donnees_p2),
-                            extract_sharksTHR(df_donnees_p2),
-                            extract_sharksOCS(df_donnees_p2),
-                            extract_mammals(df_donnees_p2),
-                            extract_seabird(df_donnees_p2),
-                            extract_turtles(df_donnees_p2)]
+    liste_fct_extraction = [palangre_syc.views.extract_tunas(df_donnees_p1), 
+                            palangre_syc.views.extract_billfishes(df_donnees_p1), 
+                            palangre_syc.views.extract_otherfish(df_donnees_p1), 
+                            palangre_syc.views.extract_sharksFAL(df_donnees_p2), 
+                            palangre_syc.views.extract_sharksBSH(df_donnees_p2), 
+                            palangre_syc.views.extract_sharksMAK(df_donnees_p2), 
+                            palangre_syc.views.extract_sharksSPN(df_donnees_p2),
+                            palangre_syc.views.extract_sharksTIG(df_donnees_p2),
+                            palangre_syc.views.extract_sharksPSK(df_donnees_p2),
+                            palangre_syc.views.extract_sharksTHR(df_donnees_p2),
+                            palangre_syc.views.extract_sharksOCS(df_donnees_p2),
+                            palangre_syc.views.extract_mammals(df_donnees_p2),
+                            palangre_syc.views.extract_seabird(df_donnees_p2),
+                            palangre_syc.views.extract_turtles(df_donnees_p2)]
     
     df_catches = pd.DataFrame(columns=['FAO_code', 'catchFate', 'count', 'totalWeight'])
     
@@ -254,7 +254,7 @@ def create_branchelinesComposition(df_donnees_p1):
     """
     branchlinesComposition = [{
         'homeId'  : None,
-        'length' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
+        'length' : palangre_syc.views.extract_gearInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
         'proportion' : None, 
         'tracelineLength' : None, 
         'topType' : "fr.ird.referential.ll.common.LineType#1239832686157#0.9", 
@@ -303,7 +303,7 @@ def create_FloatlineComposition(df_donnees_p1):
     """
     FloatlinesComposition = [{
         "homeId": None,
-        "length": extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
+        "length": palangre_syc.views.extract_gearInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
         "proportion": 100,
         "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
     }]
@@ -365,14 +365,14 @@ def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour = bool):
         _type_: la datetime au format qui permet l'insersion dans la bdd
     """
     if need_hour == True : 
-        time_ = extract_time(df_donnees_p1, data_ll).loc[index_day, 'Time']
+        time_ = palangre_syc.views.extract_time(df_donnees_p1, data_ll).loc[index_day, 'Time']
     else : 
         time_ = '00:00:00'
         
     date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
-        extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0],
-        extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0],
-        extract_time(df_donnees_p1, data_ll).loc[index_day, 'Day'],
+        palangre_syc.views.extract_logbookDate_LL(df_donnees_p1).loc[palangre_syc.views.extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0],
+        palangre_syc.views.extract_logbookDate_LL(df_donnees_p1).loc[palangre_syc.views.extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0],
+        palangre_syc.views.extract_time(df_donnees_p1, data_ll).loc[index_day, 'Day'],
         time_) 
     return date_formated
 
@@ -391,9 +391,9 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
             'totalSectionsCount' : None, 
             # 'totalBasketsCount' : extract_fishingEffort(file_path).loc[extract_fishingEffort(file_path)['Day'] == index + 1, 'Hooks'].values[0], 
             # Lui je sais pas si la valeur correspond bien enft
-            'totalBasketsCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'], 
-            'totalHooksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],             
-            'totalLightsticksCount' : extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'], 
+            'totalBasketsCount' : palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'], 
+            'totalHooksCount' : palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],             
+            'totalLightsticksCount' : palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'], 
             'totalLightsticksCount' : None, 
             'weightedSnap' : False, 
             'snapWeight' : None, 
@@ -406,8 +406,8 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
             
         set.update({'settingStartTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
         
-        set.update({'settingStartLatitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-            'settingStartLongitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'],
+        set.update({'settingStartLatitude' : palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+            'settingStartLongitude' : palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
             'settingEndTimeStamp' : None, 
             'settingEndLatitude' : None, 
             'settingEndLongitude' : None, 
@@ -425,10 +425,10 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
             # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0], 
             'totalLineLength' : None,
             'basketLineLength' : None, 
-            'lengthBetweenBranchlines' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
+            'lengthBetweenBranchlines' : palangre_syc.views.extract_gearInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
             })
             
-        bait_datatable = extract_bait_LL(df_donnees_p1)
+        bait_datatable = palangre_syc.views.extract_bait_LL(df_donnees_p1)
         set.update({'baitsComposition' : create_BaitComposition(bait_datatable, data_ll),})
         
         set.update({'floatlinesComposition' : create_FloatlineComposition(df_donnees_p1),   
@@ -451,7 +451,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
         activity = {
             'homeId' : None, 
             'comment' : None,}
-        if extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
+        if palangre_syc.views.extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1' :
             activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=True)})
         else : 
             activity.update({'startTimeStamp' : create_starttimestamp(df_donnees_p1, data_ll, index_day= i, need_hour=False)
@@ -459,14 +459,14 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
                 ,})
             
         activity.update({'endTimeStamp' : None,
-            'latitude' : extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-            'longitude' : extract_positions(df_donnees_p1).loc[i, 'Longitude'], 
-            'seaSurfaceTemperature' : extract_temperature(df_donnees_p1).loc[i, 'Température'], 
+            'latitude' : palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+            'longitude' : palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Longitude'], 
+            'seaSurfaceTemperature' : palangre_syc.views.extract_temperature(df_donnees_p1).loc[i, 'Température'], 
             'wind' : None, 
             'windDirection' : None, 
             'currentSpeed' : None, 
             'currentDirection' : None, 
-            'vesselActivity' : extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'], 
+            'vesselActivity' : palangre_syc.views.extract_time(df_donnees_p1, data_ll).loc[i, 'VesselActivity'], 
             'dataQuality' : None, 
             'fpaZone' : None, 
             'relatedObservedActivity' : None, 
@@ -500,7 +500,7 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, days_in_a
         'homeId' : None, 
         'startDate': create_starttimestamp(df_donnees_p1, data_ll, 0, need_hour = False), 
         'endDate': create_starttimestamp(df_donnees_p1, data_ll, days_in_a_month-1, need_hour = False),
-        'noOfCrewMembers' : extract_cruiseInfo_LL(df_donnees_p1).loc[extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
+        'noOfCrewMembers' : palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId' : None, 
         'gearUseFeatures' : None, 
         'activityObs' : None, 
@@ -542,70 +542,70 @@ def pretty_print(json_data, file = "sample.json", mode ="a"):
         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
     """
     # print(json_data)
-    json_formatted_str = json.dumps(json_data, indent=2, default=api.serialize)
+    json_formatted_str = json.dumps(json_data, indent=2, default=palangre_syc.api.serialize)
     with open(file, mode) as outfile:
         outfile.write(json_formatted_str)
 
 DIR = "./palangre_syc/media"
 
-def main():
+# def main():
       
-    warnings.simplefilter(action='ignore', category=FutureWarning)
+#     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    if os.path.exists("sample.json") : 
-        print("="*80)
-        os.remove("sample.json")
+#     if os.path.exists("sample.json") : 
+#         print("="*80)
+#         os.remove("sample.json")
 
-    print("="*80)
-    print("Load JSON data file")
+#     print("="*80)
+#     print("Load JSON data file")
         
-    token = api.get_token()
+#     token = api.get_token()
     
-    for file in os.listdir(DIR) :
-        if '~$' not in file : 
-            file_path = DIR + '/' + file
+#     for file in os.listdir(DIR) :
+#         if '~$' not in file : 
+#             file_path = DIR + '/' + file
             
-            # file_path = './palangre_syc/media/S 30-KEIFUKU MARU NO.1-JAN2023.xlsx'
+#             # file_path = './palangre_syc/media/S 30-KEIFUKU MARU NO.1-JAN2023.xlsx'
             
-            with open('./data_common.json', 'r', encoding = 'utf-8') as f:
-                data_common = json.load(f)
-            with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
-                data_ll = json.load(f) 
+#             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
+#                 data_common = json.load(f)
+#             with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+#                 data_ll = json.load(f) 
 
-            print("="*80)
-            print("Read excel file")
-            print(file_path)
+#             print("="*80)
+#             print("Read excel file")
+#             print(file_path)
             
-            df_donnees_p1 = read_excel(file_path, 1)
-            df_donnees_p2 = read_excel(file_path, 2)
+#             df_donnees_p1 = read_excel(file_path, 1)
+#             df_donnees_p2 = read_excel(file_path, 2)
             
-            print("="*80)
-            print("Create Activity and Set")
+#             print("="*80)
+#             print("Create Activity and Set")
                 
-            DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+#             DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
 
-            MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
+#             MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
             
-            print("="*80)
-            print("Create Trip")
+#             print("="*80)
+#             print("Create Trip")
             
-            trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
+#             trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
 
-            # pretty_print(trip)
+#             # pretty_print(trip)
             
-            # token = api.get_token()
-            print("le token qu'on test dansla boucle json", token)
-            url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+#             # token = api.get_token()
+#             print("le token qu'on test dansla boucle json", token)
+#             url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-            api.send_trip(token, trip, url_base)
-            # api.close(token)
+#             api.send_trip(token, trip, url_base)
+#             # api.close(token)
             
     
-    api.close(token)
+#     api.close(token)
 
-if __name__ == "__main__":
-    start_time = time.time()
-    main()
-    print("--- %s seconds ---" % (time.time() - start_time))
+# if __name__ == "__main__":
+#     start_time = time.time()
+#     main()
+#     print("--- %s seconds ---" % (time.time() - start_time))
     
     
