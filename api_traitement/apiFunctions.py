@@ -836,54 +836,26 @@ def errorFilter(response):
     Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
     """
     error = json.loads(response)
-    # print(error)
-    lati_long_date_ref = []
-    msg = []
-    comp = 0
-    comp2 = 0
-    for val in error['exception']['result']['data']:
-        for i in range(len(val['messages'])):
+    # print(error) ['exception']['result']['nodes']
 
-            if (val['messages'][i]['fieldName'] == 'latitude') or (val['messages'][i]['fieldName'] == 'longitude') or (
-                    val['messages'][i]['fieldName'] == 'quadrant'):
-                temp = ""
-                try:
-                    temp = val['reference']['content']['date'].replace("T00:00:00.000Z", ""), \
-                        val['reference']['content']['time'].replace(":00.000Z", "").replace('1970-01-01T', '')
+    def errorFonction(nodes):
+        if ('children' in nodes.keys()):
+            return errorFonction(nodes['children'][0])
 
-                except:
-                    temp2 = " *** champs erreur: " + str(
-                        val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                        val['messages'][i]['message'])
-                    if temp2 not in msg:
-                        comp += 1
-                        msg.append(temp2)
+        if ('messages' in nodes.keys()):
+            temp = nodes['messages']
+            text = nodes['datum']['text']
 
-                if temp != "":
-                    if temp not in lati_long_date_ref:
-                        lati_long_date_ref.append(temp)
-            else:
-                temp2 = " *** champs erreur: " + str(
-                    val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                    val['messages'][i]['message'])
-                if temp2 not in msg:
-                    msg.append(temp2)
+            return "<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
 
-            if temp2 in msg:
-                comp2 += 1
 
     all_message = []
-    for val_m in msg:
-        all_message.append(val_m)
 
-    if comp != 0:
-        all_message.append(" *** nombre d'occurence sur longitude et latitude: " + str(comp))
-
-    if comp2 != 0:
-        all_message.append(" *** Nombre total d'erreurs tout types confondus: " + str(comp2))
-
-    for vals in lati_long_date_ref:
-        all_message.append(" *** Erreur sur la longitude et la latitude le " + str(vals[0]) + " à " + str(vals[1]))
+    if 'messages' in error['exception']['result']['nodes'][0].keys():
+        errorFonction(error['exception']['result']['nodes'][0])
+    else:
+        for val in error['exception']['result']['nodes'][0]['children']:
+            all_message.append(errorFonction(val))
 
     return all_message
 
