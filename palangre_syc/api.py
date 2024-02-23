@@ -5,7 +5,7 @@ import requests
 import yaml
 from json import dump
 
-from json_construction import pretty_print
+from palangre_syc.json_construction import pretty_print
 # from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
 

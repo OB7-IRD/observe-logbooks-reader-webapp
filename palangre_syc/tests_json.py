@@ -50,9 +50,9 @@ print(get_tunasSpecies_topiaID(file_path))
 
 def create_catches(FAO_code_logbook):
     catches = {
-        "homeId": index + 1,
+        "homeId": checking_logbook + 1,
         "comment": '',
-        "count": extract_tunas(file_path).loc[index, column],
+        "count": extract_tunas(file_path).loc[checking_logbook, column],
         "totalWeight": '',
         "hookWhenDiscarded": '',
         "depredated": '',
@@ -78,10 +78,10 @@ def create_catches(FAO_code_logbook):
    
         
 days_in_a_month = len(extract_time(file_path))
-for index in range(days_in_a_month):
+for checking_logbook in range(days_in_a_month):
     # if extract_time(file_path).loc[extract_time(file_path)['Time']][index] != str:
     
-    Set = {'homeId' : index + 1, }
+    Set = {'homeId' : checking_logbook + 1, }
         
         
     MultipleCatches = []

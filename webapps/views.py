@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 from api_traitement.apiFunctions import *
 from .form import UserForm
@@ -31,9 +32,13 @@ def relordToken(req, username, password):
     data_user = User.objects.get(username=user)
 
     baseUrl = data_user.url
-
+    
+    print(data_user.database)
+    if data_user.database == 'test' :
+        data_user.username = 'technicienweb'
+                
     data_user_connect = {
-        "config.login": user,
+        "config.login": data_user.username,
         "config.password": password,
         "config.databaseName": data_user.database,
         "referentialLocale": data_user.ref_language,
@@ -50,28 +55,34 @@ def auth_login(request):
 
         request.session['username'] = username
         request.session['password'] = password
-
-        # print(username, password)
-
+        
         user = authenticate(request, username=username,  password=password)
 
-        print(user)
+        print("="*20, "auth_login", "="*20)        
 
         if user is not None and user.is_active:
             data_user = User.objects.get(username=user)
+            print("_"*20, "user is not None and user.is_active", "_"*20)
+                        
             if basename == data_user.basename.lower():
                 token = ""
                 allData = []
                 baseUrl = data_user.url
-
+                
+                
+                if basename == 'test-proto.ird.fr' :
+                    data_user.username = 'technicienweb'
+                    print(user , data_user)
+                
+                print("_"*20, "baseUrl", "_"*20)
+                
                 data_user_connect = {
-                    "config.login": user,
+                    "config.login": data_user.username,
                     "config.password": password,
                     "config.databaseName": data_user.database,
                     "referentialLocale": data_user.ref_language,
                 }
 
-                # print(data_user_connect)
 
                 try:
                     # token = "ok"
@@ -79,20 +90,23 @@ def auth_login(request):
                     print("Token: ", token)
                     print('baseURL: ', baseUrl)
                     allData = load_data(token=token, baseUrl=baseUrl)
-
-                    # allData = load_data2()
+                    # if allData == []:
+                    #     print("="*20, "if allData == []", "="*20)
 
                 except:
                     pass
-
-                if (token != "") and (allData is not []):
+            
+                
+                if (token != "") and (allData != []):
                     login(request, user)
                     request.session['token'] = token
                     request.session['baseUrl'] = baseUrl
-                    # print(allData)
+                    
+                    print("="*20, "if (token != "") and (allData is not [])", "="*20)
+                    
                     datat_0c_Pr = {
                         "ocean": search_in(allData),
-                        'senne' : allData['seine'], "palangre" : allData['longline']
+                        "senne" : allData['seine'], "palangre" : allData['longline']
                     }
                     request.session['data_Oc_Pr'] = datat_0c_Pr
                     request.session['table_files'] = []
@@ -117,12 +131,10 @@ def update_data(request):
     baseUrl = request.session.get('baseUrl')
 
     allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
-    print(allData)
-    seine = search_in(allData['seine'], search="Program")
-    ll = search_in(allData['longline'], search="Program")
+    print("="*20, "update_data", "="*20)
     datat_0c_Pr = {
         "ocean": search_in(allData),
-        "programmes": {'senne' : allData['seine'], "palangre" : allData['longline']}
+        "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
     }
     request.session['data_Oc_Pr'] = datat_0c_Pr
 
@@ -146,16 +158,34 @@ def home(request):
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+    # print(datat_0c_Pr["gear"])
     ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     apply_conf  = request.session.get('dico_config')
 
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
-
+        
         message = tags = ''
         logbooks = os.listdir("media/logbooks")
+        
+        # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
+        if apply_conf["domaine"] == "palangre":
+            logbooks = os.listdir("media/logbooks")
+            print("="*20, "logbook kwargs", "="*20)
+            print(logbooks)
+            print(apply_conf)
+            # return redirect(reverse("checking logbook"),  
+            #                 kwargs={'selected_file': logbooks, 
+            #                         'apply_conf': apply_conf})
 
+            url = reverse('checking logbook')
+            url = f"{url}?selected_file={logbooks}&apply_conf={apply_conf}"            
+            return redirect(url) 
+                         
+                         
+
+        # sinon on a un fichier senne
         if 0 < len(logbooks) <= 1:
             info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
 
@@ -231,9 +261,9 @@ def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     
     if datat_0c_Pr != None:
-        # print("getProgmram", datat_0c_Pr)   
-        datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
- 
+        # print("getProgmram", datat_0c_Pr)  
+        datat_0c_Pr = search_in(datat_0c_Pr["domains"][domaine], "Program")
+        
         dataPro = {
             "id":[],
             "value":[]

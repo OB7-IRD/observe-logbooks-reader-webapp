@@ -43,6 +43,8 @@ def get_all_referential_data(token, module, baseUrl):
 
             for valin in json.loads(ac_cap.text)["content"][val]:
                 dicoModule[vals].append(valin)
+        print("="*20, "get_all_referential_data", "="*20)
+        print(dicoModule)
         return dicoModule
     else:
         return "Problème de connexion pour recuperer les données"
@@ -51,18 +53,24 @@ def get_all_referential_data(token, module, baseUrl):
 # Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
 # En utilisant notre fuiseau horaire
 def load_data(token, baseUrl, forceUpdate=False):
+    print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
         ref_common = get_all_referential_data(token, "common", url)
+        # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
         ps_common = get_all_referential_data(token, "ps/common", url)
         ll_common = get_all_referential_data(token, "ll/common", url)
+        gear = {'seine' :ps_common, 'longline':ll_common}
         # ll_logbook = getAll_for_Mod_ps_and_common(token, "ll/logbook", url)
 
-        allData = {**ref_common, **ps_logbook, 'seine' :ps_common, 'longline':ll_common}
-
+        allData = {**ref_common, **ps_logbook, **gear}
+        
+        print("="*20, "load_data SubFunction", "="*20)
+        # print(ref_common[5:])
+        
         file_name = "media/data/data_" + str(day) + ".json"
 
         with open(file_name, 'w', encoding='utf-8') as f:
@@ -83,21 +91,33 @@ def load_data(token, baseUrl, forceUpdate=False):
 
             # Suprimer l'ancienne
             os.remove("media/data/" + last_file)
+            
+            print("="*20, "allData updated", "="*20)
+            # print(allData[5:])
 
         else:
             file_name = "media/data/" + files[0]
             # Opening JSON file
-            f = open(file_name)
+            f = open(file_name , encoding='utf-8')
             # returns JSON object as  a dictionary
             allData = json.load(f)
+            
+            print("="*20, "allData already existing", "="*20)
+            # print(allData)
     else:
         list_file = os.listdir("media/data")
         for file_name in list_file:
             os.remove("media/data/" + str(file_name))
 
         allData = subFunction(token, day, baseUrl)
+        print("="*20, "subFunction getting allData", "="*20)
+        # print(al/lData[5:])
 
     return allData
+
+
+# print(load_data(token = '9f49725e-2402-46fd-ab52-c03a6ba2c529',
+#                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
 def load_data2():
@@ -162,7 +182,7 @@ def search_in(allData, search="Ocean"):
     if allData == [] : 
         return prog_dic
     
-    print(allData)
+    # print(allData)
     
     for val in allData[search]:
         prog_dic[val["topiaId"]] = val["label2"]

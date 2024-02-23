@@ -1,4 +1,6 @@
-from django.shortcuts import render
+import os
+import warnings
+from django.shortcuts import redirect, render
 import requests
 
 from json import dump
@@ -10,7 +12,10 @@ import re, time
 import datetime
 import json
 
-from IPython.display import display, HTML
+from palangre_syc import api
+from palangre_syc.json_construction import create_activity_and_set, create_trip
+
+# from IPython.display import display, HTML
 
 # from palangre_syc import api
 # from palangre_syc.json_construction import create_activity_and_set, create_trip
@@ -140,7 +145,7 @@ def zero_if_empty(value):
 # FILE_PATH = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
 # FILE_PATH = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
 # FILE_PATH = './palangre_syc/media/août2023-FV JUMANJI.xlsx'
-FILE_PATH = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
+FILE_PATH = './palangre_syc/media/Aout2022-FV GOLDEN FULL NO.168.xlsx'
 
 
 def read_excel(file_path, num_page): 
@@ -682,197 +687,164 @@ def extract_turtles(df_donnees):
     return df_turtles
 
 
-DIR = "./palangre_syc/media"
+DIR = "./media/logbooks"
 
-def index(request):
-    with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
-        data_ll = json.load(f) 
-    df_donnees_p1 = read_excel(FILE_PATH, 1)
-
-
-    df_vessel = extract_vesselInfo_LL(df_donnees_p1)
-    df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
-    df_report = extract_reportInfo_LL(df_donnees_p1)
-    df_gear = extract_gearInfo_LL(df_donnees_p1)
-    df_line = extract_lineMaterial_LL(df_donnees_p1)
-    df_target = extract_target_LL(df_donnees_p1)
-    df_date = extract_logbookDate_LL(df_donnees_p1)
-    df_bait = extract_bait_LL(df_donnees_p1)
-    df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+def checking_logbook(request) :
     
-    df_position = extract_positions(df_donnees_p1)
-    df_time = extract_time(df_donnees_p1, data_ll)
-    df_temperature = extract_temperature(df_donnees_p1)
-    df_tunas = extract_tunas(df_donnees_p1)
-    df_billfishes = extract_billfishes(df_donnees_p1)
-    df_otherfish = extract_otherfish(df_donnees_p1)
+    selected_file = request.GET.get('selected_file')
+    apply_conf = request.GET.get('apply_conf')
     
-    df_donnees_p2 = read_excel(FILE_PATH, 2)
-    df_sharksFAL = extract_sharksFAL(df_donnees_p2)
-    df_sharksBSH = extract_sharksBSH(df_donnees_p2)
-    df_sharksMAK = extract_sharksMAK(df_donnees_p2)
-    df_sharksSPN = extract_sharksSPN(df_donnees_p2)
-    df_sharksTIG = extract_sharksTIG(df_donnees_p2)
-    df_sharksPSK = extract_sharksPSK(df_donnees_p2)
-    df_sharksTHR = extract_sharksTHR(df_donnees_p2)
-    df_sharksOCS = extract_sharksOCS(df_donnees_p2)
-    df_mammals = extract_mammals(df_donnees_p2)
-    df_seabirds = extract_seabird(df_donnees_p2)
-    df_turtles = extract_turtles(df_donnees_p2)
+    print("="*20, "checking_logbook how to get kwargs", "="*20)
+    print(apply_conf)
     
-    
-    
-    df_activity = pd.concat([df_position, df_time, df_temperature, 
-                             df_fishingEffort, df_tunas, df_billfishes, df_otherfish, 
-                             df_sharksFAL, df_sharksBSH, df_sharksMAK, 
-                             df_sharksSPN, df_sharksTIG, df_sharksPSK, 
-                             df_sharksTHR, df_sharksOCS, 
-                             df_mammals, df_seabirds, df_turtles],
-                            axis = 1)
-    
+    if selected_file is not None and apply_conf is not None:
         
-    # if request.method == 'POST':
-
-    # else : 
-    context = { 
-        'df_vessel' : df_vessel, 
-        'df_cruise' : df_cruise, 
-        'df_report' : df_report,
-        'df_gear' : df_gear, 
-        'df_line' : df_line, 
-        'df_target' : df_target, 
-        'df_date' : df_date, 
-        'df_bait' : df_bait,
+        # request.session['selected_file'] = request.POST.get('selected_file')
+        # Traitement à faire avec le fichier sélectionné
+        # Redirection vers une autre page
+        # selected_file = request.session.get('selected_file') 
+        print(type(selected_file))
+        file_name = selected_file.strip("['']")
+        print(file_name)
         
-        'df_position' : df_position,   
-        'df_time' : df_time,       
-        'df_activity' : df_activity, 
-    }
+        print("="*20, "checking_logbook selected_file", "="*20)
+        
+        file_path = DIR + "/" + file_name
+        print(file_path)
+        
+        
+        with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+            data_ll = json.load(f) 
+        df_donnees_p1 = read_excel(file_path, 1)
+
+
+        df_vessel = extract_vesselInfo_LL(df_donnees_p1)
+        df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
+        df_report = extract_reportInfo_LL(df_donnees_p1)
+        df_gear = extract_gearInfo_LL(df_donnees_p1)
+        df_line = extract_lineMaterial_LL(df_donnees_p1)
+        df_target = extract_target_LL(df_donnees_p1)
+        df_date = extract_logbookDate_LL(df_donnees_p1)
+        df_bait = extract_bait_LL(df_donnees_p1)
+        df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+        
+        df_position = extract_positions(df_donnees_p1)
+        df_time = extract_time(df_donnees_p1, data_ll)
+        df_temperature = extract_temperature(df_donnees_p1)
+        df_tunas = extract_tunas(df_donnees_p1)
+        df_billfishes = extract_billfishes(df_donnees_p1)
+        df_otherfish = extract_otherfish(df_donnees_p1)
+        
+        df_donnees_p2 = read_excel(file_path, 2)
+        df_sharksFAL = extract_sharksFAL(df_donnees_p2)
+        df_sharksBSH = extract_sharksBSH(df_donnees_p2)
+        df_sharksMAK = extract_sharksMAK(df_donnees_p2)
+        df_sharksSPN = extract_sharksSPN(df_donnees_p2)
+        df_sharksTIG = extract_sharksTIG(df_donnees_p2)
+        df_sharksPSK = extract_sharksPSK(df_donnees_p2)
+        df_sharksTHR = extract_sharksTHR(df_donnees_p2)
+        df_sharksOCS = extract_sharksOCS(df_donnees_p2)
+        df_mammals = extract_mammals(df_donnees_p2)
+        df_seabirds = extract_seabird(df_donnees_p2)
+        df_turtles = extract_turtles(df_donnees_p2)
+        
+        
+        
+        df_activity = pd.concat([df_position, df_time, df_temperature, 
+                                df_fishingEffort, df_tunas, df_billfishes, df_otherfish, 
+                                df_sharksFAL, df_sharksBSH, df_sharksMAK, 
+                                df_sharksSPN, df_sharksTIG, df_sharksPSK, 
+                                df_sharksTHR, df_sharksOCS, 
+                                df_mammals, df_seabirds, df_turtles],
+                                axis = 1)
+        
+            
+        # if request.method == 'POST':
+
+        # else : 
+        context = { 
+            'df_vessel' : df_vessel, 
+            'df_cruise' : df_cruise, 
+            'df_report' : df_report,
+            'df_gear' : df_gear, 
+            'df_line' : df_line, 
+            'df_target' : df_target, 
+            'df_date' : df_date, 
+            'df_bait' : df_bait,
+            
+            'df_position' : df_position,   
+            'df_time' : df_time,       
+            'df_activity' : df_activity, 
+        }
+        
+        
+        
+        return render(request, 'LL_homepage.html', context)
+
+    else:
+        # Gérer le cas où la méthode HTTP n'est pas POST
+        pass
+    return render(request, 'LL_homepage.html')
+
+def listing_files(request):
+    # Récupérer la liste des fichiers dans le dossier 'media'
+    files = [f for f in os.listdir(DIR) if '~$' not in f]
+
+    return render(request, 'LL_file_selection.html', {'files': files})
+
+
+
+def send_logbook2Observe(request):
+    warnings.simplefilter(action='ignore', category=FutureWarning)
     
-    return render(request, 'LL_homepage.html', context)
-
- 
- 
- 
-
-# def index(request):
+    if request.method == 'POST':
+        request.session['send_logbook2Observe'] = request.POST.get('send_logbook2Observe')
+        # Traitement à faire avec le fichier sélectionné
+        # Redirection vers une autre page
+        selected_file = request.session.get('selected_file')
+        file_path = DIR + "/" + selected_file
     
-#     warnings.simplefilter(action='ignore', category=FutureWarning)
+        if os.path.exists("sample.json") : 
+            print("="*80)
+            os.remove("sample.json")
 
-#     if os.path.exists("sample.json") : 
-#         print("="*80)
-#         os.remove("sample.json")
+        print("="*80)
+        print("Load JSON data file")
+            
+        token = api.get_token()
+    
+
+        with open('./data_common.json', 'r', encoding = 'utf-8') as f:
+            data_common = json.load(f)
+        with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
+            data_ll = json.load(f) 
+
+        print("="*80)
+        print("Read excel file")
+        print(file_path)
         
-#     token = api.get_token()
+        df_donnees_p1 = read_excel(file_path, 1)
+        df_donnees_p2 = read_excel(file_path, 2)
         
-#     for file in os.listdir(DIR) :
-#         if '~$' not in file : 
-#             file_path = DIR + '/' + file
+        print("="*80)
+        print("Create Activity and Set")
             
-#             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
-#                 data_common = json.load(f)
-#             with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
-#                 data_ll = json.load(f) 
-#             print(file_path)
-            
-#             if request.method == 'POST' :
-#                 df_donnees_p1 = read_excel(file_path, 1)
-#                 df_donnees_p2 = read_excel(file_path, 2)
-                
-            
-#                 df_vessel = extract_vesselInfo_LL(df_donnees_p1)
-#                 df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
-#                 df_report = extract_reportInfo_LL(df_donnees_p1)
-#                 df_gear = extract_gearInfo_LL(df_donnees_p1)
-#                 df_line = extract_lineMaterial_LL(df_donnees_p1)
-#                 df_target = extract_target_LL(df_donnees_p1)
-#                 df_date = extract_logbookDate_LL(df_donnees_p1)
-#                 df_bait = extract_bait_LL(df_donnees_p1)
-#                 df_fishingEffort = extract_fishingEffort(df_donnees_p1)
-                
-#                 df_position = extract_positions(df_donnees_p1)
-#                 df_time = extract_time(df_donnees_p1, data_ll)
-#                 df_temperature = extract_temperature(df_donnees_p1)
-#                 df_tunas = extract_tunas(df_donnees_p1)
-#                 df_billfishes = extract_billfishes(df_donnees_p1)
-#                 df_otherfish = extract_otherfish(df_donnees_p1)
-                
-#                 df_sharksFAL = extract_sharksFAL(df_donnees_p2)
-#                 df_sharksBSH = extract_sharksBSH(df_donnees_p2)
-#                 df_sharksMAK = extract_sharksMAK(df_donnees_p2)
-#                 df_sharksSPN = extract_sharksSPN(df_donnees_p2)
-#                 df_sharksTIG = extract_sharksTIG(df_donnees_p2)
-#                 df_sharksPSK = extract_sharksPSK(df_donnees_p2)
-#                 df_sharksTHR = extract_sharksTHR(df_donnees_p2)
-#                 df_sharksOCS = extract_sharksOCS(df_donnees_p2)
-#                 df_mammals = extract_mammals(df_donnees_p2)
-#                 df_seabirds = extract_seabird(df_donnees_p2)
-#                 df_turtles = extract_turtles(df_donnees_p2)
+        DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+
+        MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
         
-#                 df_activity = pd.concat([df_position, df_time, df_temperature, 
-#                                 df_fishingEffort, df_tunas, df_billfishes, df_otherfish, 
-#                                 df_sharksFAL, df_sharksBSH, df_sharksMAK, 
-#                                 df_sharksSPN, df_sharksTIG, df_sharksPSK, 
-#                                 df_sharksTHR, df_sharksOCS, 
-#                                 df_mammals, df_seabirds, df_turtles],
-#                                 axis = 1)
+        print("="*80)
+        print("Create Trip")
+        
+        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
 
-#                 print("="*80)
-#                 print("Create Activity and Set")
-                    
-#                 DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
+        
+        print("le token qu'on test dansla boucle json", token)
+        url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-#                 MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
-                
-#                 print("="*80)
-#                 print("Create Trip")
-                
-#                 trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
-
-                
-                
-#                 df_donnees_p1 = read_excel(file_path, 1)
-#                 df_donnees_p2 = read_excel(file_path, 2)
-                
-#                 print("="*80)
-#                 print("Create Activity and Set")
-                    
-#                 DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
-
-#                 MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
-                
-#                 print("="*80)
-#                 print("Create Trip")
-                
-#                 trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
-
-#                 # pretty_print(trip)
-                
-#                 # token = api.get_token()
-#                 print("le token qu'on test dansla boucle json", token)
-#                 url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-#                 api.send_trip(token, trip, url_base)
+        api.send_trip(token, trip, url_base)
+            # api.close(token)
             
-#                 context = { 
-#                     'df_vessel' : df_vessel, 
-#                     'df_cruise' : df_cruise, 
-#                     'df_report' : df_report,
-#                     'df_gear' : df_gear, 
-#                     'df_line' : df_line, 
-#                     'df_target' : df_target, 
-#                     'df_date' : df_date, 
-#                     'df_bait' : df_bait,
-                    
-#                     'df_position' : df_position,   
-#                     'df_time' : df_time,       
-#                     'df_activity' : df_activity, 
-#                 }
-                
-#             else : 
-#                 context = {}
-            
-#     api.close(token)
-     
-#     return render(request, 'LL_homepage.html', context)
-
+    
+    # api.close(token)
+    

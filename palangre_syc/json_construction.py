@@ -1,7 +1,7 @@
-from views import * 
+from palangre_syc.views import * 
 import json, os
 import warnings
-import api
+import palangre_syc.api
 
 
 
@@ -565,11 +565,6 @@ def main():
         if '~$' not in file : 
             file_path = DIR + '/' + file
             
-            # file_path = './palangre_syc/media/S 35-CHUN YING NO.212-JUL2021.xlsx'
-            # file_path = './palangre_syc/media/Decembre2022-FV GOLDEN FULL NO.168.xlsx'
-            # file_path = './palangre_syc/media/Mars2023-FV GOLDEN FULL NO.168.xlsx'
-            # file_path = './palangre_syc/media/Août2023-FV GOLDEN FULL NO.168.xlsx'
-
             # file_path = './palangre_syc/media/S 30-KEIFUKU MARU NO.1-JAN2023.xlsx'
             
             with open('./data_common.json', 'r', encoding = 'utf-8') as f:

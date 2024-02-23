@@ -32,7 +32,7 @@ Palangre aux Seychelles
         </div>
     
         <!-- Button to trigger data update -->
-        <form method="post" action="{% url 'index' %}">
+        <form method="post" action="{% url 'checking logbook' %}">
             {% csrf_token %}
             <button type="submit"> lancer le chargement des données </button>
         </form>
@@ -45,7 +45,7 @@ Palangre aux Seychelles
 
     <div class = "container-fluid bg-success">
         <div class = "row">
-            <div class = "col-md-4 bg-info">
+            <div class = "col-md-4">
                 <div class= "table-responsive">
                     <h3 class = ""> Date du logbook </h3>
                 
@@ -119,7 +119,7 @@ Palangre aux Seychelles
                 </div>
             </div>
 
-            <div class="col-md-4 bg-warning">
+            <div class="col-md-4">
                 <div class= "table-responsive">                    
                     <h3 class = ""> Vessel information </h3>
                     
@@ -242,7 +242,7 @@ Palangre aux Seychelles
 <div class="container-fluid">
     <div class="row">
       <div class="col-md-6 text-start">
-        <a href="" class="btn btn-danger"> Retour et modification </a>
+        <a href="../logbook" class="btn btn-danger"> Retour et modification </a>
       </div>
   
       <div class="col-md-6 text-end">
