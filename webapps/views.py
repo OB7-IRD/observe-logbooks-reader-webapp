@@ -241,7 +241,6 @@ def logbook(request):
                      os.remove("media/logbooks/"+ logbook)
 
         else:
-            message = "Traitement pour palangre ici"
             messages.error(request, message)
             tags = "error"
 

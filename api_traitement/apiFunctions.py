@@ -80,7 +80,7 @@ def load_data(token, baseUrl, forceUpdate=False):
         del ps_common["VesselActivity"]
         del ll_common["VesselActivity"]
 
-        allData = {**ref_common, **ps_logbook, **program, **vesselActivity}
+        allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
 
         # allData = {**ref_common, **ps_logbook, **ps_common}
 
