@@ -1,300 +1,278 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Palangre aux Seychelles</title>
-    <!-- Include your CSS styles or link to external stylesheets here -->
-</head>
-<body>
+{% extends "base_bs5.html" %}
+{% load static %}
 
-    <header>
-        <h1>Page d'accueil pour les données de palangre</h1>
-        <!-- Add navigation links if needed -->
-    </header>
+
+{% block title %}
+
+Palangre aux Seychelles
+
+{% endblock title %}
+
+{% block navigation %}
+{% endblock navigation %}
+
+{% block heading %}
+<h1>Page d'accueil pour les données de palangre</h1>
+{% endblock heading %}
+
+{% block content %}
+
 
     <section>
         <h2>Mise à jour des données de références</h2>
         <p>
             en chargant cette page, normalement on se connecte à la base et on génère un TOKEN
         </p>
-        <!-- div>
+        <div>
             {% if token %}
                 <p>Sortie json de la connexion et extraction du token: {{ token }}</p>
             {% else %}
                 <p>Failed to fetch data from the API.</p>
             {% endif %}
-        </div -->
+        </div>
     
         <!-- Button to trigger data update -->
-        <form method="post" action="{% url 'index' %}">
+        <form method="post" action="{% url 'checking logbook' %}">
             {% csrf_token %}
-            <button type="submit"> Recharger un token </button>
+            <button type="submit"> lancer le chargement des données </button>
         </form>
         
     </section>
 
-    <!--section>
-        {% if data_ref_common %}
-            <p> Sortie json de la connexion et extraction du token: {{ data_ref_common }}</p>
-        {% else %}
-            <p> ERREUR : pas de récupération des données réf common.</p>
-        {% endif %}
-    </section-->
+   
 
-    <div>
-        <h3> Date du logbook </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_date.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_date.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
+<div class ="bg-danger">
+
+    <div class = "container-fluid bg-success">
+        <div class ="bg_warning">
+            <h3> Données sélectionnées </h3>
+           
+            <ul>
+                {% for key, value in apply_conf.items %}
+                    <li><strong>{{ key }}:</strong> {{ value }}</li>
                 {% endfor %}
-            </tbody>
-        </table>
+
+            </ul>
+        </div>    
+
+        <div class = "row">
+            <div class = "col-md-4">
+                <div class= "table-responsive">
+                    <h3 class = ""> Date du logbook </h3>
+                
+                    <table class="table" border="1" >
+                        <thead>
+                            <tr>
+                                {% for col in df_date.columns %}
+                                    <th scope="col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_date.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope="row"> {{ cell }} </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <div class = "table-responsive">
+                    <h3> Report information </h3>
+
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_report.columns %}
+                                    <th scope="col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_report.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope="row"> {{ cell }} </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <div class = "table-responsive">
+                    <h3> Cruise information </h3>
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_cruise.columns %}
+                                    <th scope="col">
+                                        {{ col }}
+                                    </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_cruise.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope="row">
+                                        {{ cell }}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class= "table-responsive">                    
+                    <h3 class = ""> Vessel information </h3>
+                    
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_vessel.columns %}
+                                    <th scope="col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_vessel.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope="row"> {{ cell }} </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>  
+                <div class = "table-responsive">
+                    <h3> Gear information </h3>
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_gear.columns %}
+                                    <th scope = "col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_gear.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope = "row"> {{ cell }} </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class = "table-responsive">
+                    <h3> Line material </h3>
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_line.columns %}
+                                    <th scope = "col">{{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_line.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope = "row">{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <div class = "table-responsive">
+                    <h3> Target species </h3>
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_target.columns %}
+                                    <th scope ="col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_target.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope = "row"> {{ cell }} </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <div class = "table-responsive">
+                    <h3> Type of baits </h3>
+                    <table border="1" class = "table">
+                        <thead>
+                            <tr>
+                                {% for col in df_bait.columns %}
+                                    <th scope = "col"> {{ col }} </th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in df_bait.iterrows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td scope = "row">{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>    
+            </div>
+        </div>
     </div>
+</div>
+    
 
-    <div>
-        <h3> Vessel information - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_vessel.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_vessel.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+<div class="container-fluid">
+    <div class="row">
+      <div class="col-md-6 text-start">
+        <a href="../logbook" class="btn btn-danger"> Retour et modification </a>
+      </div>
+  
+      <div class="col-md-6 text-end">
+        <a href="send_logbook2Observe" class="btn btn-success"> Envoyer le logbook </a>
+      </div>
     </div>
-
-    <div>
-        <h3> Cruise information - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_cruise.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_cruise.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <h3> Report information - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_report.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_report.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <h3> Gear information - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_gear.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_gear.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <h3> Line material - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_line.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_line.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <h3> Target species - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_target.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_target.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <div>
-        <h3>  Bait - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_bait.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_bait.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+  </div>
 
 
-    <!-- div>
-        <h3> GPS positions - dataframe </h3>
-        <table border="1">
-            <thead>
-                <tr>
-                    {% for col in df_position.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_position.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div -->
+<br><br><br>
 
     <div>
         <h3> all data - dataframe </h3>
        <!-- {{ df_vessel | safe }} -->  
-        <table border="1">
+        <table border="1" class = "table">
             <thead>
                 <tr>
                     {% for col in df_activity.columns %}
-                        <th>
-                            {{ col }}
-                        </th>
+                        <th scope = "col"> {{ col }} </th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -302,9 +280,7 @@
                 {% for index, row in df_activity.iterrows %}
                     <tr>
                         {% for cell in row %}
-                        <td>
-                            {{ cell }}
-                        </td>
+                        <td scope = "row"> {{ cell }} </td>
                         {% endfor %}
                     </tr>
                 {% endfor %}
@@ -312,12 +288,8 @@
         </table>
     </div>
 
+{% endblock content %}
 
-    <footer>
-        <p>&copy; En cours de développement </p>
-    </footer>
-
-    <!-- Include your JavaScript files or link to external scripts here -->
-
-</body>
-</html>
+{% block footer %}
+<p>&copy; En cours de développement </p>
+{% endblock footer %}

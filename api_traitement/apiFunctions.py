@@ -33,7 +33,7 @@ def getToken(baseUrl, data):
 
 
 # recuperer toutes les données de la senne
-def getAll_for_Mod_ps_and_common(token, module, baseUrl):
+def get_all_referential_data(token, module, baseUrl):
     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
     ac_cap = requests.get(url)
     if ac_cap.status_code == 200:
@@ -56,11 +56,33 @@ def load_data(token, baseUrl, forceUpdate=False):
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
-        ref_common = getAll_for_Mod_ps_and_common(token, "common", url)
-        ps_logbook = getAll_for_Mod_ps_and_common(token, "ps/logbook", url)
-        ps_common = getAll_for_Mod_ps_and_common(token, "ps/common", url)
+        ref_common = get_all_referential_data(token, "common", url)
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)
 
-        allData = {**ref_common, **ps_logbook, **ps_common}
+        program = {
+            'Program': {
+                'seine' :ps_common["Program"],
+                'longline':ll_common["Program"]
+            }
+        }
+        vesselActivity = {
+            'VesselActivity': {
+                'seine' :ps_common["VesselActivity"],
+                'longline':ll_common["VesselActivity"]
+            }
+        }
+
+        # Suppression des éléments suivant
+        del ps_common["Program"]
+        del ll_common["Program"]
+        del ps_common["VesselActivity"]
+        del ll_common["VesselActivity"]
+
+        allData = {**ref_common, **ps_logbook, **program, **vesselActivity}
+
+        # allData = {**ref_common, **ps_logbook, **ps_common}
 
         file_name = "media/data/data_" + str(day) + ".json"
 
@@ -157,10 +179,15 @@ def getOcean_Program(allData, search="Ocean"):
     """
         search => Ocean ou Program
     """
-    prog_dic = {}
-    for val in allData[search]:
-        prog_dic[val["topiaId"]] = val["label2"]
-    return prog_dic
+    if allData == []: return {}
+
+    if search == "Ocean":
+        return { val["topiaId"] : val["label2"] for val in allData[search]}
+    else:
+        return {
+            "seine": { val["topiaId"] : val["label2"] for val in allData[search]["seine"]},
+            "longline": { val["topiaId"] : val["label2"] for val in allData[search]["longline"]},
+        }
 
 
 # Traitement du logbook
