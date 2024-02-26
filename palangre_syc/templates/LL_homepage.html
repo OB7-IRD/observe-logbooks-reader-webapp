@@ -41,26 +41,43 @@ Palangre aux Seychelles
 
    
 
-<div class ="bg-danger">
+<div class ="">
 
-    <div class = "container-fluid bg-success">
-        <div class ="bg_warning">
-            <h3> Données sélectionnées </h3>
+    <div class = "container-fluid">
            
-            <ul>
-                {% for key, value in apply_conf.items %}
-                    <li><strong>{{ key }}:</strong> {{ value }}</li>
-                {% endfor %}
-
-            </ul>
-        </div>    
 
         <div class = "row">
             <div class = "col-md-4">
-                <div class= "table-responsive">
-                    <h3 class = ""> Date du logbook </h3>
+                <div class="">
+                    <h3> Données sélectionnées </h3>
+                    Vous ête ainsi localisé dans <b> l'océan {{ocean | safe}} </b>
+                    et vous être dans le programme <b> {{programme | safe }} </b>
                 
-                    <table class="table" border="1" >
+                </div> 
+
+                <div class= "table-responsive">
+                    <h3 class = "">  </h3>
+                    <p>Le journal de pêche que vous souhaitez envoyer est celui du 
+                    {% for index, row in df_date.iterrows %}
+                        {% if row.Logbook_name == 'Month' %}
+                            <!-- Affichage de la valeur du mois -->
+                            {% with month_value=row.Value %}
+                                <b>{{ month_value }} 
+                                    {% if row.Value == 1 %}
+                                        er
+                                    {% else %}
+                                        ème
+                                    {% endif %}</b> mois
+                            {% endwith %}
+                        {% elif row.Logbook_name == 'Year' %}
+                            <!-- Affichage de l'année -->
+                            {% with year_value=row.Value %}
+                                de l'année <b>{{ year_value }}</b></p>
+                            {% endwith %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% comment %} <table class="table" border="1" >
                         <thead>
                             <tr>
                                 {% for col in df_date.columns %}
@@ -77,7 +94,7 @@ Palangre aux Seychelles
                                 </tr>
                             {% endfor %}
                         </tbody>
-                    </table>
+                    </table> {% endcomment %}
                 </div>
                 <br>
                 <div class = "table-responsive">
@@ -174,6 +191,33 @@ Palangre aux Seychelles
                             {% endfor %}
                         </tbody>
                     </table>
+                    
+                    {% if df_gear|length == 2 %}
+
+                        <table border="1" class = "table">
+                            <thead>
+                                <tr>
+                                    {% for col in df_gear.0.columns %}
+                                        <th scope = "col"> {{ col }} </th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for index, row in df_gear.0.iterrows %}
+                                    <tr>
+                                        {% for cell in row %}
+                                        <td scope = "row"> {{ cell }} </td>
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                        <div class="alert alert-danger" role="alert">
+                            <p>{{ df_gear.1 }}</p>
+                        </div>
+                    {% endif %}
+                    
                 </div>
             </div>
 
@@ -272,7 +316,7 @@ Palangre aux Seychelles
             <thead>
                 <tr>
                     {% for col in df_activity.columns %}
-                        <th scope = "col"> {{ col }} </th>
+                        <th scope = "col"> {{ col }} </th> 
                     {% endfor %}
                 </tr>
             </thead>

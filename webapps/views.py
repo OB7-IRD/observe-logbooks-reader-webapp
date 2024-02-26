@@ -159,8 +159,8 @@ def home(request):
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     # print(datat_0c_Pr["gear"])
-    print("+"*20, "datat_Oc_Pr", "+"*20) 
-    print(datat_0c_Pr)
+    print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
+    # print(datat_0c_Pr)
     
     ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     apply_conf  = request.session.get('dico_config')
@@ -255,21 +255,21 @@ def logbook(request):
         })
 
     # else : 
-    #     if apply_conf is not None :
-    #         print("="*20, "apply_conf is not None", "="*20)
-    #         print(apply_conf)
-    #         if apply_conf['domaine'] == 'palangre' :
-    #             return render(request, "logbook.html", context={
-    #                 "program_data": datat_0c_Pr['palangre']['Program'],
-    #                 "ocean_data": datat_0c_Pr["ocean"]
-    #             })
-    #         elif apply_conf['domaine'] == 'palangre' : 
-    #             return render(request, "logbook.html", context={
-    #                 "program_data": datat_0c_Pr['senne']['Program'],
-    #                 "ocean_data": datat_0c_Pr["ocean"]
-    #             })
-    print("="*20, "apply_conf is None", "="*20)
-    print(apply_conf)
+    if apply_conf is not None :
+        print("="*20, "apply_conf is not None", "="*20)
+        print(apply_conf)
+        if apply_conf['domaine'] == 'palangre' :
+            return render(request, "logbook.html", context={
+                "program_data": datat_0c_Pr['palangre']['Program'],
+                "ocean_data": datat_0c_Pr["ocean"]
+            })
+        elif apply_conf['domaine'] == 'senne' : 
+            return render(request, "logbook.html", context={
+                "program_data": datat_0c_Pr['senne']['Program'],
+                "ocean_data": datat_0c_Pr["ocean"]
+            })
+    # print("="*20, "apply_conf is None", "="*20)
+    # print(apply_conf)
     return render(request, "logbook.html", context={
                 "program_data": ll_programs,
                 "ocean_data": datat_0c_Pr["ocean"]
@@ -283,7 +283,7 @@ def getProgram(request, domaine):
 
         datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
         print("="*20, "datat_0c_Pr search in", "="*20)
-        print(datat_0c_Pr)
+        # print(datat_0c_Pr)
         dataPro = {
             "id":[],
             "value":[]
@@ -293,7 +293,8 @@ def getProgram(request, domaine):
             dataPro["id"].append(key)
             dataPro["value"].append(value)
             print("="*20, "dataPro", "="*20)
-            print(datat_0c_Pr)
+            # print(datat_0c_Pr)
+        print(dataPro)
         return JsonResponse({"dataPro": dataPro})
     else:
         return JsonResponse({})
@@ -310,7 +311,8 @@ def postProg_info(request):
             'ty_doc': request.POST["ty_doc"]
         }
         # print(request.session.get('dico_config'))
-        return JsonResponse({"message": "success", "domaine": request.session.get('dico_config')['domaine']})
+        return JsonResponse({"message": "success", 
+                             "domaine": request.session.get('dico_config')['domaine']})
     return JsonResponse({"message": "Veuillez ressayer svp."})
 
 @login_required
