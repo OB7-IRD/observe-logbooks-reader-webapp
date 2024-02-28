@@ -206,7 +206,7 @@ def logbook(request):
 
                 if os.path.exists("media/content_json/content_json.json"):
                     os.remove("media/content_json/content_json.json")
-                    # creer le nouveau content
+                    # creer le nouveau 
                     file_name = "media/content_json/content_json.json"
 
                     with open(file_name, 'w', encoding='utf-8') as f:

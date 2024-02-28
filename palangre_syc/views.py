@@ -274,7 +274,8 @@ def extract_gearInfo_LL(df_donnees):
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
     
     if not df_gear['Value'].apply(lambda x: isinstance(x, int)).all():
-        message = "Les données remplies dans le fichiers ne correspondent pas au type attendu, Observe attend uniquement des entiers" 
+        print("+"*20, "df_gear not all are int","+"*20)
+        message = "Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers." 
         return df_gear, message
     
     return df_gear
@@ -306,6 +307,10 @@ def extract_lineMaterial_LL(df_donnees):
 
     df_line_used = df_line.loc[df_line['Value'] != "None"]
     
+    if len(df_line_used) > 1:
+        message = "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."
+        return df_line_used, message
+    
     return df_line_used
 
 def extract_target_LL(df_donnees):
@@ -335,13 +340,13 @@ def extract_target_LL(df_donnees):
         print(element, type(element))
     
     df_targeted = df_target.loc[df_target['Value'] == None]
-    print(df_targeted)
+    # print(df_targeted)
     # filtered = [row['Logbook_name'] for row in df_target if row['Value'] != 'None']
     # Supposons que df_target est votre DataFrame pandas
     filtered = df_target.loc[df_target['Value'] == 'P', 'Logbook_name']
 
     # filtered = [row for row in df_target if row['Value'] is not None]
-    print(filtered)
+    # print(filtered)
     
     
     return df_target

@@ -420,6 +420,13 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
     else:
         df_gear = palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)
         
+    # mais pour l'instant on ne traite pas cette info anyways 
+    if isinstance(palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1), tuple) : 
+        df_line, _ = palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1)
+    else:
+        df_line = palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1)
+      
+        
         
     MultipleActivity = []
     for i in range(0, DAYS_IN_A_MONTH):
