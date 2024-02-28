@@ -166,3 +166,4 @@ cython_debug/
 
 *.xlsx
 *.xlsx
+token.yml

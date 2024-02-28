@@ -304,7 +304,9 @@ def extract_lineMaterial_LL(df_donnees):
     df_line['Logbook_name'] = df_line['Logbook_name'].apply(
         lambda x: x.strip())
 
-    return df_line
+    df_line_used = df_line.loc[df_line['Value'] != "None"]
+    
+    return df_line_used
 
 def extract_target_LL(df_donnees):
     '''
@@ -324,12 +326,24 @@ def extract_target_LL(df_donnees):
     vect = np.vectorize(strip_if_string)
     np_target[:, 0:1] = vect(np_target[:, 0:1])
 
-    df_target = pd.DataFrame(np_target, columns=['Logbook_name', 'Value'])
-    df_target['Logbook_name'] = remove_spec_char_from_list(
-        df_target['Logbook_name'])
-    df_target['Logbook_name'] = df_target['Logbook_name'].apply(
-        lambda x: x.strip())
+    df_target = pd.DataFrame(np_target, 
+                             columns=['Logbook_name', 'Value'])
+    df_target['Logbook_name'] = remove_spec_char_from_list(df_target['Logbook_name'])
+    df_target['Logbook_name'] = df_target['Logbook_name'].apply(lambda x: x.strip())
+    
+    for element in df_target['Value']:
+        print(element, type(element))
+    
+    df_targeted = df_target.loc[df_target['Value'] == None]
+    print(df_targeted)
+    # filtered = [row['Logbook_name'] for row in df_target if row['Value'] != 'None']
+    # Supposons que df_target est votre DataFrame pandas
+    filtered = df_target.loc[df_target['Value'] == 'P', 'Logbook_name']
 
+    # filtered = [row for row in df_target if row['Value'] is not None]
+    print(filtered)
+    
+    
     return df_target
 
 
@@ -344,8 +358,7 @@ def extract_logbookDate_LL(df_donnees):
     np_date = np.array([('Month', df_month), ('Year', df_year)],
                        dtype=[('Logbook_name', 'U10'), ('Value', int)])
     df_date = pd.DataFrame(np_date)
-    df_date['Logbook_name'] = remove_spec_char_from_list(
-        df_date['Logbook_name'])
+    df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'])
 
     return df_date
 
@@ -368,8 +381,10 @@ def extract_bait_LL(df_donnees):
                         ('Other', df_other),],
                        dtype=[('Logbook_name', 'U10'), ('Value', 'U10')])
     df_bait = pd.DataFrame(np_bait)
-
-    return df_bait
+    
+    df_bait_used = df_bait.loc[df_bait['Value'] != "None"]
+    
+    return df_bait_used
 
 
 def extract_positions(df_donnees):
@@ -756,7 +771,6 @@ def checking_logbook(request):
         df_line = extract_lineMaterial_LL(df_donnees_p1)
         df_target = extract_target_LL(df_donnees_p1)
         df_date = extract_logbookDate_LL(df_donnees_p1)
-        print(df_date)
         df_bait = extract_bait_LL(df_donnees_p1)
         df_fishingEffort = extract_fishingEffort(df_donnees_p1)
 
@@ -780,7 +794,7 @@ def checking_logbook(request):
         df_seabirds = extract_seabird(df_donnees_p2)
         df_turtles = extract_turtles(df_donnees_p2)
 
-        df_activity = pd.concat([df_position, df_time, df_temperature,
+        df_activity = pd.concat([df_position, df_time.loc[:,'Time'], df_temperature,
                                 df_fishingEffort, df_tunas, df_billfishes, df_otherfish,
                                 df_sharksFAL, df_sharksBSH, df_sharksMAK,
                                 df_sharksSPN, df_sharksTIG, df_sharksPSK,

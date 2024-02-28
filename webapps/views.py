@@ -158,7 +158,6 @@ def home(request):
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
-    # print(datat_0c_Pr["gear"])
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
     
@@ -175,15 +174,12 @@ def logbook(request):
         # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
         if apply_conf["domaine"] == "palangre":
             logbooks = os.listdir("media/logbooks")
-            print("="*20, "logbook kwargs", "="*20)
-            print(logbooks)
-            print(apply_conf)
-            # return redirect(reverse("checking logbook"),  
-            #                 kwargs={'selected_file': logbooks, 
-            #                         'apply_conf': apply_conf})
+            # print("="*20, "logbook kwargs", "="*20)
+            # print(logbooks)
+            # print(apply_conf)
 
             url = reverse('checking logbook')
-            url = f"{url}?selected_file={logbooks}"            
+            url = f"{url}?selected_file={logbooks}"          
             return redirect(url) 
                          
                          
@@ -294,7 +290,7 @@ def getProgram(request, domaine):
             dataPro["value"].append(value)
             print("="*20, "dataPro", "="*20)
             # print(datat_0c_Pr)
-        print(dataPro)
+        # print(dataPro)
         return JsonResponse({"dataPro": dataPro})
     else:
         return JsonResponse({})

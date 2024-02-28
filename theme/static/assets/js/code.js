@@ -97,6 +97,45 @@ $(document).ready(function(){
     $("#btn_apply").click(function(e){
         e.preventDefault()
         // e.stopPropagation()
+
+        // deleting the previously dropped files in the drop zone
+        // everytime we click on the "appliquer" button, it will clear the 'media/logbook' folder
+        // Function to clear the contents of the 'media/logbook' file
+    
+        // function clearLogFile(callback) {
+        //     $.ajax({
+        //         type: 'GET',
+        //         url: 'media/logbook', // Assuming this URL points to the 'media/logbook' file
+        //         success: function(data) {
+        //             // Check if the file is not empty
+        //             if (data.trim() !== '') {
+        //                 // If the file is not empty, clear its contents
+        //                 $.ajax({
+        //                     type: 'POST',
+        //                     url: 'domaineSelect', // URL to a server-side script that clears the logbook file
+        //                     success: function(response) {
+        //                         console.log('Logbook file cleared successfully.');
+        //                         callback();
+        //                     },
+        //                     error: function(xhr, status, error) {
+        //                         console.error('Error clearing logbook file:', error);
+        //                         // Handle error if necessary
+        //                     }
+        //                 });
+        //             } else {
+        //                 // If the file is already empty, proceed with other actions
+        //                 callback();
+        //             }
+        //             },
+        //         error: function(xhr, status, error) {
+        //             console.error('Error reading logbook file:', error);
+        //             // Handle error if necessary
+        //         }
+        //     });
+        // }
+
+
+        
         if (($("#domaine").val() != "Domaine..." ) && ($("#programme").val() != "Programmes du domaine..." ) && ($("#ocean").val() != "Ocean..." ) && ($("#ty_doc").val() != "Types de document..." )){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
