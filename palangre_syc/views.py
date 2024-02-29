@@ -260,21 +260,32 @@ def extract_gearInfo_LL(df_donnees):
     df_gear = del_empty_col(df_gear)
 
     np_gear = np.array(df_gear)
-
     # on nettoie la colonne en enlevant les espaces et les ':'
     np_gear[:, 0] = np_removing_semicolon(np_gear, 0)
 
     # On applique la fonction strip sur les cellules de la colonnes Valeur,
     # si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)
-    np_gear[:, 1] = vect(np_gear[:, 1])
+    
+    # vect = np.vectorize(strip_if_string)
+    # np_gear[:, 1] = vect(np_gear[:, 1])
+    # if not np_gear[:, 1].apply(lambda x: isinstance(x, int))
+    
+    
 
     df_gear = pd.DataFrame(np_gear, columns=['Logbook_name', 'Value'])
+    
+    # Vérifie si toutes les cellules de la colonne sont des entiers
+    toutes_int = df_gear['Value'].apply(lambda cellule: isinstance(cellule, int)).all()
+    print("toutes int ? ", toutes_int)
+    if toutes_int:
+        # Applique la fonction vect si toutes les cellules sont des entiers
+        df_gear['Value'] = np.vectorize(strip_if_string)(df_gear['Value'])
+    print("df_gear ? ", df_gear)
+        
     df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'])
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
     
     if not df_gear['Value'].apply(lambda x: isinstance(x, int)).all():
-        print("+"*20, "df_gear not all are int","+"*20)
         message = "Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers." 
         return df_gear, message
     
@@ -311,6 +322,10 @@ def extract_lineMaterial_LL(df_donnees):
         message = "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."
         return df_line_used, message
     
+    if len(df_line_used) == 0:
+        message = "La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. Veuillez vérifier les données."
+        return df_line_used, message
+
     return df_line_used
 
 def extract_target_LL(df_donnees):
@@ -339,11 +354,11 @@ def extract_target_LL(df_donnees):
     for element in df_target['Value']:
         print(element, type(element))
     
-    df_targeted = df_target.loc[df_target['Value'] == None]
+    # df_targeted = df_target.loc[df_target['Value'] == None]
     # print(df_targeted)
     # filtered = [row['Logbook_name'] for row in df_target if row['Value'] != 'None']
     # Supposons que df_target est votre DataFrame pandas
-    filtered = df_target.loc[df_target['Value'] == 'P', 'Logbook_name']
+    # filtered = df_target.loc[df_target['Value'] == 'P', 'Logbook_name']
 
     # filtered = [row for row in df_target if row['Value'] is not None]
     # print(filtered)
@@ -847,6 +862,25 @@ def listing_files(request):
     files = [f for f in os.listdir(DIR) if '~$' not in f]
 
     return render(request, 'LL_file_selection.html', {'files': files})
+
+
+def userguideline(request):
+    
+    if request.method == 'POST':
+        response = request.POST.get('response')
+        print(response)
+        if response == 'yes':
+            end_of_trip_question = "Is there an end ? "
+        elif response == 'no':
+            # nouveau trip
+            end_of_trip_question = "Is there an end of the trip in this logbook ?"
+        else:
+            end_of_trip_question = None
+
+        return render(request, 'LL_prepage.html', {'end_of_trip_question': end_of_trip_question})
+
+
+    return render(request, 'LL_prepage.html')
 
 
 def send_logbook2Observe(request):

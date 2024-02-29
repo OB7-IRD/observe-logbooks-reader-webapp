@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+
+
+{% block title %}
+
+Palangre aux Seychelles
+
+{% endblock title %}
+
+{% block navigation %}
+{% endblock navigation %}
+
+{% block heading %}
+<h1>Page d'accueil pour les données de palangre</h1>
+{% endblock heading %}
+
+{% block content %}
+
+
+
+<!-- Questions pour l'utilisateur -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <h2> Does this logbook continues an existing logbook ?</h2>
+    <form method="post" action="{% url 'user guideline' %}">
+      {% csrf_token %}
+      <button type="submit" name="response" value="yes">Yes</button>
+      <button type="submit" name="response" value="no">No</button>
+    </form>
+    
+    <div id="EndOfTripQuestion">
+      {% if end_of_trip_question %}
+        <h2>{{ end_of_trip_question }}</h2>
+      {% endif %}
+    </div>
+</div>
+
+
+
+
+
+
+{% endblock content %}
+
+{% block footer %}
+<p>&copy; En cours de développement </p>
+{% endblock footer %}

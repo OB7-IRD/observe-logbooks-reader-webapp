@@ -398,6 +398,24 @@ $(document).ready(function(){
     });
     */
 
+    // function validateAndCloseModal() {
+    //     var selectedOption1 = document.querySelector('input[name="selectedOption1"]:checked');
+    //     var selectedOption2 = document.querySelector('input[name="selectedOption2"]:checked');
+        
+    //     if (!selectedOption1 || !selectedOption2) {
+    //     alert("Veuillez répondre à toutes les questions avant de valider.");
+    //     return false;
+    //     } else {
+    //     // Proceed with your validation logic or form submission
+    //     // Close the modal
+    //     document.querySelector('.bg-white').style.display = 'none';
+    //     document.querySelector('.fixed').style.display = 'none';
+    //     }
+    //     }
+        
+    //     // Attach the function to the click event of the validation button
+    // $('#validate-btn').click(validateAndCloseModal);
+        
 });
 
 
