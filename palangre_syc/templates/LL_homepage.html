@@ -33,152 +33,290 @@ Palangre aux Seychelles
 
    
          
-    <div x-data="{ showModal: true, selectedOption1: '' , selectedOption2: ''}">
+    {% comment %} <div x-data="{ showModal: true, newtrip_question: '' , endtrip_question: ''}">
         <!-- Modal -->
         <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 ">
             <div class="bg-white rounded-lg p-6 w-150 max-w-full shadow-lg transform transition-all duration-300" x-show.transition.opacity="showModal">
+                <form method="POST" id="dep_end_infos" >
+                <!-- action="dep_end_infos"  action="{% url 'checking logbook' %}" -->
                 
-                <!-- Modal Content -->
-                <div>
-                    <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                        Est ce que le logbook que vous transmettez continue une marée déjà existante dans Observe ?
-                    </p>
-                    
-                    <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                        <!-- Radio button for "Oui" -->
-                        <div class="flex justify-center items-center">
-                            
-                            <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-1" x-model="selectedOption1" value="newtrip_yes"/> 
-                            <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-1" data-ripple-dark="true"> Oui              
-                        </div>
-
-                        <!-- Radio button for "Non" -->
-                        <div class="flex justify-center items-center">
-                            <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-2" x-model="selectedOption1" value="newtrip_no"/>   
-                            <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-2" data-ripple-dark="true"> Non 
-           
-                        </div>
-                    </div>
-                </div>
+                    {% csrf_token %}   
+                    <!-- Modal Content -->
                     <div>
-                    <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                        Est ce que le logbook que vous transmettez contient une date de fin de marée ?
-                    </p>
-                    
-                    <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                        <!-- Radio button for "Oui" -->
-                        <div class="flex justify-center items-center">
-                            
-                            <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-3" x-model="selectedOption2" value="end_yes"/> 
-                            <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-3" data-ripple-dark="true"> Oui              
-                        </div>
+                        <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
+                            Est ce que le logbook que vous transmettez continue une marée déjà existante dans Observe ?
+                        </p>
+                        
+                        <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                            <!-- Radio button for "Oui" -->
+                            <div class="flex justify-center items-center">
+                                
+                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-1" name ="newtrip_question" x-model="newtrip_question" value="newtrip_yes"/> 
+                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-1" data-ripple-dark="true"> Oui              
+                            </div>
 
-                        <!-- Radio button for "Non" -->
-                        <div class="flex justify-center items-center">
-                            <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-4" x-model="selectedOption2" value="end_no"/>   
-                            <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-4" data-ripple-dark="true"> Non 
-           
+                            <!-- Radio button for "Non" -->
+                            <div class="flex justify-center items-center">
+                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-2" name ="newtrip_question" x-model="newtrip_question" value="newtrip_no"/>   
+                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-2" data-ripple-dark="true"> Non 
+            
+                            </div>
                         </div>
                     </div>
+                        <div>
+                        <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
+                            Est ce que le logbook que vous transmettez contient une date de fin de marée ?
+                        </p>
+                        
+                        <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                            <!-- Radio button for "Oui" -->
+                            <div class="flex justify-center items-center">
+                                
+                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-3"name ="endtrip_question"  x-model="endtrip_question" value="end_yes"/> 
+                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-3" data-ripple-dark="true"> Oui              
+                            </div>
 
+                            <!-- Radio button for "Non" -->
+                            <div class="flex justify-center items-center">
+                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-4"name ="endtrip_question"  x-model="endtrip_question" value="end_no"/>   
+                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-4" data-ripple-dark="true"> Non 
+            
+                            </div>
+                        </div>
+                    </div>
                     <!-- Validation Button -->
-                    {% comment %} <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="showModal = false">
-                        Valider
-                    </button> {% endcomment %}
+                         <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="showModal = false">
+                            Valider
+                        </button> 
+                    <div class="flex justify-center items-center">
+                        <button id="validate-modal" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="validateAndCloseModal">
+                            Valider
+                        </button> 
 
-                    <button id="validate-modal" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="validateAndCloseModal">
-                        Valider
-                    </button>
-                </div>
+                        {% comment %} <button @click="sendAnswers()" id"validate_modal" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"
+                         disabled="newtrip_question == null || endtrip_question == null" 
+                         > Valider
+                        </button> 
+
+                        <button id="btn_dep_end_infos" type="submit" name="submit" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
+                            <span class="text-white font-semibold">
+                                Valider
+                            </span>
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
-    <main class="grid place-items-center w-full min-h-screen transition-all main">
+        <!-- Modal -->
+        
 
-        <!-- Content -->
-        <div class="p-12">
 
+<main class = "main items-center">
+    
+    <!-- Div Questions to user -->
+    {% comment %} <div class="bg-red-300 px-12 pt-8">
+    
+        <form method="POST" id="dep_end_infos" action="{% url 'checking logbook' %}">
+               
+            <div>
+                <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
+                    Est ce que le logbook que vous transmettez continue une marée déjà existante dans Observe ?
+                </p>
                 
+                <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                    <!-- Radio button for "Oui" -->
+                    <div class="flex justify-center items-center">
+                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-1" name ="newtrip_question"  value="newtrip_yes"/> 
+                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-1"> Oui              
+                    </div>
 
-            <!-- First line div -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                    <!-- Radio button for "Non" -->
+                    <div class="flex justify-center items-center">
+                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-2" name ="newtrip_question" value="newtrip_no"/>   
+                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-2"> Non 
+    
+                    </div>
+                </div>
+            </div>
 
-                <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
-                    <div class="text-center mb-1">
-                        <div class="text-2xl font-semibold mb-1"> Journal du 
-                            {% for index, row in df_date.iterrows %}
-                                {% if row.Logbook_name == 'Month' %}
+            <div>
+                <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
+                    Est ce que le logbook que vous transmettez contient une date de fin de marée ?
+                </p>
+                
+                <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
+                    <!-- Radio button for "Oui" -->
+                    <div class="flex justify-center items-center">
+                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-3"name ="endtrip_question" value="end_yes"/> 
+                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-3"> Oui              
+                    </div>
+
+                    <!-- Radio button for "Non" -->
+                    <div class="flex justify-center items-center">
+                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-4"name ="endtrip_question" value="end_no"/>   
+                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-4"> Non 
+    
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center items-center">
+                <button id="btn_dep_end_infos" type="submit" name="submit" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
+                    <span class="text-white font-semibold">
+                        Valider
+                    </span>
+                </button>
+            </div>
+            {% csrf_token %}
+        </form>
+    </div> {% endcomment %}
+
+    <!-- Content -->
+    <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
+        <div>
+            <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
+
+                <!-- First line div -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center mb-1">
+                            <div class="text-2xl font-semibold mb-1"> Journal du 
+                                {% for index, row in df_date.iterrows %}
+                                    {% if row.Logbook_name == 'Month' %}
+                                    <!-- Affichage de la valeur du mois -->
+                                        {% with month_value=row.Value %}
+                                                {% if row.Value < 10 %}
+                                                    0{{ month_value }}
+                                                {% else %}
+                                                    {{ month_value }}
+                                                {% endif %}
+                                        {% endwith %}
+                                    {% elif row.Logbook_name == 'Year' %}
+                                        <!-- Affichage de l'année -->
+                                        {% with year_value=row.Value %}
+                                            / {{ year_value }}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center mb-1">
+                            <div class="text-2xl font-semibold"> Océan {{ocean | safe}}</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class = "text-center mb-1">
+                            <div class="text-2xl font-semibold"> Programme {{programme | safe }}</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center text-2xl font-semibold">
+                            Rapporté 
+                            {% for index, row in df_report.iterrows %}
+                                {% if row.Logbook_name == 'Person reported' %}
                                 <!-- Affichage de la valeur du mois -->
-                                    {% with month_value=row.Value %}
-                                            {% if row.Value < 10 %}
-                                                0{{ month_value }}
-                                            {% else %}
-                                                {{ month_value }}
-                                            {% endif %}
+                                    {% with report_value=row.Value %}
+                                        par {{ report_value }}
                                     {% endwith %}
-                                {% elif row.Logbook_name == 'Year' %}
+                                {% elif row.Logbook_name == 'Date reported' %}
                                     <!-- Affichage de l'année -->
-                                    {% with year_value=row.Value %}
-                                        / {{ year_value }}
+                                    {% with date_value=row.Value %}
+                                        le {{ date_value }}
                                     {% endwith %}
                                 {% endif %}
                             {% endfor %}
-                        </div>
+                        </div>     
                     </div>
                 </div>
+                <!-- End First line div -->
 
-                <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
-                    <div class="text-center mb-1">
-                        <div class="text-2xl font-semibold"> Océan {{ocean | safe}}</div>
-                    </div>
-                </div>
+                <!-- Second line div -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+                    
+                    <div class="p-6 relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 dark:bg-gray-800 w-full shadow-lg rounded">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-50 flex justify-center items-center"> Informations de marée</h3>
+                                </div>
+                            </div>
 
-                <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
-                    <div class = "text-center mb-1">
-                        <div class="text-2xl font-semibold"> Programme {{programme | safe }}</div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
-                    <div class="text-center text-2xl font-semibold">
-                        Rapporté 
-                        {% for index, row in df_report.iterrows %}
-                            {% if row.Logbook_name == 'Person reported' %}
-                            <!-- Affichage de la valeur du mois -->
-                                {% with report_value=row.Value %}
-                                    par {{ report_value }}
-                                {% endwith %}
-                            {% elif row.Logbook_name == 'Date reported' %}
-                                <!-- Affichage de l'année -->
-                                {% with date_value=row.Value %}
-                                    le {{ date_value }}
-                                {% endwith %}
-                            {% endif %}
-                        {% endfor %}
-                    </div>     
-                </div>
-            </div>
-            <!-- End First line div -->
-
-            <!-- Second line div -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                
-                <div class="p-6 relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 dark:bg-gray-800 w-full shadow-lg rounded">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-50 flex justify-center items-center"> Informations de marée</h3>
+                            <div class="block w-full overflow-x-auto">
+                                <table class="items-center mx-auto w-full bg-transparent border-collapse">
+                                    <tbody>                
+                                        {% for index, row in df_cruise.iterrows %}
+                                            <tr class="text-gray-700 dark:text-gray-100">
+                                                {% for cell in row %}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                    {{ cell }}
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le navire</h3>
+                                </div>
+                            </div>
+
+                            <div class="block w-full overflow-x-auto">
+                                <table class="items-center mx-auto w-full bg-transparent border-collapse">
+                                    <tbody>                
+                                        {% for index, row in df_vessel.iterrows %}
+                                            <tr class="">
+                                                {% for cell in row %}
+                                                <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                    {% if row.Value != '' %}
+                                                        {{ cell }}
+                                                    {% endif %}   
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                <!-- End Second line div -->
+
+                <!-- Third line div -->
+                <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 mb-6">
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le matériel</h3>
+                                </div>
+                            </div>
+                        </div>
+            
                         <div class="block w-full overflow-x-auto">
-                            <table class="items-center mx-auto w-full bg-transparent border-collapse">
-                                <tbody>                
-                                    {% for index, row in df_cruise.iterrows %}
-                                        <tr class="text-gray-700 dark:text-gray-100">
+                            {% if df_gear|length == 2 %}    
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody> 
+                                    {% for index, row in df_gear.0.iterrows %}
+                                        <tr class="">
                                             {% for cell in row %}
-                                            <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
                                                 {{ cell }}
                                             </td>
                                             {% endfor %}
@@ -186,297 +324,239 @@ Palangre aux Seychelles
                                     {% endfor %}
                                 </tbody>
                             </table>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le navire</h3>
-                            </div>
-                        </div>
+                            <div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
+                                {{ df_gear.1 | safe}}
+                            </div>    
+                                    
+                            
 
-                        <div class="block w-full overflow-x-auto">
-                            <table class="items-center mx-auto w-full bg-transparent border-collapse">
-                                <tbody>                
-                                    {% for index, row in df_vessel.iterrows %}
+
+                            {% else %}
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>
+                                    {% for index, row in df_gear.iterrows %}
                                         <tr class="">
-                                            {% for cell in row %}
-                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                                {% if row.Value != '' %}
-                                                    {{ cell }}
-                                                {% endif %}   
-                                            </td>
+                                        {% for cell in row %}
+                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                            {{ cell }}
+                                        </td>
                                             {% endfor %}
                                         </tr>
                                     {% endfor %}
                                 </tbody>
                             </table>
+                            {% endif %}
                         </div>
                     </div>
-                    
-                </div>
-            </div>
-            <!-- End Second line div -->
 
-            <!-- Third line div -->
-            <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 mb-6">
-                <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le matériel</h3>
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur la ligne de pêche</h3>
+                                </div>
                             </div>
                         </div>
-                    </div>
-        
-                    <div class="block w-full overflow-x-auto">
-                        {% if df_gear|length == 2 %}    
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody> 
-                                {% for index, row in df_gear.0.iterrows %}
-                                    <tr class="">
-                                        {% for cell in row %}
-                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                            {{ cell }}
-                                        </td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                        <div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
-                            {{ df_gear.1 | safe}}
-                        </div>    
-                                
-                        
-
-
-                        {% else %}
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody>
-                                {% for index, row in df_gear.iterrows %}
-                                    <tr class="">
-                                    {% for cell in row %}
-                                    <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                        {{ cell }}
-                                    </td>
-                                        {% endfor %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur la ligne de pêche</h3>
-                            </div>
-                        </div>
-                    </div>
-        
-                    <div class="block w-full overflow-x-auto">
-                        {% if df_line|length == 2 %}    
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody> 
-                                {% for index, row in df_line.0.iterrows %}
-                                    {% if row.Value != None %}
-                                        <tr>
-                                        {% comment %} {% for cell in row %} {% endcomment %}
-                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                            {{ row.Logbook_name }}
-                                        </td>
-                                    {% endif %}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                        <div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
-                            {{ df_line.1 | safe}}
-                        </div> 
-
-
-                        {% elif df_gear|length == 1 %}
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody>                
-                                {% for index, row in df_line.iterrows %}
-                                    {% if row.Value != None %}
-                                        <tr>
-                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                            {{ row.Logbook_name }}
-                                        </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Espèces visées </h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="block w-full overflow-x-auto">
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody>                
-                                {% for index, row in df_target.iterrows %}
-                                    {% if row.Value != None %}
-                                        <tr>
+            
+                        <div class="block w-full overflow-x-auto">
+                            {% if df_line|length == 2 %}    
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody> 
+                                    {% for index, row in df_line.0.iterrows %}
+                                        {% if row.Value != None %}
+                                            <tr>
+                                            {% comment %} {% for cell in row %} {% endcomment %}
                                             <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
                                                 {{ row.Logbook_name }}
                                             </td>
-                                            {% comment %} <td>
-                                                {% if row.Value != None %}
-                                                    <input id="ripple-on" type="checkbox"
-                                                    class="peer relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500"
-                                                    checked disabled />
-                                                {% endif %}
-                                            </td> {% endcomment %}
+                                        {% endif %}
                                         </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
 
-                <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
-                    <div class="rounded-t mb-0 px-0 border-0">
-                        <div class="flex flex-wrap items-center px-4 py-2">
-                            <div class="relative w-full max-w-full flex-grow flex-1">
-                                <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Âppats utilisés </h3>
-                            </div>
+                            <div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
+                                {{ df_line.1 | safe}}
+                            </div> 
+
+
+                            {% elif df_gear|length == 1 %}
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_line.iterrows %}
+                                        {% if row.Value != None %}
+                                            <tr>
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
                         </div>
                     </div>
 
-                    <div class="block w-full overflow-x-auto">
-                        <table class="items-center w-full bg-transparent border-collapse">
-                            <tbody>                
-                                {% for index, row in df_bait.iterrows %}
-                                    {% if row.Value != 'None' %}
-                                    <tr class="">
-                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
-                                            {{ row.Logbook_name }}
-                                        </td>
-                                    </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Espèces visées </h3>
+                                </div>
+                            </div>
+                        </div>
 
-            </div>
-            <!-- End Third line div -->
-        </div>
-        <!-- End Content -->
-
-        <div>
-            {% if df_gear|length == 2 or df_line|length == 2 %}
-                
-            <div class="w-full mb-2 select-none rounded-t-lg border-t-4 border-gray-400 bg-gray-100 p-4 font-medium">
-                Au moins une information du logbook n'est pas correcte, merci de la vérifier. 
-                Si vous décidez d'envoyer le journal de bord, l'information éronée ne sera pas retransmise.
-            </div>
-            {% endif %}
-        </div>
-
-
-        <!-- Div buttons -->
-        <div class="flex justify-center items-center inline-flex">
-
-            <button class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">
-                <a href="../logbook">
-                    Annuler
-                </a>
-            </button>
-            
-            <button class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
-                    <a href="send_logbook2Observe">
-                        Envoyer le journal de bord
-                    </a>
-            </button>
-        </div>
-    <!-- End Div buttons -->
-
-
-
-
-
-
-        <div class="container mx-auto px-4 sm:px-4">
-            <div class="py-8">
-                <div>
-                    <h2 class="text-2xl font-semibold leading-tight">Données jour par jour</h2>
-                </div>
-
-        
-
-                <div class="-mx-2 sm:-mx-2 px-2 sm:px-8 py-2 overflow-x-auto">
-                    <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
-                        <table class="min-w-full leading-normal" id = "dataTable">
-
-                            <thead>
-                                <tr>
-                                    {% for col in df_activity.columns %}
-                                        {% comment %} {% if col != 'VesselActivity' %} {% endcomment %}
-                                        <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            {{ col }} 
-                                        </th>
-                                        {% comment %} {% endif %} {% endcomment %}
-                                    {% endfor %}
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {% for index, row in df_activity.iterrows %}
-                                    
-                                    <tr>
-
-                                        {% comment %} {% for cell in row %}
-                                            {% if not starts_with(cell, 'fr.referentiel') %}
-                                                <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
-                                                    {{ cell }}
+                        <div class="block w-full overflow-x-auto">
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_target.iterrows %}
+                                        {% if row.Value != None %}
+                                            <tr>
+                                                <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                    {{ row.Logbook_name }}
                                                 </td>
-                                            {% endif %}
-                                        {% endfor %} {% endcomment %}
-
-                                    
-
-                                    {% for cell in row %}
-                                        <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
-                                            {{ cell }} 
-                                        </td>
-                                    {% endfor%}
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-
-                        
-                        </table>
-                        
-
+                                                {% comment %} <td>
+                                                    {% if row.Value != None %}
+                                                        <input id="ripple-on" type="checkbox"
+                                                        class="peer relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500"
+                                                        checked disabled />
+                                                    {% endif %}
+                                                </td> {% endcomment %}
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Âppats utilisés </h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="block w-full overflow-x-auto">
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_bait.iterrows %}
+                                        {% if row.Value != 'None' %}
+                                        <tr class="">
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End Third line div -->
+            
+                <!-- Div if error in the logbook -->
+                {% if df_gear|length == 2 or df_line|length == 2 %}
+                    
+                <div class="w-full mb-2 select-none rounded-t-lg border-t-4 border-gray-400 bg-gray-100 p-4 font-medium">
+                    Au moins une information du logbook n'est pas correcte, merci de la vérifier. 
+                    Si vous décidez d'envoyer le journal de bord, l'information éronée ne sera pas retransmise.
+                </div>
+                {% endif %}
+                <!-- End Div if error in the logbook -->
+
+                <!-- Div buttons -->
+                <div class="flex justify-center items-center inline-flex">
+
+                    {% comment %} <button class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">
+                        <a href="../logbook">
+                            Annuler
+                        </a>
+                    </button>
+                    
+                    <button class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
+                            <a href="send_logbook2Observe">
+                                Envoyer le journal de bord
+                            </a>
+                    </button> {% endcomment %}
+                    <input id = "annuler_extraction" value="Annuler" type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/>
+                    <input id = "sendform" value="Envoyer le journal de bord" type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+
+                
+                </div>
+            <!-- End Div buttons -->
+            {% csrf_token %}
+            </form>
+        </div>
+    
+    <!-- End Div content -->
+
+
+
+
+        <div class="container mx-auto px-4 sm:px-4 py-8">
+            <div>
+                <h2 class="text-2xl font-semibold leading-tight">Données jour par jour</h2>
+            </div>
+
+    
+
+            <div class="-mx-2 sm:-mx-2 px-2 sm:px-8 py-2 overflow-x-auto">
+                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
+                    <table class="min-w-full leading-normal" id = "dataTable">
+
+                        <thead>
+                            <tr>
+                                {% for col in df_activity.columns %}
+                                    {% comment %} {% if col != 'VesselActivity' %} {% endcomment %}
+                                    <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        {{ col }} 
+                                    </th>
+                                    {% comment %} {% endif %} {% endcomment %}
+                                {% endfor %}
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for index, row in df_activity.iterrows %}
+                                
+                                <tr>
+
+                                    {% comment %} {% for cell in row %}
+                                        {% if not starts_with(cell, 'fr.referentiel') %}
+                                            <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
+                                                {{ cell }}
+                                            </td>
+                                        {% endif %}
+                                    {% endfor %} {% endcomment %}
+
+                                
+
+                                {% for cell in row %}
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ cell }} 
+                                    </td>
+                                {% endfor%}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+
+                    
+                    </table>
+                    
+
                 </div>
             </div>
         </div>
-        
-    </main>
+    </div>
+    
+</main>
 
 
 
@@ -485,14 +565,107 @@ Palangre aux Seychelles
 <!-- Inclure la bibliothèque DataTables -->
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
-<script src="{% static 'assets/js/code.js' %}"></script>
+{% comment %} <script src="{% static 'theme/assets/js/code.js' %}"></script> {% endcomment %}
 
 
-<script>
-    $(document).ready(function() {
+<!--script>
+    {% comment %} $(document).ready(function() {
         $('#dataTable').DataTable();
+    }); {% endcomment %}
+
+    window.app = {
+        newtrip_question: null,
+        endtrip_question: null,
+        showModal: false,
+        // Other properties and methods...
+    };
+
+    
+    {% comment %} $("#validate_modal").click(function sendAnswers() { {% endcomment %}
+    function sendAnswers() {
+        const newtrip_question = app.newtrip_question;
+        const endtrip_question = app.endtrip_question;
+        println(newtrip_question)
+
+        if (newtrip_question != null && endtrip_question != null) {
+            data = $("#checking_logbook").serialize();
+            console.log(data);
+            $.ajax({
+                type: 'POST',
+                {% comment %} url:'{% url 'checking logbook' %}', {% endcomment %}
+                url: '/checking_logbook/',
+                data: data,
+                dataType: "json",
+                
+                success: function(response){
+                    console.log(response);
+                    if (response.message == 'success'){
+                        console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
+
+                    }else{
+                        console.log("2message unsuccess"+response.message);
+                    }
+                },
+                error: function(response){
+                    console.log(response);
+                    console.log('not a success mais je peux pas te dire pourquoi');
+                }
+            });
+        } else {
+            alert('Please answer both questions.');
+        }
+    }
+</script !-->
+
+
+
+{% comment %} <script>
+$(document).ready(function(){
+    $("#btn_dep_end_infos").click(function(e){
+        e.preventDefault()
+        console.log("Radio new trip : " + $("input[type='radio'][name='newtrip_question']:checked").val());
+        console.log("Radio end trip : " + $("input[type='radio'][name='endtrip_question']:checked").val());        
+
+        if (($("input[type='radio'][name='newtrip_question']:checked").val() != undefined)
+        && ($("input[type='radio'][name='endtrip_question']:checked").val() != undefined)) {
+            // console.log($("#dep_end_infos").serialize());
+            data = $("#dep_end_infos").serialize();
+            
+           // var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+           // console.log(csrftoken);
+
+            var current_url = window.location.href;
+            var modifiedUrl = current_url.replace('http://127.0.0.1:8000/palangre_syc/', '');
+            console.log("url ? : " + modifiedUrl);
+            $("#extracted_logbook").show();
+            
+            $.ajax({
+                type: 'POST',
+                //url: 'checking_logbook/'+$("#dep_end_infos").attr('action'),                data: data,
+                //url: 'checking_logbook',
+                //url : modifiedUrl,
+               // dataType: "json",
+            
+            });
+
+           // $("#div_upload").show(1500);
+          //  $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+
+          //  var domaine = $("#domaine").val()
+          //  dropZone(domaine);
+    
+            console.log('Affiche les réponses envoyées : '+$("#dep_end_infos").val());
+        }
+
+        else{
+            alert('Merci de selectionner tous les champs avant d\'appliquer');
+        }
+
     });
-</script>
+
+});
+
+</script> {% endcomment %}
 
 
 {% endblock content %}

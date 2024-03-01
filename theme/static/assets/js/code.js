@@ -415,8 +415,36 @@ $(document).ready(function(){
         
     //     // Attach the function to the click event of the validation button
     // $('#validate-btn').click(validateAndCloseModal);
-        
-});
+});    
+
+function sendAnswers() {
+    const newtrip_question = app.newtrip_question;
+    const endtrip_question = app.endtrip_question;
+    if (newtrip_question && endtrip_question) {
+        fetch(`/modal_answers/?newtrip_question=${newtrip_question}&endtrip_question=${endtrip_question}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Answers submitted successfully!');
+                app.showModal = false;
+                app.newtrip_question = null;
+                app.endtrip_question = null;
+            } else {
+                alert('Error submitting answers!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    } else {
+        alert('Please answer both questions.');
+    }
+}
+
 
 
 

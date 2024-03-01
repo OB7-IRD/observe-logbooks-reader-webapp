@@ -3,6 +3,7 @@ import re
 import json
 import datetime
 import warnings
+from django.http import JsonResponse
 
 import pandas as pd
 import numpy as np
@@ -762,14 +763,37 @@ DIR = "./media/logbooks"
 
 
 def checking_logbook(request):
-
+    
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
     
     programme = from_topiad_to_value(apply_conf['programme'], 'palangre')
     ocean = from_topiad_to_value(apply_conf['ocean'])
     print("="*20, "checking_logbook how to get kwargs", "="*20)
+    
+    
+    print("+"*20, "modal_answers",  "+"*20)
+    #if request.POST.get('submit'):
 
+    # if request.method == 'POST':
+    #     newtrip_question = request.POST.get('newtrip_question')
+    #     endtrip_question = request.POST.get('endtrip_question')
+    #     print("+"*20, newtrip_question , "+"*20)
+    #     print("+"*20, endtrip_question , "+"*20)
+    #     #if newtrip_question and endtrip_question:
+    #     request.session['newtrip_question'] = newtrip_question
+    #     request.session['endtrip_question'] = endtrip_question
+    #     print("=o"*20, newtrip_question , "=o"*20)
+    #     print("=o"*20, endtrip_question , "=o"*20)
+    #         # return JsonResponse({'status': 'success'})
+
+
+
+
+    
+    
+    
+#ident to change
     if selected_file is not None and apply_conf is not None:
 
         file_name = selected_file.strip("['']")
@@ -878,9 +902,18 @@ def userguideline(request):
             end_of_trip_question = None
 
         return render(request, 'LL_prepage.html', {'end_of_trip_question': end_of_trip_question})
-
-
     return render(request, 'LL_prepage.html')
+
+def modal_answers(request):
+    print("+"*20, "modal_answers",  "+"*20)
+    if request.method == 'POST' and request.is_ajax():
+        newtrip_question = request.POST.get('newtrip_question')
+        endtrip_question = request.POST.get('endtrip_question')
+        if newtrip_question and endtrip_question:
+            request.session['newtrip_question'] = newtrip_question
+            request.session['endtrip_question'] = endtrip_question
+            return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error'})
 
 
 def send_logbook2Observe(request):
