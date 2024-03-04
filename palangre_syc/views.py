@@ -12,7 +12,7 @@ import openpyxl
 from django.shortcuts import render
 
 from palangre_syc import api
-from palangre_syc.json_construction import create_activity_and_set, create_trip
+from palangre_syc.json_construction import create_activity_and_set, create_trip, get_vessel_topiaID
 
 
 def del_empty_col(dataframe):
@@ -124,7 +124,7 @@ def zero_if_empty(value):
         return int(value)
 
 
-def from_topiad_to_value(topiad, domaine = None):
+def from_topiad_to_value2(topiad, domaine = None):
     """
     Fonction qui retourne le label 1 pour un topiad donné 
     dans la base common si un domaine n'est pas précisé
@@ -151,6 +151,43 @@ def from_topiad_to_value(topiad, domaine = None):
             if element['topiaId'] == topiad:
                 return element['label2']
     
+    
+def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine = None):
+    """
+    Fonction générale qui retourne le label output pour un topiad donné 
+    dans la base common ou lognliner
+
+    Args:
+        topiad
+        lookingfor: catégorie issu du WS dans laquelle on veut chercher notre topiaid
+        label_output: ce qu'on veut présenter (label, nom, espèce ...)
+        domaine si nécessaire (palangre, senne)
+
+    Returns:
+        nom souhaité associé au topotiad
+    """
+    if domaine is None:
+        with open('./data_common.json', 'r', encoding='utf-8') as f:
+            data_common = json.load(f)
+        category = 'fr.ird.observe.entities.referential.common.' + lookingfor
+        if data_common['content'][category] is not None :
+            for element in data_common['content'][category]:
+                if element['topiaId'] == topiaid:
+                    return element[label_output]
+        else:
+            print("please do check the orthographe of lookingfor element")
+            return None
+    
+    else: 
+        with open('./data_ll.json', 'r', encoding='utf-8') as f:
+            data_ll = json.load(f)
+        category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
+        for element in data_ll['content'][category]:
+            if element['topiaId'] == topiaid:
+                return element[label_output]
+
+
+        
     
 # FILE_PATH = './palangre_syc/media/Aout2022-FV GOLDEN FULL NO.168.xlsx'
 
@@ -277,11 +314,11 @@ def extract_gearInfo_LL(df_donnees):
     
     # Vérifie si toutes les cellules de la colonne sont des entiers
     toutes_int = df_gear['Value'].apply(lambda cellule: isinstance(cellule, int)).all()
-    print("toutes int ? ", toutes_int)
+    # print("toutes int ? ", toutes_int)
     if toutes_int:
         # Applique la fonction vect si toutes les cellules sont des entiers
         df_gear['Value'] = np.vectorize(strip_if_string)(df_gear['Value'])
-    print("df_gear ? ", df_gear)
+    # print("df_gear ? ", df_gear)
         
     df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'])
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
@@ -759,6 +796,62 @@ def extract_turtles(df_donnees):
     return df_turtles
 
 
+
+
+def get_previous_trip_infos(request, df_donnees_p1):
+    """Fonction qui va faire appel au WS pour :
+    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
+    et 2) trouver les informations rattachées à ce trip
+
+    Args:
+        request (_type_): _description_
+        df_donnees_p1 (_type_): _description_
+
+    Returns:
+        dictionnaire: startDate, endDate, captain
+    """
+    
+    with open('./data_common.json', 'r', encoding='utf-8') as f:
+        data_common = json.load(f)
+        
+    token = api.get_token()
+    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+
+    # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
+    vessel_topiaid = get_vessel_topiaID(df_donnees_p1, data_common).replace("#", "-")
+    programme_topiaid = request.session.get('dico_config')['programme'].replace("#", "-")
+    
+    print("="*20, vessel_topiaid, "="*20)
+    print("="*20, programme_topiaid, "="*20)
+
+    previous_trip = api.latest_trip(token, url_base, vessel_topiaid, programme_topiaid)
+    # on récupères les informations uniquement pour le trip avec la endDate la plus récente
+    parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
+    if parsed_previous_trip['content'][0] is not None:
+        # Prévoir le cas ou le vessel n'a pas fait de trip avant
+        trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace("#", "-")
+        print("="*20, trip_topiaid, "="*20)
+                
+        trip_info = api.getone_trip(token, url_base, trip_topiaid)
+        parsed_trip_info = json.loads(trip_info.decode('utf-8'))
+        parsed_trip_info = parsed_trip_info['content'][0]
+        print("="*20, "detailled trip from views.py", "="*20)
+        
+        captain_name = from_topiaid_to_value(topiaid=parsed_trip_info['captain'],
+                            lookingfor='Person',
+                            label_output = 'lastName',
+                            domaine=None)
+        
+        dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+                      'endDate': parsed_trip_info['endDate'], 
+                      'captain': captain_name}
+        return dico_trip_infos
+    
+    else:
+        print("="*20, "previous_trip is empty from views.py", "="*20)
+        return None
+
+
 DIR = "./media/logbooks"
 
 
@@ -767,33 +860,19 @@ def checking_logbook(request):
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
     
-    programme = from_topiad_to_value(apply_conf['programme'], 'palangre')
-    ocean = from_topiad_to_value(apply_conf['ocean'])
+    programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
+                                    lookingfor = 'Program',
+                                    label_output = 'label2',
+                                    domaine = 'palangre')
+    
+    ocean = from_topiaid_to_value(topiaid = apply_conf['ocean'],
+                                lookingfor = 'Ocean',
+                                label_output = 'label2',
+                                domaine = None)
     print("="*20, "checking_logbook how to get kwargs", "="*20)
     
     
-    print("+"*20, "modal_answers",  "+"*20)
-    #if request.POST.get('submit'):
 
-    # if request.method == 'POST':
-    #     newtrip_question = request.POST.get('newtrip_question')
-    #     endtrip_question = request.POST.get('endtrip_question')
-    #     print("+"*20, newtrip_question , "+"*20)
-    #     print("+"*20, endtrip_question , "+"*20)
-    #     #if newtrip_question and endtrip_question:
-    #     request.session['newtrip_question'] = newtrip_question
-    #     request.session['endtrip_question'] = endtrip_question
-    #     print("=o"*20, newtrip_question , "=o"*20)
-    #     print("=o"*20, endtrip_question , "=o"*20)
-    #         # return JsonResponse({'status': 'success'})
-
-
-
-
-    
-    
-    
-#ident to change
     if selected_file is not None and apply_conf is not None:
 
         file_name = selected_file.strip("['']")
@@ -846,10 +925,13 @@ def checking_logbook(request):
                                 df_mammals, df_seabirds, df_turtles],
                                 axis=1)
 
-        # if request.method == 'POST':
 
-        # else :
+
+        previous_trip = get_previous_trip_infos(request, df_donnees_p1)
+        print("="*20, previous_trip, "="*20)
+        
         context = {
+            'previous_trip': previous_trip,
             'df_vessel': df_vessel,
             'df_cruise': df_cruise,
             'df_report': df_report,
@@ -888,32 +970,7 @@ def listing_files(request):
     return render(request, 'LL_file_selection.html', {'files': files})
 
 
-def userguideline(request):
-    
-    if request.method == 'POST':
-        response = request.POST.get('response')
-        print(response)
-        if response == 'yes':
-            end_of_trip_question = "Is there an end ? "
-        elif response == 'no':
-            # nouveau trip
-            end_of_trip_question = "Is there an end of the trip in this logbook ?"
-        else:
-            end_of_trip_question = None
 
-        return render(request, 'LL_prepage.html', {'end_of_trip_question': end_of_trip_question})
-    return render(request, 'LL_prepage.html')
-
-def modal_answers(request):
-    print("+"*20, "modal_answers",  "+"*20)
-    if request.method == 'POST' and request.is_ajax():
-        newtrip_question = request.POST.get('newtrip_question')
-        endtrip_question = request.POST.get('endtrip_question')
-        if newtrip_question and endtrip_question:
-            request.session['newtrip_question'] = newtrip_question
-            request.session['endtrip_question'] = endtrip_question
-            return JsonResponse({'status': 'success'})
-    return JsonResponse({'status': 'error'})
 
 
 def send_logbook2Observe(request):

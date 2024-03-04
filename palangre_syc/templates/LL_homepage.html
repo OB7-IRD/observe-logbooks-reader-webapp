@@ -178,6 +178,30 @@ Palangre aux Seychelles
         <div>
             <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
 
+                <!-- last trip extracted data -->
+                <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
+                    <div class = "bg-red-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
+                        
+                            <div class="text-center mb-1 text-2xl font-semibold">
+                                Marée initiée le {{ previous_trip.startDate |slice:":10"}}
+                            </div>
+
+                            <div class="text-center mb-1 text-2xl font-semibold">
+                                Actuellement cloturée le {{ previous_trip.endDate |slice:":10"}}
+                            </div>
+
+                            <div class="text-center mb-1 text-2xl font-semibold">
+                                Menée par {{ previous_trip.captain }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
                 <!-- First line div -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
 

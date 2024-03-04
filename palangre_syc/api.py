@@ -63,8 +63,6 @@ def get_token():
     
     return token
 
-
-
 def get_referential_ll():
     """ Fonction qui récupère les données issues du référentiel de palangre
 
@@ -113,7 +111,6 @@ def get_referential_common():
         data_ref_common = None
     
     return data_ref_common
-    
     
 
 def close(token):
@@ -165,6 +162,53 @@ def send_trip(token, data, url_base):
     else:
         with open(file = "error.json", mode = "w") as outfile:
             outfile.write(res.text)
+
+
+def latest_trip(token, url_base, vessel_id, programme_topiaid):
+    """Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
+
+    Args:
+        token
+        url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+        vessel_id: topiaid du navire (avec les '-')
+        programme_topiaid: topiaid du programme choisi (avec les '-')
+
+    Returns:
+        trip topiaid
+    """
+    # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
+    api_trip = '/data/ll/common/Trip?authenticationToken='
+
+    api_vessel_filter = '&filters.vessel_id='
+    api_programme_filter = '&filters.logbookProgram_id='
+    api_ordeer_filter = '&orders.endDate=DESC'
+
+    api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
+    response = requests.get(api_trip_request, timeout=15)
+    return response.content
+
+def getone_trip(token, url_base, trip_topiaid):
+    """ pour un trip topiaid donné, développe ce qu'il y a dedans
+
+    Args:
+        token
+        url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+        trip_topiaid: topiaid avec '-' à la place des '#'
+
+    Returns:
+        json
+    """    
+    api_trip = '/data/ll/common/Trip/'
+    auth = '?authenticationToken='
+    api_trip_request = url_base + api_trip + trip_topiaid + auth + token
+
+    try:
+        response = requests.get(api_trip_request, timeout=15)
+        response.raise_for_status()  # Raise an exception for bad responses (status codes >= 400)
+        return response.content
+    except requests.exceptions.RequestException as e:
+        print(f"Error occurred: {e}")
+        return None
 
 
 def errorFilter(response):
