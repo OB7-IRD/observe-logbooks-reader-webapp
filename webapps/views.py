@@ -178,7 +178,7 @@ def logbook(request):
             # print(logbooks)
             # print(apply_conf)
 
-            url = reverse('checking logbook')
+            url = reverse('presenting previous trip')
             url = f"{url}?selected_file={logbooks}"          
             return redirect(url) 
                          

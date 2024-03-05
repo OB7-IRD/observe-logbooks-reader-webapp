@@ -18,160 +18,10 @@ Palangre aux Seychelles
 {% block content %}
 
 
-    <section>
-        {% comment %} 
-        <h2>Mise à jour des données de références</h2>
-
-        <form method="post" action="{% url 'checking logbook' %}">
-            {% csrf_token %}
-            <button type="submit"> lancer le chargement des données </button>
-        </form> 
-        {% endcomment %}
-        
-    </section>
-
-
-   
-         
-    {% comment %} <div x-data="{ showModal: true, newtrip_question: '' , endtrip_question: ''}">
-        <!-- Modal -->
-        <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 ">
-            <div class="bg-white rounded-lg p-6 w-150 max-w-full shadow-lg transform transition-all duration-300" x-show.transition.opacity="showModal">
-                <form method="POST" id="dep_end_infos" >
-                <!-- action="dep_end_infos"  action="{% url 'checking logbook' %}" -->
-                
-                    {% csrf_token %}   
-                    <!-- Modal Content -->
-                    <div>
-                        <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                            Est ce que le logbook que vous transmettez continue une marée déjà existante dans Observe ?
-                        </p>
-                        
-                        <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                            <!-- Radio button for "Oui" -->
-                            <div class="flex justify-center items-center">
-                                
-                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-1" name ="newtrip_question" x-model="newtrip_question" value="newtrip_yes"/> 
-                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-1" data-ripple-dark="true"> Oui              
-                            </div>
-
-                            <!-- Radio button for "Non" -->
-                            <div class="flex justify-center items-center">
-                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-2" name ="newtrip_question" x-model="newtrip_question" value="newtrip_no"/>   
-                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-2" data-ripple-dark="true"> Non 
-            
-                            </div>
-                        </div>
-                    </div>
-                        <div>
-                        <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                            Est ce que le logbook que vous transmettez contient une date de fin de marée ?
-                        </p>
-                        
-                        <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                            <!-- Radio button for "Oui" -->
-                            <div class="flex justify-center items-center">
-                                
-                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-3"name ="endtrip_question"  x-model="endtrip_question" value="end_yes"/> 
-                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-3" data-ripple-dark="true"> Oui              
-                            </div>
-
-                            <!-- Radio button for "Non" -->
-                            <div class="flex justify-center items-center">
-                                <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-4"name ="endtrip_question"  x-model="endtrip_question" value="end_no"/>   
-                                <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-4" data-ripple-dark="true"> Non 
-            
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Validation Button -->
-                         <button class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="showModal = false">
-                            Valider
-                        </button> 
-                    <div class="flex justify-center items-center">
-                        <button id="validate-modal" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" @click="validateAndCloseModal">
-                            Valider
-                        </button> 
-
-                        {% comment %} <button @click="sendAnswers()" id"validate_modal" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"
-                         disabled="newtrip_question == null || endtrip_question == null" 
-                         > Valider
-                        </button> 
-
-                        <button id="btn_dep_end_infos" type="submit" name="submit" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
-                            <span class="text-white font-semibold">
-                                Valider
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div> {% endcomment %}
-
-        <!-- Modal -->
-        
 
 
 <main class = "main items-center">
     
-    <!-- Div Questions to user -->
-    {% comment %} <div class="bg-red-300 px-12 pt-8">
-    
-        <form method="POST" id="dep_end_infos" action="{% url 'checking logbook' %}">
-               
-            <div>
-                <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                    Est ce que le logbook que vous transmettez continue une marée déjà existante dans Observe ?
-                </p>
-                
-                <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                    <!-- Radio button for "Oui" -->
-                    <div class="flex justify-center items-center">
-                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-1" name ="newtrip_question"  value="newtrip_yes"/> 
-                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-1"> Oui              
-                    </div>
-
-                    <!-- Radio button for "Non" -->
-                    <div class="flex justify-center items-center">
-                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-2" name ="newtrip_question" value="newtrip_no"/>   
-                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-2"> Non 
-    
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <p class="text-lg text-gray-600 text-2xl font-semibold mb-1"> 
-                    Est ce que le logbook que vous transmettez contient une date de fin de marée ?
-                </p>
-                
-                <div class="flex grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
-                    <!-- Radio button for "Oui" -->
-                    <div class="flex justify-center items-center">
-                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-3"name ="endtrip_question" value="end_yes"/> 
-                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-3"> Oui              
-                    </div>
-
-                    <!-- Radio button for "Non" -->
-                    <div class="flex justify-center items-center">
-                        <input type="radio" class="relative h-5 w-5 appearance-none rounded-md border transition-all checked:border-blue-500 checked:bg-blue-500 checked:before:bg-blue-500 " id="radio-4"name ="endtrip_question" value="end_no"/>   
-                        <label class="relative flex cursor-pointer items-center rounded-full p-3" for="radio-4"> Non 
-    
-                    </div>
-                </div>
-            </div>
-            
-            <div class="flex justify-center items-center">
-                <button id="btn_dep_end_infos" type="submit" name="submit" class="w-30 px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
-                    <span class="text-white font-semibold">
-                        Valider
-                    </span>
-                </button>
-            </div>
-            {% csrf_token %}
-        </form>
-    </div> {% endcomment %}
 
     <!-- Content -->
     <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
@@ -179,8 +29,7 @@ Palangre aux Seychelles
             <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
 
                 <!-- last trip extracted data -->
-                {% if previous_trip != None %}
-                    {% comment %} <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6"> {% endcomment %}
+                {% comment %} {% if previous_trip != None %}
                         <div class = "rounded-md p-4 flex justify-center items-center">
                             <div class = "text-center text-2xl font-semibold mb-6">
                                 La dernière marée enregistrée sur Observe pour le navire
@@ -224,10 +73,6 @@ Palangre aux Seychelles
                             </div>  
                         </div>
 
-
-                    {% comment %} </div> {% endcomment %}
-
-
                 {% else %}
                 <!-- for the boat first trip (in this program) -->
                     <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
@@ -237,11 +82,36 @@ Palangre aux Seychelles
                             </div>
                         </div>
                     </div>
-                {% endif %}
+                {% endif %} {% endcomment %}
 
-
-
-
+            {% if continuetrip == 'Continuer cette marée' %}
+                <div class = "rounded-md p-4 flex justify-center items-center">
+                    <div class = "text-center text-2xl font-semibold mb-6">
+                        La dernière marée enregistrée sur Observe pour le navire
+                            {{ previous_trip.vessel }}
+                        est la suivante : 
+                    </div>  
+                </div>  
+        
+                <div class = "p-6 flex justify-center items-center">
+        
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
+                    
+                        <div class="text-center mb-1 text-2xl">
+                            Marée initiée le <b>{{ previous_trip.startDate |slice:":10"}}</b> 
+                            depuis le port de <b>{{ previous_trip.depPort }}</b> 
+                        </div>
+        
+                        <div class="text-center mb-1 text-2xl">
+                            Actuellement cloturée le <b>{{ previous_trip.endDate |slice:":10"}}</b>
+                        </div>
+        
+                        <div class="text-center mb-1 text-2xl">
+                            Menée par <b>{{ previous_trip.captain }}</b>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
 
 
                 <!-- First line div -->
@@ -322,15 +192,26 @@ Palangre aux Seychelles
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 Departure date
                                             </td>
+                                            {% if continuetrip == 'Continuer cette marée'%}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
+                                                    {{ previous_trip.startDate |slice:":10"}} 
+                                                </td>
+                                            {% else %}
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date">
                                             </td>
+                                            {% endif %}
                                         </tr>
 
                                         <tr class="text-gray-700 dark:text-gray-100">
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 Departure port
                                             </td>
+                                            {% if continuetrip == 'Continuer cette marée'%}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
+                                                    {{ previous_trip.depPort }} 
+                                                </td>
+                                            {% else %}
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
                                                     <option value="" selected>Non concerné</option>
@@ -339,6 +220,7 @@ Palangre aux Seychelles
                                                     {% endfor %}
                                                 </select>                                            
                                             </td>
+                                            {% endif %}
                                         </tr>
 
                                         <tr class="text-gray-700 dark:text-gray-100">
@@ -588,24 +470,16 @@ Palangre aux Seychelles
 
                 <!-- Div buttons -->
                 <div class="flex justify-center items-center inline-flex">
-
-                    {% comment %} <button class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">
-                        <a href="../logbook">
-                            Annuler
-                        </a>
-                    </button>
-                    
-                    <button class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900">
-                            <a href="send_logbook2Observe">
-                                Envoyer le journal de bord
-                            </a>
-                    </button> {% endcomment %}
                     <input id = "annuler_extraction" value="Annuler" type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/>
                     <input id = "sendform" value="Envoyer le journal de bord" type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-
-                
                 </div>
             <!-- End Div buttons -->
+
+
+
+
+
+
             {% csrf_token %}
             </form>
         </div>

@@ -585,7 +585,6 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
         'sampleDataEntryOperator': None,
         'landingDataEntryOperator': None,
         'ocean': apply_conf['ocean'],
-        # departureHarbour et landingHarbour à remplir
         'departureHarbour': apply_conf['depPort'],
         'landingHarbour': apply_conf['endPort'],
         'observationsDataQuality': None,

@@ -854,21 +854,24 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     Returns:
         dictionnaire: startDate, endDate, captain
     """
-        
+     
     token = api.get_token()
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = get_vessel_topiaID(df_donnees_p1, data_common).replace("#", "-")
-    programme_topiaid = request.session.get('dico_config')['programme'].replace("#", "-")
+    vessel_topiaid = get_vessel_topiaID(df_donnees_p1, data_common)
+    vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
+    programme_topiaid = request.session.get('dico_config')['programme']
+    programme_topiaid_WS = programme_topiaid.replace("#", "-")
     
-    print("="*20, vessel_topiaid, "="*20)
+    print("="*20, vessel_topiaid_WS, "="*20)
     print("="*20, programme_topiaid, "="*20)
 
-    previous_trip = api.latest_trip(token, url_base, vessel_topiaid, programme_topiaid)
+    previous_trip = api.latest_trip(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
-    print("°"*10, parsed_previous_trip['content'] , "°"*10)
+    # print("°"*10, parsed_previous_trip['content'] , "°"*10)
+    
     if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
         trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace("#", "-")
@@ -884,9 +887,23 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
                             label_output = 'lastName',
                             domaine=None)
         
+        departure_harbour = from_topiaid_to_value(topiaid=parsed_trip_info['departureHarbour'],
+                            lookingfor='Harbour',
+                            label_output = 'label2',
+                            domaine=None)
+        
+        # a adapter car on fait 2 fois l'action
+        vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
+                            lookingfor='Vessel',
+                            label_output = 'label2',
+                            domaine=None)  
+        
         dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
-                      'endDate': parsed_trip_info['endDate'], 
-                      'captain': captain_name}
+                    'depPort': departure_harbour,
+                    'endDate': parsed_trip_info['endDate'], 
+                    'captain': captain_name, 
+                    'vessel': vessel_name}
+        
         return dico_trip_infos
     
     else:
@@ -897,7 +914,168 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
 DIR = "./media/logbooks"
 
 
+def presenting_previous_trip(request):
+    
+    selected_file = request.GET.get('selected_file')
+    apply_conf = request.session.get('dico_config')
+    
+    print("="*20, "presenting_previous_trip", "="*20)
+    
+    if selected_file is not None and apply_conf is not None:
+
+        file_name = selected_file.strip("['']")
+        file_path = DIR + "/" + file_name
+
+        request.session['file_path'] = file_path
+
+        print("="*20, "presenting_previous_trip selected_file", "="*20)
+        print(file_path)
+        
+        df_donnees_p1 = read_excel(file_path, 1)
+            
+        programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
+                                    lookingfor = 'Program',
+                                    label_output = 'label2',
+                                    domaine = 'palangre')
+    
+        ocean = from_topiaid_to_value(topiaid = apply_conf['ocean'],
+                                lookingfor = 'Ocean',
+                                label_output = 'label2',
+                                domaine = None)
+        
+        
+        with open('./data_common.json', 'r', encoding='utf-8') as f:
+            data_common = json.load(f)
+        
+        # On récupères le dictionnnaire de données jugées intéressantes de la précédente marée
+        context = get_previous_trip_infos(request, df_donnees_p1, data_common)
+    
+        context.update({'programme': programme,
+                        'ocean': ocean})
+        
+        
+        return render(request, 'LL_previoustrippage.html', context)
+    
+    else:
+        
+        return render(request, 'LL_previoustrippage.html')
+
+
+
 def checking_logbook(request):
+    
+    # selected_file = request.GET.get('selected_file')
+    
+    print("="*20, "checking_logbook", "="*20)
+    
+    with open('./data_common.json', 'r', encoding='utf-8') as f:
+        data_common = json.load(f)
+
+    if request.method == 'POST':
+        
+        # continuetrip = request.POST.get('continuetrip')
+        newtrip = request.POST.get('newtrip')
+        continuetrip = request.POST.get('continuetrip')
+        
+        print(newtrip)
+        
+        # print(continuetrip, newtrip)
+        
+        apply_conf = request.session.get('dico_config')
+        file_path = request.session.get('file_path')
+
+        programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
+                                    lookingfor = 'Program',
+                                    label_output = 'label2',
+                                    domaine = 'palangre')
+    
+        ocean = from_topiaid_to_value(topiaid = apply_conf['ocean'],
+                                lookingfor = 'Ocean',
+                                label_output = 'label2',
+                                domaine = None)
+
+
+        print("="*20, "checking_logbook selected_file", "="*20)
+        print(file_path)
+
+        with open('./data_ll.json', 'r', encoding='utf-8') as f:
+            data_ll = json.load(f)
+        df_donnees_p1 = read_excel(file_path, 1)
+
+        df_vessel = extract_vesselInfo_LL(df_donnees_p1)
+        df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
+        df_report = extract_reportInfo_LL(df_donnees_p1)
+        df_gear = extract_gearInfo_LL(df_donnees_p1)
+        df_line = extract_lineMaterial_LL(df_donnees_p1)
+        df_target = extract_target_LL(df_donnees_p1)
+        df_date = extract_logbookDate_LL(df_donnees_p1)
+        df_bait = extract_bait_LL(df_donnees_p1)
+        df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+
+        df_position = extract_positions(df_donnees_p1)
+        df_time = extract_time(df_donnees_p1, data_ll)
+        df_temperature = extract_temperature(df_donnees_p1)
+        df_tunas = extract_tunas(df_donnees_p1)
+        df_billfishes = extract_billfishes(df_donnees_p1)
+        df_otherfish = extract_otherfish(df_donnees_p1)
+
+        df_donnees_p2 = read_excel(file_path, 2)
+        df_sharksFAL = extract_sharksFAL(df_donnees_p2)
+        df_sharksBSH = extract_sharksBSH(df_donnees_p2)
+        df_sharksMAK = extract_sharksMAK(df_donnees_p2)
+        df_sharksSPN = extract_sharksSPN(df_donnees_p2)
+        df_sharksTIG = extract_sharksTIG(df_donnees_p2)
+        df_sharksPSK = extract_sharksPSK(df_donnees_p2)
+        df_sharksTHR = extract_sharksTHR(df_donnees_p2)
+        df_sharksOCS = extract_sharksOCS(df_donnees_p2)
+        df_mammals = extract_mammals(df_donnees_p2)
+        df_seabirds = extract_seabird(df_donnees_p2)
+        df_turtles = extract_turtles(df_donnees_p2)
+
+        df_activity = pd.concat([df_position, df_time.loc[:,'Time'], df_temperature,
+                                df_fishingEffort, df_tunas, df_billfishes, df_otherfish,
+                                df_sharksFAL, df_sharksBSH, df_sharksMAK,
+                                df_sharksSPN, df_sharksTIG, df_sharksPSK,
+                                df_sharksTHR, df_sharksOCS,
+                                df_mammals, df_seabirds, df_turtles],
+                                axis=1)
+
+        previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
+        
+        list_ports = get_list_ports(data_common)  
+        
+        context = {
+            'previous_trip': previous_trip,
+            'continuetrip': continuetrip,
+            'newtrip': newtrip,
+            'df_vessel': df_vessel,
+            'df_cruise': df_cruise,
+            'list_ports': list_ports,
+            'df_report': df_report,
+            'df_gear': df_gear,
+            'df_line': df_line,
+            'df_target': df_target,
+            'df_date': df_date,
+            'df_bait': df_bait,
+
+            'df_position': df_position,
+            'df_time': df_time,
+            'df_activity': df_activity,
+
+            'programme': programme,
+            'ocean': ocean,
+        }
+
+        return render(request, 'LL_homepage.html', context)
+
+    else:
+        # Gérer le cas où la méthode HTTP n'est pas POST
+        pass
+    return render(request, 'LL_homepage.html')
+
+
+
+def checking_logbook2(request):
     
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
