@@ -75,8 +75,8 @@ def get_referential_ll():
     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
     
     # Constitution du lien url pour accéder à l'API et donc générer un token
-    api_url = api_base + api_Token + api_infos 
-    response = requests.get(api_url)
+    api_url = api_base + api_Token + api_infos
+    response = requests.get(api_url, timeout=15)
     
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
@@ -98,9 +98,9 @@ def get_referential_common():
     api_Token = 'authenticationToken=' + get_token() +'&'
     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
         
-    # Constitution du lien url pour accéder à l'API et donc générer un token    
-    api_url = api_base + api_Token + api_infos 
-    response = requests.get(api_url)
+    # Constitution du lien url pour accéder à l'API et donc générer un token
+    api_url = api_base + api_Token + api_infos
+    response = requests.get(api_url, timeout=15)
         
     # si la réponse est un succès, on extrait que le Token
     if response.status_code == 200:
@@ -114,20 +114,24 @@ def get_referential_common():
     
 
 def close(token):
+    """
+    Fonction qui fmer un token
+    """
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/close?'
     
     # Constitution du lien url pour accéder à l'API et fermer la connexion
     api_url = api_base + 'authenticationToken=' + token
-    response = requests.get(api_url)
+    response = requests.get(api_url, timeout=15)
     print("reponse of close function ", response.status_code)
     return response.status_code
         
 def serialize(obj): 
-    if isinstance(obj, datetime.datetime): 
-        return obj.isoformat() 
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
     if isinstance(obj, np.int64):
         return int(obj)
-    raise TypeError("Type not serializable") 
+    return str(obj)
+    # raise TypeError("Type not serializable")
 
 def send_trip(token, data, url_base):
     """_summary_
@@ -152,7 +156,7 @@ def send_trip(token, data, url_base):
 
     print("Post")
     pretty_print(data)
-    res = requests.post(url, data=data_json, headers=headers)
+    res = requests.post(url, data=data_json, headers=headers, timeout=15)
 
     print("Code resultat de la requete", res.status_code)
     print("url envoyé : ", url)
@@ -165,7 +169,8 @@ def send_trip(token, data, url_base):
 
 
 def latest_trip(token, url_base, vessel_id, programme_topiaid):
-    """Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
+    """
+    Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
 
     Args:
         token

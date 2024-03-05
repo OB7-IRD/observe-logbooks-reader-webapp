@@ -237,6 +237,36 @@ def extract_cruiseInfo_LL(df_donnees):
     Fonction qui extrait et présente dans un dataframe les données relatives à la marée
     '''
     # On extrait les données propres au 'Vessel information'
+    df_cruise1 = df_donnees.iloc[9:10, 11:20]
+    df_cruise2 = df_donnees.iloc[9:10, 20:29]
+
+    # On supprimes les colonnes qui sont vides
+    df_cruise1 = del_empty_col(df_cruise1)
+    df_cruise2 = del_empty_col(df_cruise2)
+
+    np_cruise = np.append(np.array(df_cruise1), np.array(df_cruise2), axis=0)
+
+    # on nettoie la colonne en enlevant les espaces et les ':'
+    np_cruise[:, 0] = np_removing_semicolon(np_cruise, 0)
+
+    # On applique la fonction strip sur les cellules de la colonnes Valeur,
+    # si l'élément correspond à une zone de texte
+    vect = np.vectorize(strip_if_string)
+    np_cruise[:, 1] = vect(np_cruise[:, 1])
+
+    df_cruise = pd.DataFrame(np_cruise, columns=['Logbook_name', 'Value'])
+    df_cruise['Logbook_name'] = remove_spec_char_from_list(
+        df_cruise['Logbook_name'])
+    df_cruise['Logbook_name'] = df_cruise['Logbook_name'].apply(
+        lambda x: x.strip())
+
+    return df_cruise
+
+def extract_cruiseInfo_LL2(df_donnees):
+    '''
+    BACK UP Fonction qui extrait et présente dans un dataframe les données relatives à la marée
+    '''
+    # On extrait les données propres au 'Vessel information'
     df_cruise1 = df_donnees.iloc[7:10, 11:20]
     df_cruise2 = df_donnees.iloc[7:10, 20:29]
 
@@ -795,10 +825,24 @@ def extract_turtles(df_donnees):
     df_turtles.reset_index(drop=True, inplace=True)
     return df_turtles
 
+def get_list_ports(data_common):
+    """
+    Args:
+        data_common
+
+    Returns:
+        list: all the enabled ports (topiaId and label2)
+    """
+    ports = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
+    list_ports = []
+    for port in ports:
+        if port.get('status') == 'enabled':
+            list_ports.append({'topiaId': port.get('topiaId'), 'label2': port.get('label2')})
+    return list_ports
 
 
-
-def get_previous_trip_infos(request, df_donnees_p1):
+        
+def get_previous_trip_infos(request, df_donnees_p1, data_common):
     """Fonction qui va faire appel au WS pour :
     1) trouver l'id du trip le plus récent pour un vessel et un programme donné
     et 2) trouver les informations rattachées à ce trip
@@ -810,9 +854,6 @@ def get_previous_trip_infos(request, df_donnees_p1):
     Returns:
         dictionnaire: startDate, endDate, captain
     """
-    
-    with open('./data_common.json', 'r', encoding='utf-8') as f:
-        data_common = json.load(f)
         
     token = api.get_token()
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
@@ -827,7 +868,8 @@ def get_previous_trip_infos(request, df_donnees_p1):
     previous_trip = api.latest_trip(token, url_base, vessel_topiaid, programme_topiaid)
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
-    if parsed_previous_trip['content'][0] is not None:
+    print("°"*10, parsed_previous_trip['content'] , "°"*10)
+    if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
         trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace("#", "-")
         print("="*20, trip_topiaid, "="*20)
@@ -871,7 +913,8 @@ def checking_logbook(request):
                                 domaine = None)
     print("="*20, "checking_logbook how to get kwargs", "="*20)
     
-    
+    with open('./data_common.json', 'r', encoding='utf-8') as f:
+        data_common = json.load(f)
 
     if selected_file is not None and apply_conf is not None:
 
@@ -927,13 +970,17 @@ def checking_logbook(request):
 
 
 
-        previous_trip = get_previous_trip_infos(request, df_donnees_p1)
+        previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
         print("="*20, previous_trip, "="*20)
+        
+        list_ports = get_list_ports(data_common)
+        # print("°"*20, "get_list_ports", "°"*20)
         
         context = {
             'previous_trip': previous_trip,
             'df_vessel': df_vessel,
             'df_cruise': df_cruise,
+            'list_ports': list_ports,
             'df_report': df_report,
             'df_gear': df_gear,
             'df_line': df_line,
@@ -976,56 +1023,70 @@ def listing_files(request):
 def send_logbook2Observe(request):
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
-    # if request.method == 'POST':
-    file_path = request.session.get('file_path')
-    apply_conf = request.session.get('dico_config')
-    print("="*20, "send_logbook2Observe ocean and program", "="*20)
-    print(apply_conf['ocean'])
-    print(apply_conf['programme'])
-    # request.session['send_logbook2Observe'] = request.POST.get('send_logbook2Observe')
-    # Traitement à faire avec le fichier sélectionné
-    # Redirection vers une autre page
+    if request.method == 'POST':
+        print("°"*20, "POST", "°"*20)
+        
+        file_path = request.session.get('file_path')
+        apply_conf = request.session.get('dico_config')
+        print("="*20, "send_logbook2Observe ocean and program", "="*20)
+        print(apply_conf['ocean'])
+        print(apply_conf['programme'])
+        
+        
+        
+        startDate = request.POST.get('startDate')
+        endDate = request.POST.get('endDate')
+        depPort = request.POST.get('depPort')
+        endPort = request.POST.get('endPort')
+        
+        apply_conf.update({'startDate': startDate,
+                           'endDate': endDate, 
+                           'depPort': depPort if depPort != '' else None, 
+                           'endPort': endPort if endPort != '' else None})
+                    
 
-    if os.path.exists("sample.json"):
+        if os.path.exists("sample.json"):
+            print("="*80)
+            os.remove("sample.json")
+
         print("="*80)
-        os.remove("sample.json")
+        print("Load JSON data file")
 
-    print("="*80)
-    print("Load JSON data file")
+        token = api.get_token()
 
-    token = api.get_token()
+        with open('./data_common.json', 'r', encoding='utf-8') as f:
+            data_common = json.load(f)
+        with open('./data_ll.json', 'r', encoding='utf-8') as f:
+            data_ll = json.load(f)
 
-    with open('./data_common.json', 'r', encoding='utf-8') as f:
-        data_common = json.load(f)
-    with open('./data_ll.json', 'r', encoding='utf-8') as f:
-        data_ll = json.load(f)
+        print("="*80)
+        print("Read excel file")
+        print(file_path)
 
-    print("="*80)
-    print("Read excel file")
-    print(file_path)
+        df_donnees_p1 = read_excel(file_path, 1)
+        df_donnees_p2 = read_excel(file_path, 2)
 
-    df_donnees_p1 = read_excel(file_path, 1)
-    df_donnees_p2 = read_excel(file_path, 2)
+        print("="*80)
+        print("Create Activity and Set")
 
-    print("="*80)
-    print("Create Activity and Set")
+        days_in_month = len(extract_positions(df_donnees_p1))
 
-    days_in_month = len(extract_positions(df_donnees_p1))
+        MultipleActivity = create_activity_and_set(
+            df_donnees_p1, df_donnees_p2, data_common, data_ll, days_in_month)
 
-    MultipleActivity = create_activity_and_set(
-        df_donnees_p1, df_donnees_p2, data_common, data_ll, days_in_month)
+        print("="*80)
+        print("Create Trip")
 
-    print("="*80)
-    print("Create Trip")
+        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf)
 
-    trip = create_trip(df_donnees_p1, MultipleActivity,
-                       data_common, data_ll, days_in_month, apply_conf)
+        print("le token qu'on test dansla boucle json", token)
+        url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-    print("le token qu'on test dansla boucle json", token)
-    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-    api.send_trip(token, trip, url_base)
+        api.send_trip(token, trip, url_base)
     # api.close(token)
 
-    return render(request, 'LL_send_data.html', {'info': api.send_trip(token, trip, url_base)})
-
+        return render(request, 'LL_send_data.html', {'info': api.send_trip(token, trip, url_base)})
+    
+    else:
+        # ajouter une page erreur d'envoi
+        return render(request, 'LL_file_selection.html')

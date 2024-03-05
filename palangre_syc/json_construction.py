@@ -411,6 +411,23 @@ def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour=bool):
         time_)
     return date_formated
 
+def create_starttimestamp_from_fieldDate(date):
+    """ Fonction qui permet d'avoir le bon format de date-time pour envoyer le json
+
+    Args: 
+        date: issue du input 
+        
+    Returns:
+        datetime: pour stratDate et endDAte
+    """
+    date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
+        date[:4],
+        date[5:7],
+        date[-2:],
+        '00:00:00')
+    return date_formated
+
+
 
 def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH):
     # days_in_a_month = len(extract_positions(df_donnees_p1))
@@ -537,7 +554,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
     return MultipleActivity
 
 
-def create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, days_in_a_month, apply_conf):
+def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
     # Dans le trip on a fixé :
     # tripType = Marée de pêche commerciale
     # observer = unknown car non présent
@@ -547,8 +564,8 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, days_in_a
 
     trip = {
         'homeId': None,
-        'startDate': create_starttimestamp(df_donnees_p1, data_ll, 0, need_hour=False),
-        'endDate': create_starttimestamp(df_donnees_p1, data_ll, days_in_a_month-1, need_hour=False),
+        'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']),
+        'endDate': create_starttimestamp_from_fieldDate(apply_conf['endDate']),
         'noOfCrewMembers': palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId': None,
         'gearUseFeatures': None,
@@ -569,8 +586,8 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, days_in_a
         'landingDataEntryOperator': None,
         'ocean': apply_conf['ocean'],
         # departureHarbour et landingHarbour à remplir
-        'departureHarbour': None,
-        'landingHarbour': None,
+        'departureHarbour': apply_conf['depPort'],
+        'landingHarbour': apply_conf['endPort'],
         'observationsDataQuality': None,
         'logbookDataQuality': None,
         'generalComment': None,
@@ -600,60 +617,6 @@ def pretty_print(json_data, file="sample.json", mode="a"):
 
 DIR = "./palangre_syc/media"
 
-# def main():
-
-#     warnings.simplefilter(action='ignore', category=FutureWarning)
-
-#     if os.path.exists("sample.json") :
-#         print("="*80)
-#         os.remove("sample.json")
-
-#     print("="*80)
-#     print("Load JSON data file")
-
-#     token = api.get_token()
-
-#     for file in os.listdir(DIR) :
-#         if '~$' not in file :
-#             file_path = DIR + '/' + file
-
-#             # file_path = './palangre_syc/media/S 30-KEIFUKU MARU NO.1-JAN2023.xlsx'
-
-#             with open('./data_common.json', 'r', encoding = 'utf-8') as f:
-#                 data_common = json.load(f)
-#             with open('./data_ll.json', 'r', encoding = 'utf-8') as f:
-#                 data_ll = json.load(f)
-
-#             print("="*80)
-#             print("Read excel file")
-#             print(file_path)
-
-#             df_donnees_p1 = read_excel(file_path, 1)
-#             df_donnees_p2 = read_excel(file_path, 2)
-
-#             print("="*80)
-#             print("Create Activity and Set")
-
-#             DAYS_IN_A_MONTH = len(extract_positions(df_donnees_p1))
-
-#             MultipleActivity = create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH)
-
-#             print("="*80)
-#             print("Create Trip")
-
-#             trip = create_trip(df_donnees_p1, MultipleActivity, data_common, data_ll, DAYS_IN_A_MONTH)
-
-#             # pretty_print(trip)
-
-#             # token = api.get_token()
-#             print("le token qu'on test dansla boucle json", token)
-#             url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-#             api.send_trip(token, trip, url_base)
-#             # api.close(token)
-
-
-#     api.close(token)
 
 # if __name__ == "__main__":
 #     start_time = time.time()
