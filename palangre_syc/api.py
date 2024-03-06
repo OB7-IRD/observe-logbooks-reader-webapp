@@ -133,6 +133,41 @@ def serialize(obj):
     return str(obj)
     # raise TypeError("Type not serializable")
 
+def update_trip(token, data, url_base, topiaid):
+    """_summary_
+
+    Args:
+        token (str): token valide
+        data (json): json file
+        url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+        topiaid du trip 
+    Returns:
+    """
+
+    data_json = json.dumps(data, default=serialize)
+
+    headers = {
+        "Content-Type": "application/json",
+        'authenticationToken': token, 
+        # 'Parameters': topiaid
+    }
+
+    url = url_base + '/data/ll/common/Trip/' + topiaid
+
+    print("PUT for updating the data")
+    # pretty_print(data)
+    res = requests.put(url, data=data_json, headers=headers, timeout=15)
+    
+    print("Code resultat de la requete", res.status_code)
+    print("url envoyé : ", url)
+
+    if res.status_code == 200:
+        return ("Logbook inséré avec success", 1)
+    else:
+        with open(file = "errorupdate.json", mode = "w") as outfile:
+            outfile.write(res.text)
+
+
 def send_trip(token, data, url_base):
     """_summary_
 

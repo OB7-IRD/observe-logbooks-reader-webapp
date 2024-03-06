@@ -825,7 +825,7 @@ def extract_turtles(df_donnees):
     df_turtles.reset_index(drop=True, inplace=True)
     return df_turtles
 
-def get_list_ports(data_common):
+def get_list_harbours(data_common):
     """
     Args:
         data_common
@@ -833,12 +833,13 @@ def get_list_ports(data_common):
     Returns:
         list: all the enabled ports (topiaId and label2)
     """
-    ports = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
-    list_ports = []
-    for port in ports:
-        if port.get('status') == 'enabled':
-            list_ports.append({'topiaId': port.get('topiaId'), 'label2': port.get('label2')})
-    return list_ports
+    harbours = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
+    list_harbours = []
+    for harbour in harbours:
+        if harbour.get('status') == 'enabled':
+            list_harbours.append({'topiaId': harbour.get('topiaId'), 'label2': harbour.get('label2')})
+    sorted_list_harbours = sorted(list_harbours, key=lambda x: x['label2'])
+    return sorted_list_harbours
 
 
         
@@ -881,29 +882,44 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
         parsed_trip_info = json.loads(trip_info.decode('utf-8'))
         parsed_trip_info = parsed_trip_info['content'][0]
         print("="*20, "detailled trip from views.py", "="*20)
+        print(parsed_trip_info)
         
         captain_name = from_topiaid_to_value(topiaid=parsed_trip_info['captain'],
                             lookingfor='Person',
                             label_output = 'lastName',
                             domaine=None)
         
-        departure_harbour = from_topiaid_to_value(topiaid=parsed_trip_info['departureHarbour'],
-                            lookingfor='Harbour',
-                            label_output = 'label2',
-                            domaine=None)
-        
         # a adapter car on fait 2 fois l'action
         vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
                             lookingfor='Vessel',
                             label_output = 'label2',
-                            domaine=None)  
+                            domaine=None)
         
-        dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+        try:
+            departure_harbour = from_topiaid_to_value(topiaid=parsed_trip_info['departureHarbour'],
+                            lookingfor='Harbour',
+                            label_output = 'label2',
+                            domaine=None)
+            
+            dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
                     'depPort': departure_harbour,
+                    'depPort_topiaid': parsed_trip_info['departureHarbour'],
                     'endDate': parsed_trip_info['endDate'], 
                     'captain': captain_name, 
-                    'vessel': vessel_name}
-        
+                    'vessel': vessel_name, 
+                    'triptopiaid': trip_topiaid}
+            
+        except KeyError:
+            departure_harbour = 'null'
+            
+            dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+                    'depPort': departure_harbour,
+                    'depPort_topiaid': 'null',
+                    'endDate': parsed_trip_info['endDate'], 
+                    'captain': captain_name, 
+                    'vessel': vessel_name, 
+                    'triptopiaid': trip_topiaid}
+
         return dico_trip_infos
     
     else:
@@ -921,6 +937,19 @@ def presenting_previous_trip(request):
     
     print("="*20, "presenting_previous_trip", "="*20)
     
+    programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
+                                    lookingfor = 'Program',
+                                    label_output = 'label2',
+                                    domaine = 'palangre')
+    
+    ocean = from_topiaid_to_value(topiaid = apply_conf['ocean'],
+                                lookingfor = 'Ocean',
+                                label_output = 'label2',
+                                domaine = None)
+    
+    context = {'programme': programme,
+                'ocean': ocean}
+    
     if selected_file is not None and apply_conf is not None:
 
         file_name = selected_file.strip("['']")
@@ -933,32 +962,33 @@ def presenting_previous_trip(request):
         
         df_donnees_p1 = read_excel(file_path, 1)
             
-        programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
-                                    lookingfor = 'Program',
-                                    label_output = 'label2',
-                                    domaine = 'palangre')
-    
-        ocean = from_topiaid_to_value(topiaid = apply_conf['ocean'],
-                                lookingfor = 'Ocean',
-                                label_output = 'label2',
-                                domaine = None)
-        
-        
         with open('./data_common.json', 'r', encoding='utf-8') as f:
             data_common = json.load(f)
         
         # On récupères le dictionnnaire de données jugées intéressantes de la précédente marée
-        context = get_previous_trip_infos(request, df_donnees_p1, data_common)
+        try: 
+            context.update(get_previous_trip_infos(request, df_donnees_p1, data_common))
     
-        context.update({'programme': programme,
-                        'ocean': ocean})
+        except TypeError: 
+            context.update({'startDate': None,
+                    # 'depPort': ,
+                    # 'depPort_topiaid': parsed_trip_info['departureHarbour'],
+                    # 'endDate': parsed_trip_info['endDate'], 
+                    # 'captain': captain_name, 
+                    # 'vessel': vessel_name, 
+                    # 'triptopiaid': 'null'
+                    })
+            request.session['context'] = context
+            print(context)
+            return render(request, 'LL_previoustrippage.html', context)
         
-        
-        return render(request, 'LL_previoustrippage.html', context)
+        # return render(request, 'LL_previoustrippage.html', context)
     
-    else:
-        
-        return render(request, 'LL_previoustrippage.html')
+    # else:
+    print('='*20, "presenting_previous_trip settling context", "="*20)
+    print(context)
+    request.session['context'] = context
+    return render(request, 'LL_previoustrippage.html', context)
 
 
 
@@ -978,12 +1008,13 @@ def checking_logbook(request):
         continuetrip = request.POST.get('continuetrip')
         
         print(newtrip)
+        request.session['continuetrip'] = continuetrip
         
         # print(continuetrip, newtrip)
         
         apply_conf = request.session.get('dico_config')
         file_path = request.session.get('file_path')
-
+        print(request.session.get('context'))
         programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
                                     lookingfor = 'Program',
                                     label_output = 'label2',
@@ -1041,10 +1072,10 @@ def checking_logbook(request):
                                 axis=1)
 
         previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
+        print(previous_trip)
+        list_ports = get_list_harbours(data_common)  
         
-        list_ports = get_list_ports(data_common)  
-        
-        context = {
+        data_to_homepage = {
             'previous_trip': previous_trip,
             'continuetrip': continuetrip,
             'newtrip': newtrip,
@@ -1066,7 +1097,7 @@ def checking_logbook(request):
             'ocean': ocean,
         }
 
-        return render(request, 'LL_homepage.html', context)
+        return render(request, 'LL_homepage.html', data_to_homepage)
 
     else:
         # Gérer le cas où la méthode HTTP n'est pas POST
@@ -1151,7 +1182,7 @@ def checking_logbook2(request):
         previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
         print("="*20, previous_trip, "="*20)
         
-        list_ports = get_list_ports(data_common)
+        list_ports = get_list_harbours(data_common)
         # print("°"*20, "get_list_ports", "°"*20)
         
         context = {
@@ -1206,7 +1237,10 @@ def send_logbook2Observe(request):
         
         file_path = request.session.get('file_path')
         apply_conf = request.session.get('dico_config')
+        context = request.session.get('context')
+        
         print("="*20, "send_logbook2Observe ocean and program", "="*20)
+        print(context)
         print(apply_conf['ocean'])
         print(apply_conf['programme'])
         
@@ -1221,7 +1255,10 @@ def send_logbook2Observe(request):
                            'endDate': endDate, 
                            'depPort': depPort if depPort != '' else None, 
                            'endPort': endPort if endPort != '' else None})
-                    
+        
+        print("°"*20, "apply_conf", "°"*20)
+        print(apply_conf)
+    
 
         if os.path.exists("sample.json"):
             print("="*80)
@@ -1255,15 +1292,27 @@ def send_logbook2Observe(request):
         print("="*80)
         print("Create Trip")
 
-        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf)
+        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context)
 
         print("le token qu'on test dansla boucle json", token)
         url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-        api.send_trip(token, trip, url_base)
+        print("request.session.get('continuetrip') : ", request.session.get('continuetrip'))
+        if request.session.get('continuetrip') == None:
+            print("Je suis dans 'request.session.get('continuetrip') == None' ")
+            api.send_trip(token, trip, url_base)
+        else:
+            api.update_trip(token=token, 
+                            data=trip, 
+                            url_base=url_base, 
+                            topiaid=context['triptopiaid'])
+    
+    
     # api.close(token)
 
-        return render(request, 'LL_send_data.html', {'info': api.send_trip(token, trip, url_base)})
+        return render(request, 'LL_send_data.html', {'info': 'OK'}
+                    #   , {'info': api.send_trip(token, trip, url_base)}
+                      )
     
     else:
         # ajouter une page erreur d'envoi

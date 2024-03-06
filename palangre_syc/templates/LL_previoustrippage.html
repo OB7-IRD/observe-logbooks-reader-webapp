@@ -21,9 +21,10 @@ Palangre aux Seychelles
     <!-- last trip extracted data -->
     {% if startDate != None %}
         <div class = "rounded-md p-4 flex justify-center items-center">
-            <div class = "text-center text-2xl font-semibold mb-6">
+            <div class = "text-center text-2xl mb-6">
                 La dernière marée enregistrée sur Observe pour le navire
-                    {{ vessel }}
+                   <b> {{ vessel }} </b>
+                selon le programme {{ programme }} et dans l'océan {{ ocean }}
 
                 est la suivante : 
             </div>  
@@ -43,7 +44,7 @@ Palangre aux Seychelles
                 </div>
 
                 <div class="text-center mb-1 text-2xl">
-                    Menée par <b>{{ captain }}</b>
+                    Menée par le capitaine <b>{{ captain }}</b>
                 </div>
             </div>
         </div>

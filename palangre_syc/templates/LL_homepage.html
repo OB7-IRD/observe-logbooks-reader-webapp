@@ -143,7 +143,7 @@ Palangre aux Seychelles
 
                     <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
                         <div class="text-center mb-1">
-                            <div class="text-2xl font-semibold"> Océan {{ocean | safe}}</div>
+                            <div class="text-2xl font-semibold"> Océan {{ ocean | safe}}</div>
                         </div>
                     </div>
 
@@ -207,7 +207,7 @@ Palangre aux Seychelles
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 Departure port
                                             </td>
-                                            {% if continuetrip == 'Continuer cette marée'%}
+                                            {% if continuetrip == 'Continuer cette marée' and previous_trip.depPort != 'null' %}
                                                 <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
                                                     {{ previous_trip.depPort }} 
                                                 </td>

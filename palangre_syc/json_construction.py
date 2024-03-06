@@ -554,7 +554,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
     return MultipleActivity
 
 
-def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
+def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context):
     # Dans le trip on a fixé :
     # tripType = Marée de pêche commerciale
     # observer = unknown car non présent
@@ -563,8 +563,14 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
     # species semble être TargetSpecies - a voir si on développe
 
     trip = {
-        'homeId': None,
-        'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']),
+        'homeId': None,}
+
+    if apply_conf['startDate'] != None :
+        trip.update({'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']), })
+    else : 
+        trip.update({'startDate': context['startDate'], })
+        
+    trip.update({
         'endDate': create_starttimestamp_from_fieldDate(apply_conf['endDate']),
         'noOfCrewMembers': palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId': None,
@@ -584,8 +590,15 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
         'logbookDataEntryOperator': get_lb_operator_topiaID(df_donnees_p1, data_common),
         'sampleDataEntryOperator': None,
         'landingDataEntryOperator': None,
-        'ocean': apply_conf['ocean'],
-        'departureHarbour': apply_conf['depPort'],
+        'ocean': apply_conf['ocean'],})
+    
+    if apply_conf['depPort'] != None :
+        trip.update({'departureHarbour': apply_conf['depPort'], })
+    else : 
+        trip.update({'departureHarbour': context['depPort_topiaid'], })
+        
+    
+    trip.update({ 
         'landingHarbour': apply_conf['endPort'],
         'observationsDataQuality': None,
         'logbookDataQuality': None,
@@ -595,7 +608,7 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf):
         'species': None,
         'observationsAvailability': False,
         'logbookAvailability': True,
-    }
+    })
     return trip
 
 
