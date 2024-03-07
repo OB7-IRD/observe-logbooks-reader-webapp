@@ -274,8 +274,8 @@ def logbook(request):
 @login_required
 def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
-    
-    if datat_0c_Pr is not None and domaine is not None:
+    print('views.py getProgram domaine when domaine not selected : ', domaine)
+    if datat_0c_Pr is not None and domaine != 'favicon.ico':
 
         datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
         print("="*20, "datat_0c_Pr search in", "="*20)

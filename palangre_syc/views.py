@@ -4,6 +4,11 @@ import json
 import datetime
 import warnings
 from django.http import JsonResponse
+from django.utils.translation import activate
+
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext
+
 
 import pandas as pd
 import numpy as np
@@ -354,7 +359,7 @@ def extract_gearInfo_LL(df_donnees):
     df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(lambda x: x.strip())
     
     if not df_gear['Value'].apply(lambda x: isinstance(x, int)).all():
-        message = "Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers." 
+        message = _("Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers.")
         return df_gear, message
     
     return df_gear
@@ -386,14 +391,22 @@ def extract_lineMaterial_LL(df_donnees):
 
     df_line_used = df_line.loc[df_line['Value'] != "None"]
     
+    print(df_line_used)
+
+    # Traduire chaque valeur du DataFrame df_line_used
+    df_line_used['Logbook_name'] = df_line_used['Logbook_name'].apply(lambda x: gettext(x) if isinstance(x, str) else x)
+    print(df_line_used['Logbook_name'])
+    
     if len(df_line_used) > 1:
-        message = "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."
+        message = _("Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
         return df_line_used, message
     
     if len(df_line_used) == 0:
-        message = "La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. Veuillez vérifier les données."
+        message = _("La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. Veuillez vérifier les données.")
         return df_line_used, message
 
+    # df_line_used = [[_(valeur) for valeur in ligne] for ligne in df_line_used]
+    
     return df_line_used
 
 def extract_target_LL(df_donnees):
@@ -882,7 +895,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
         parsed_trip_info = json.loads(trip_info.decode('utf-8'))
         parsed_trip_info = parsed_trip_info['content'][0]
         print("="*20, "detailled trip from views.py", "="*20)
-        print(parsed_trip_info)
+        # print(parsed_trip_info)
         
         captain_name = from_topiaid_to_value(topiaid=parsed_trip_info['captain'],
                             lookingfor='Person',
@@ -895,30 +908,30 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
                             label_output = 'label2',
                             domaine=None)
         
+        dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+                    'endDate': parsed_trip_info['endDate'], 
+                    'captain': captain_name, 
+                    'vessel': vessel_name, 
+                    'triptopiaid': trip_topiaid}
+        
         try:
             departure_harbour = from_topiaid_to_value(topiaid=parsed_trip_info['departureHarbour'],
                             lookingfor='Harbour',
                             label_output = 'label2',
                             domaine=None)
             
-            dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+            dico_trip_infos.update({
                     'depPort': departure_harbour,
                     'depPort_topiaid': parsed_trip_info['departureHarbour'],
-                    'endDate': parsed_trip_info['endDate'], 
-                    'captain': captain_name, 
-                    'vessel': vessel_name, 
-                    'triptopiaid': trip_topiaid}
+                    })
             
         except KeyError:
             departure_harbour = 'null'
             
-            dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+            dico_trip_infos.update({
                     'depPort': departure_harbour,
                     'depPort_topiaid': 'null',
-                    'endDate': parsed_trip_info['endDate'], 
-                    'captain': captain_name, 
-                    'vessel': vessel_name, 
-                    'triptopiaid': trip_topiaid}
+                    })
 
         return dico_trip_infos
     
@@ -931,6 +944,8 @@ DIR = "./media/logbooks"
 
 
 def presenting_previous_trip(request):
+    
+    activate(request.LANGUAGE_CODE)
     
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
@@ -1009,6 +1024,7 @@ def checking_logbook(request):
         
         print(newtrip)
         request.session['continuetrip'] = continuetrip
+        print("continuetrip : ", continuetrip)
         
         # print(continuetrip, newtrip)
         
@@ -1213,17 +1229,17 @@ def checking_logbook2(request):
     return render(request, 'LL_homepage.html')
 
 
-def listing_files(request):
-    """Fonction qui permet de lister les fichiers dans le dossier media
-    Args:
-        request 
-    Returns:
-        list: fochiers en .xslx
-    """
-    # Récupérer la liste des fichiers dans le dossier 'media'
-    files = [f for f in os.listdir(DIR) if '~$' not in f]
+# def listing_files(request):
+#     """Fonction qui permet de lister les fichiers dans le dossier media
+#     Args:
+#         request 
+#     Returns:
+#         list: fochiers en .xslx
+#     """
+#     # Récupérer la liste des fichiers dans le dossier 'media'
+#     files = [f for f in os.listdir(DIR) if '~$' not in f]
 
-    return render(request, 'LL_file_selection.html', {'files': files})
+#     return render(request, 'LL_file_selection.html', {'files': files})
 
 
 

@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load i18n %}
 
 {% block title %}
 
-Palangre aux Seychelles
+{% translate "Palangre aux Seychelles"%}
 
 {% endblock title %}
 
@@ -12,7 +12,7 @@ Palangre aux Seychelles
 {% endblock navigation %}
 
 {% block heading %}
-<h1>Page d'accueil pour les données de palangre</h1>
+<h1> {% translate "Page d'accueil pour les données de palangre" %}</h1>
 {% endblock heading %}
 
 {% block content %}
@@ -26,70 +26,17 @@ Palangre aux Seychelles
     <!-- Content -->
     <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
         <div>
+            <!-- ADD TRANSLATION ON URL -->
             <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
 
-                <!-- last trip extracted data -->
-                {% comment %} {% if previous_trip != None %}
-                        <div class = "rounded-md p-4 flex justify-center items-center">
-                            <div class = "text-center text-2xl font-semibold mb-6">
-                                La dernière marée enregistrée sur Observe pour le navire
-                                {% for index, row in df_vessel.iterrows %}
-                                    {% if row.Logbook_name == 'Vessel Name' %}
-                                        {{ row.Value }}
-                                    {% endif %}   
-                                {% endfor %}
-                                est la suivante : 
-                            </div>  
-                        </div>  
-
-                        <div class = "p-6 flex justify-center items-center">
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
-                            
-                                <div class="text-center mb-1 text-2xl">
-                                    Marée initiée le <b>{{ previous_trip.startDate |slice:":10"}}</b>
-                                </div>
-
-                                <div class="text-center mb-1 text-2xl">
-                                    Actuellement cloturée le <b>{{ previous_trip.endDate |slice:":10"}}</b>
-                                </div>
-
-                                <div class="text-center mb-1 text-2xl">
-                                    Menée par <b>{{ previous_trip.captain }}</b>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class = "rounded-md p-4 flex justify-center items-center">
-                            <div class = "text-center text-2xl mb-6">
-                                Que souhaitez-vous faire ?
-                                <div class="flex justify-center text-2xm items-right inline-flex">
-                                    <input id = "continuetrip" value="Continuer cette marée" type="submit" name="continuetrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-                                </div>
-
-                                <div class="flex justify-center text-2xm items-right inline-flex">
-                                    <input id = "newtrip" value="Créer une nouvelle marée" type="submit" name="newtrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-                                </div>
-                            </div>  
-                        </div>
-
-                {% else %}
-                <!-- for the boat first trip (in this program) -->
-                    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
-                        <div class = "bg-yellow-100 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
-                            <div class="flex justify-center items-right inline-flex">
-                                <input id = "newtrip" value="Cette marée est une nouvelle marée" type="submit" name="newtrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-                            </div>
-                        </div>
-                    </div>
-                {% endif %} {% endcomment %}
-
-            {% if continuetrip == 'Continuer cette marée' %}
+            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' %}
                 <div class = "rounded-md p-4 flex justify-center items-center">
                     <div class = "text-center text-2xl font-semibold mb-6">
-                        La dernière marée enregistrée sur Observe pour le navire
-                            {{ previous_trip.vessel }}
+                        {% blocktranslate trimmed %}
+                        La dernière marée enregistrée sur Observe pour le navire 
+                            {{ previous_trip.vessel }} 
                         est la suivante : 
+                        {% endblocktranslate %}
                     </div>  
                 </div>  
         
@@ -98,16 +45,22 @@ Palangre aux Seychelles
                     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
                     
                         <div class="text-center mb-1 text-2xl">
-                            Marée initiée le <b>{{ previous_trip.startDate |slice:":10"}}</b> 
-                            depuis le port de <b>{{ previous_trip.depPort }}</b> 
+                            {% blocktranslate with startDate=previous_trip.startDate|slice:':10' depPort=previous_trip.depPort trimmed %}
+                            Marée initiée le {{ startDate }} 
+                            depuis le port de {{ depPort }} 
+                            {% endblocktranslate %}
                         </div>
         
                         <div class="text-center mb-1 text-2xl">
-                            Actuellement cloturée le <b>{{ previous_trip.endDate |slice:":10"}}</b>
+                            {% blocktranslate with endDate=previous_trip.endDate|slice:':10' trimmed %}
+                            Actuellement cloturée le {{ endDate }}
+                            {% endblocktranslate %}
                         </div>
         
                         <div class="text-center mb-1 text-2xl">
-                            Menée par <b>{{ previous_trip.captain }}</b>
+                            {% blocktranslate with captain=previous_trip.captain trimmed %}
+                            Menée par {{ captain }}
+                            {% endblocktranslate %}
                         </div>
                     </div>
                 </div>
@@ -119,7 +72,8 @@ Palangre aux Seychelles
 
                     <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
                         <div class="text-center mb-1">
-                            <div class="text-2xl font-semibold mb-1"> Journal du 
+                            <div class="text-2xl font-semibold mb-1"> 
+                                {% translate "Journal du " %} 
                                 {% for index, row in df_date.iterrows %}
                                     {% if row.Logbook_name == 'Month' %}
                                     <!-- Affichage de la valeur du mois -->
@@ -143,29 +97,37 @@ Palangre aux Seychelles
 
                     <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
                         <div class="text-center mb-1">
-                            <div class="text-2xl font-semibold"> Océan {{ ocean | safe}}</div>
+                            <div class="text-2xl font-semibold"> 
+                                {% blocktranslate trimmed %}
+                                Océan {{ ocean }}
+                                {% endblocktranslate %} 
+                            </div>
                         </div>
                     </div>
 
                     <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
                         <div class = "text-center mb-1">
-                            <div class="text-2xl font-semibold"> Programme {{programme | safe }}</div>
+                            <div class="text-2xl font-semibold"> 
+                                {% blocktranslate trimmed %}
+                                Programme {{ programme }}
+                                {% endblocktranslate %}
+                            </div>
                         </div>
                     </div>
 
                     <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
                         <div class="text-center text-2xl font-semibold">
-                            Rapporté 
+                            {% translate "Rapporté " %}
                             {% for index, row in df_report.iterrows %}
                                 {% if row.Logbook_name == 'Person reported' %}
                                 <!-- Affichage de la valeur du mois -->
                                     {% with report_value=row.Value %}
-                                        par {{ report_value }}
+                                        {% translate "par" %} {{ report_value }}
                                     {% endwith %}
                                 {% elif row.Logbook_name == 'Date reported' %}
                                     <!-- Affichage de l'année -->
                                     {% with date_value=row.Value %}
-                                        le {{ date_value }}
+                                        {% translate "le "%} {{ date_value }}
                                     {% endwith %}
                                 {% endif %}
                             {% endfor %}
@@ -181,7 +143,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-50 flex justify-center items-center"> Informations de marée</h3>
+                                    <h3 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-50 flex justify-center items-center"> 
+                                        {% translate "Informations de marée" %}
+                                    </h3>
                                 </div>
                             </div>
 
@@ -190,11 +154,11 @@ Palangre aux Seychelles
                                     <tbody>   
                                         <tr class="text-gray-700 dark:text-gray-100">
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                Departure date
+                                                {% translate "Date de départ" %}
                                             </td>
-                                            {% if continuetrip == 'Continuer cette marée'%}
+                                            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' %}
                                                 <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
-                                                    {{ previous_trip.startDate |slice:":10"}} 
+                                                    {{ previous_trip.startDate |slice:':10'}} 
                                                 </td>
                                             {% else %}
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
@@ -205,16 +169,16 @@ Palangre aux Seychelles
 
                                         <tr class="text-gray-700 dark:text-gray-100">
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                Departure port
+                                                {% translate "Port de départ" %}
                                             </td>
-                                            {% if continuetrip == 'Continuer cette marée' and previous_trip.depPort != 'null' %}
+                                            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' and previous_trip.depPort != 'null' %}
                                                 <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
                                                     {{ previous_trip.depPort }} 
                                                 </td>
                                             {% else %}
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
-                                                    <option value="" selected>Non concerné</option>
+                                                    <option value="" selected> {% translate "Non concerné" %} </option>
                                                     {% for port in list_ports %}
                                                       <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
                                                     {% endfor %}
@@ -225,7 +189,7 @@ Palangre aux Seychelles
 
                                         <tr class="text-gray-700 dark:text-gray-100">
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                Arrival date
+                                                {% translate "Date d'arrivée" %}
                                             </td>
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
 
@@ -235,7 +199,7 @@ Palangre aux Seychelles
 
                                         <tr class="text-gray-700 dark:text-gray-100">
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                Arrival port
+                                                {% translate "Port d'arrivée" %}
                                             </td>
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 <select id="endPort" name="endPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
@@ -268,7 +232,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le navire</h3>
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur le navire" %}
+                                    </h3>
                                 </div>
                             </div>
 
@@ -301,7 +267,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur le matériel</h3>
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur le matériel" %}
+                                    </h3>
                                 </div>
                             </div>
                         </div>
@@ -351,7 +319,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Informations sur la ligne de pêche</h3>
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur la ligne de pêche" %}
+                                    </h3>
                                 </div>
                             </div>
                         </div>
@@ -400,7 +370,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Espèces visées </h3>
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Espèces visées" %} 
+                                    </h3>
                                 </div>
                             </div>
                         </div>
@@ -433,7 +405,9 @@ Palangre aux Seychelles
                         <div class="rounded-t mb-0 px-0 border-0">
                             <div class="flex flex-wrap items-center px-4 py-2">
                                 <div class="relative w-full max-w-full flex-grow flex-1">
-                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> Âppats utilisés </h3>
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Âppats utilisés" %}
+                                    </h3>
                                 </div>
                             </div>
                         </div>
@@ -462,16 +436,18 @@ Palangre aux Seychelles
                 {% if df_gear|length == 2 or df_line|length == 2 %}
                     
                 <div class="w-full mb-2 select-none rounded-t-lg border-t-4 border-gray-400 bg-gray-100 p-4 font-medium">
+                    {% blocktranslate trimmed %} 
                     Au moins une information du logbook n'est pas correcte, merci de la vérifier. 
                     Si vous décidez d'envoyer le journal de bord, l'information éronée ne sera pas retransmise.
+                    {% endblocktranslate %}
                 </div>
                 {% endif %}
                 <!-- End Div if error in the logbook -->
 
                 <!-- Div buttons -->
                 <div class="flex justify-center items-center inline-flex">
-                    <input id = "annuler_extraction" value="Annuler" type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/>
-                    <input id = "sendform" value="Envoyer le journal de bord" type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                    <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/>
+                    <input id = "sendform" value = {% translate "Envoyer le journal de bord"%} type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
                 </div>
             <!-- End Div buttons -->
 
