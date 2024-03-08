@@ -427,7 +427,24 @@ def create_starttimestamp_from_fieldDate(date):
         '00:00:00')
     return date_formated
 
+def search_date_into_json(json_previoustrip, date_to_look_for):
+    ''' fonction qui recherche si la 1ere date du excel est deja saisie ou non dans le json'''
+    
+    for content in json_previoustrip:
+        for activity in content['activityLogbook'] :
+            start_time = activity.get('startTimeStamp')
+            print("date trouvée dans le json : ", start_time)
+            print("date de mon excel ", date_to_look_for)
+            # print("activity['settingStartTimeStamp'] == ", activity["activityLogbook"]["settingStartTimeStamp"])
+            if start_time and start_time.startswith(date_to_look_for) :
+                print("False : erreur pour l'utilisateur")
+                return True
+            else : 
+                print("True : donc mon logbook est nouveau et peut être ajouté au précédent")
 
+    return False
+            
+    
 
 def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH):
     # days_in_a_month = len(extract_positions(df_donnees_p1))
@@ -612,6 +629,19 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, contex
     return trip
 
 
+
+def add_activity_and_set_to_trip(json_previoustrip, MultipleActivity):
+
+    json_previoustrip['content'].append(MultipleActivity)
+    
+    return json.dumps(json_previoustrip, indent=2)
+    
+    
+    return trip
+
+
+
+
 def pretty_print(json_data, file="sample.json", mode="a"):
     """ Fonction qui affiche avec les bonnes indentations un fichier json
 
@@ -628,6 +658,8 @@ def pretty_print(json_data, file="sample.json", mode="a"):
 
 
 DIR = "./palangre_syc/media"
+
+
 
 
 # if __name__ == "__main__":

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-07 15:13+0400\n"
+"POT-Creation-Date: 2024-03-08 11:55+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,32 +163,32 @@ msgid "Que souhaitez-vous faire ?"
 msgstr ""
 
 #: .\palangre_syc\templates\LL_previoustrippage.html:65
-msgid "Continuer cette marée"
+msgid "'Continuer cette marée'"
 msgstr ""
 
 #: .\palangre_syc\templates\LL_previoustrippage.html:69
-msgid "Créer une nouvelle marée"
+msgid "'Créer une nouvelle marée'"
 msgstr ""
 
 #: .\palangre_syc\templates\LL_previoustrippage.html:80
-msgid "Cette marée est une nouvelle marée"
+msgid "'Cette marée est une nouvelle marée'"
 msgstr ""
 
 #: .\palangre_syc\templates\LL_previoustrippage.html:92
 msgid "En cours de développement"
 msgstr ""
 
-#: .\palangre_syc\views.py:362
+#: .\palangre_syc\views.py:363
 msgid ""
 "Les données remplies dans le fichier soumis ne correspondent pas au type de "
 "données attendues. Ici on attend seulement des entiers."
 msgstr ""
 
-#: .\palangre_syc\views.py:401
+#: .\palangre_syc\views.py:402
 msgid "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."
 msgstr ""
 
-#: .\palangre_syc\views.py:405
+#: .\palangre_syc\views.py:406
 msgid ""
 "La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. "
 "Veuillez vérifier les données."
@@ -1789,10 +1789,18 @@ msgstr ""
 msgid "show this help message and exit"
 msgstr ""
 
+#: .\webapps\templates\home.html:22
+msgid "Tableau de bord"
+msgstr ""
+
+#: .\webapps\templates\home.html:77
+msgid "Choisir une langue"
+msgstr ""
+
 #: .\website\settings.py:115
 msgid "English"
 msgstr ""
 
 #: .\website\settings.py:116
-msgid "French"
+msgid "Français"
 msgstr ""

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static tailwind_tags %}
+{% load i18n %}
 
 
 {% block title %}
@@ -18,7 +19,7 @@ Home
         <div class="ml-10 flex items-baseline space-x-4">
           <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
           <a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
-            aria-current="page">Dashboard</a>
+            aria-current="page"> {% translate "Tableau de bord" %} </a>
 
           <a href="{% url 'logbook' %}"
             class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logbook</a>
@@ -65,7 +66,30 @@ Home
 {% block heading %}
 
 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-  <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+  <h1 class="text-3xl font-bold text-gray-900"> Tableau de bord </h1>
+   
+  <div class = "flex justify-end items-center ml-6">
+
+    {% get_current_language as CURRENT_LANGUAGE %}
+    {% get_available_languages as AVAILABLE_LANGUAGES %}
+    {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
+    <div class="languages">
+      <p class="text-m font-medium text-gray-700">{% trans "Choisir une langue" %}:</p>
+      <ul class="languages flex space-x-2">
+      {% for language in languages %}
+        <li>
+        <a href="/{{ language.code }}/"
+          {% if language.code == CURRENT_LANGUAGE %} class="active text-blue-600"{% endif %}>
+          <img src="/static/assets/img/{{ language.code }}_flag.png" alt="{{ language.name_local }}"
+                        class="w-9 h-auto inline-block">
+        </a>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+  
+  </div>
+  
 </div>
 
 {% endblock heading %}
@@ -135,8 +159,8 @@ Home
               </div>
 
               <a href="{% url 'logbook' %}"
-                class="inline-block text-center bg-indigo-600 border border-transparent rounded-md py-3 px-8 font-medium text-white hover:bg-indigo-700">Commencer
-                l'importation</a>
+                class="inline-block text-center bg-indigo-600 border border-transparent rounded-md py-3 px-8 font-medium text-white hover:bg-indigo-700">
+                Commencer l'importation</a>
             </div>
           </div>
         </div>

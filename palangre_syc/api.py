@@ -1,5 +1,6 @@
 import datetime
 import json
+import tempfile
 import numpy as np
 import requests
 import yaml
@@ -132,6 +133,32 @@ def serialize(obj):
         return int(obj)
     return str(obj)
     # raise TypeError("Type not serializable")
+    
+def get_one(token, url_base, topiaid):
+    
+    headers = {
+        'authenticationToken': token, 
+    }
+    
+    params = {
+        'config.recursive' : 'true', 
+    }
+    
+    url = url_base + '/data/ll/common/Trip/' + topiaid
+    
+    response = requests.get(url, headers=headers, params = params, timeout=15)
+    # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+
+    if response.status_code == 200 :
+        print("response status == 200 so tempfile created")
+        # Créer un fichier temporaire pour sauvegarder les données JSON
+        with open(file = "previoustrip.json", mode = "w") as outfile:
+            outfile.write(response.text)
+        return response.content
+    
+    else:
+        return None
+    
 
 def update_trip(token, data, url_base, topiaid):
     """_summary_
@@ -149,7 +176,6 @@ def update_trip(token, data, url_base, topiaid):
     headers = {
         "Content-Type": "application/json",
         'authenticationToken': token, 
-        # 'Parameters': topiaid
     }
 
     url = url_base + '/data/ll/common/Trip/' + topiaid
@@ -227,30 +253,44 @@ def latest_trip(token, url_base, vessel_id, programme_topiaid):
     response = requests.get(api_trip_request, timeout=15)
     return response.content
 
-def getone_trip(token, url_base, trip_topiaid):
-    """ pour un trip topiaid donné, développe ce qu'il y a dedans
+# def getone_trip(token, url_base, trip_topiaid):
+#     """ pour un trip topiaid donné, développe ce qu'il y a dedans
 
-    Args:
-        token
-        url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
-        trip_topiaid: topiaid avec '-' à la place des '#'
+#     Args:
+#         token
+#         url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+#         trip_topiaid: topiaid avec '-' à la place des '#'
 
-    Returns:
-        json
-    """    
-    api_trip = '/data/ll/common/Trip/'
-    auth = '?authenticationToken='
-    api_trip_request = url_base + api_trip + trip_topiaid + auth + token
+#     Returns:
+#         json
+#     """    
+#     api_trip = '/data/ll/common/Trip/'
+#     auth = '?authenticationToken='
+#     api_trip_request = url_base + api_trip + trip_topiaid + auth + token
 
+#     try:
+#         response = requests.get(api_trip_request, timeout=15)
+#         response.raise_for_status()  # Raise an exception for bad responses (status codes >= 400)
+#         return response.content
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error occurred: {e}")
+#         return None
+
+
+def load_json_file(file_path):
     try:
-        response = requests.get(api_trip_request, timeout=15)
-        response.raise_for_status()  # Raise an exception for bad responses (status codes >= 400)
-        return response.content
-    except requests.exceptions.RequestException as e:
-        print(f"Error occurred: {e}")
+        with open(file_path, 'r') as file:
+            # a voir s'il faut ajouter '.decode('utf8')'
+            data = json.load(file)
+            return data
+    except FileNotFoundError:
+        print(f"File '{file_path}' not found.")
         return None
-
-
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON file '{file_path}': {e}")
+        return None
+    
+    
 def errorFilter(response):
     """
     Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données

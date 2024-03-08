@@ -1,5 +1,5 @@
 from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required

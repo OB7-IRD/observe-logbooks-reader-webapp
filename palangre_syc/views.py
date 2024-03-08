@@ -1,9 +1,10 @@
+from django.utils import translation
 import os
 import re
 import json
 import datetime
 import warnings
-from django.http import JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 from django.utils.translation import activate
 
 from django.utils.translation import gettext as _
@@ -17,8 +18,7 @@ import openpyxl
 from django.shortcuts import render
 
 from palangre_syc import api
-from palangre_syc.json_construction import create_activity_and_set, create_trip, get_vessel_topiaID
-
+from palangre_syc import json_construction
 
 def del_empty_col(dataframe):
     """ Fonction qui supprime la colonne si elle ne contient pas d'information
@@ -855,7 +855,6 @@ def get_list_harbours(data_common):
     return sorted_list_harbours
 
 
-        
 def get_previous_trip_infos(request, df_donnees_p1, data_common):
     """Fonction qui va faire appel au WS pour :
     1) trouver l'id du trip le plus récent pour un vessel et un programme donné
@@ -873,7 +872,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = get_vessel_topiaID(df_donnees_p1, data_common)
+    vessel_topiaid = json_construction.get_vessel_topiaID(df_donnees_p1, data_common)
     vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
     programme_topiaid = request.session.get('dico_config')['programme']
     programme_topiaid_WS = programme_topiaid.replace("#", "-")
@@ -884,18 +883,111 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     previous_trip = api.latest_trip(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
-    # print("°"*10, parsed_previous_trip['content'] , "°"*10)
-    
+    # print("°"*10, parsed_previous_trip['content'] , "°"*10)    
+
     if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
         trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace("#", "-")
         print("="*20, trip_topiaid, "="*20)
-                
-        trip_info = api.getone_trip(token, url_base, trip_topiaid)
+        
+        # on récupère les infos du trip enregistré dans un fichier json
+        api.get_one(token, url_base, trip_topiaid)
+        
+        json_previoustrip = api.load_json_file("previoustrip.json")
+        print(json_previoustrip)
+        
+        # On récupère les infos que l'on voudra afficher 
+        parsed_trip_info = json_previoustrip['content'][0]
+        
+        captain_name = from_topiaid_to_value(topiaid=parsed_trip_info['captain'],
+                            lookingfor='Person',
+                            label_output = 'lastName',
+                            domaine=None)
+        
+        # a adapter car on fait 2 fois l'action
+        vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
+                            lookingfor='Vessel',
+                            label_output = 'label2',
+                            domaine=None)
+        
+        dico_trip_infos = {'startDate': parsed_trip_info['startDate'],
+                    'endDate': parsed_trip_info['endDate'], 
+                    'captain': captain_name, 
+                    'vessel': vessel_name, 
+                    'triptopiaid': trip_topiaid}
+        
+        try:
+            departure_harbour = from_topiaid_to_value(topiaid=parsed_trip_info['departureHarbour'],
+                            lookingfor='Harbour',
+                            label_output = 'label2',
+                            domaine=None)
+            
+            dico_trip_infos.update({
+                    'depPort': departure_harbour,
+                    'depPort_topiaid': parsed_trip_info['departureHarbour'],
+                    })
+            
+        except KeyError:
+            departure_harbour = 'null'
+            
+            dico_trip_infos.update({
+                    'depPort': departure_harbour,
+                    'depPort_topiaid': 'null',
+                    })
+
+        return dico_trip_infos
+    
+    else:
+        print("="*20, "previous_trip is empty from views.py", "="*20)
+        return None
+
+
+    
+        
+def get_previous_trip_infos2(request, df_donnees_p1, data_common):
+    """Fonction qui va faire appel au WS pour :
+    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
+    et 2) trouver les informations rattachées à ce trip
+
+    Args:
+        request (_type_): _description_
+        df_donnees_p1 (_type_): _description_
+
+    Returns:
+        dictionnaire: startDate, endDate, captain
+    """
+     
+    token = api.get_token()
+    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+
+    # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
+    vessel_topiaid = json_construction.get_vessel_topiaID(df_donnees_p1, data_common)
+    vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
+    programme_topiaid = request.session.get('dico_config')['programme']
+    programme_topiaid_WS = programme_topiaid.replace("#", "-")
+    
+    print("="*20, vessel_topiaid_WS, "="*20)
+    print("="*20, programme_topiaid, "="*20)
+
+    previous_trip = api.latest_trip(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
+    # on récupères les informations uniquement pour le trip avec la endDate la plus récente
+    parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
+    # print("°"*10, parsed_previous_trip['content'] , "°"*10)    
+
+    if parsed_previous_trip['content'] != []:
+        # Prévoir le cas ou le vessel n'a pas fait de trip avant
+        trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace("#", "-")
+        print("="*20, trip_topiaid, "="*20)
+        
+        # on récupère les infos du trip enregistré dans un fichier json
+        trip_info = api.get_one(token, url_base, trip_topiaid)
+        
+        json_file = api.load_json_file("previoustrip.json")
+        print(json_file)
+        
         parsed_trip_info = json.loads(trip_info.decode('utf-8'))
+        # parsed_trip_info = json.loads(trip_info.decode('utf-8'))
         parsed_trip_info = parsed_trip_info['content'][0]
-        print("="*20, "detailled trip from views.py", "="*20)
-        # print(parsed_trip_info)
         
         captain_name = from_topiaid_to_value(topiaid=parsed_trip_info['captain'],
                             lookingfor='Person',
@@ -943,14 +1035,22 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
 DIR = "./media/logbooks"
 
 
+
+
+
+
 def presenting_previous_trip(request):
     
     activate(request.LANGUAGE_CODE)
-    
+
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
     
+    # print("_"*20, 'language code', '_'*20)
+    # print(activate(apply_conf['language']))
+
     print("="*20, "presenting_previous_trip", "="*20)
+    print("apply conf : ", apply_conf)
     
     programme = from_topiaid_to_value(topiaid = apply_conf['programme'],
                                     lookingfor = 'Program',
@@ -1012,6 +1112,7 @@ def checking_logbook(request):
     # selected_file = request.GET.get('selected_file')
     
     print("="*20, "checking_logbook", "="*20)
+
     
     with open('./data_common.json', 'r', encoding='utf-8') as f:
         data_common = json.load(f)
@@ -1284,6 +1385,8 @@ def send_logbook2Observe(request):
         print("Load JSON data file")
 
         token = api.get_token()
+        print("le token qu'on test dansla boucle json", token)
+        url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
         with open('./data_common.json', 'r', encoding='utf-8') as f:
             data_common = json.load(f)
@@ -1300,31 +1403,76 @@ def send_logbook2Observe(request):
         print("="*80)
         print("Create Activity and Set")
 
+        # days_in_month = apply_conf['endDate']
         days_in_month = len(extract_positions(df_donnees_p1))
 
-        MultipleActivity = create_activity_and_set(
-            df_donnees_p1, df_donnees_p2, data_common, data_ll, days_in_month)
-
-        print("="*80)
-        print("Create Trip")
-
-        trip = create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context)
-
-        print("le token qu'on test dansla boucle json", token)
-        url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-        print("request.session.get('continuetrip') : ", request.session.get('continuetrip'))
+        
+        
         if request.session.get('continuetrip') == None:
+            
+            MultipleActivity = json_construction.create_activity_and_set(
+            df_donnees_p1, df_donnees_p2, data_common, data_ll, days_in_month)
+            
+            print("="*80)
+            print("Create Trip")
+
+            trip = json_construction.create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context)
+            
             print("Je suis dans 'request.session.get('continuetrip') == None' ")
             api.send_trip(token, trip, url_base)
+        
         else:
-            api.update_trip(token=token, 
+            with open('./previoustrip.json', 'r', encoding='utf-8') as f:
+                json_previoustrip = json.load(f)
+            
+            # fonction de recherche si la 1ere date de mon excel est dans 
+            # print(json_previoustrip['content'])
+            
+            print("#"*50)
+            print(extract_time(df_donnees_p1, data_ll).loc[0, 'VesselActivity'])
+             
+            if extract_time(df_donnees_p1, data_ll).loc[0, 'VesselActivity'] == "fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1" :
+                # Si c'est une fishing operation 
+                date = json_construction.create_starttimestamp(df_donnees_p1, data_ll, 0, True)
+            else : 
+                date = json_construction.create_starttimestamp(df_donnees_p1, data_ll, 0, False)
+            
+            
+            if json_construction.search_date_into_json(json_previoustrip['content'], date) is True :
+                print("ERROR THE TRIP YOU WANT TO ADD IS ALREDAY ENTERED IN THE PREVIOUS ONE")
+                return render(request, 'LL_send_data.html', {'info': 'NOT OK DATA ALREADY ENTERED'})
+            
+            
+            else :
+                
+                MultipleActivity = json_construction.create_activity_and_set(
+                df_donnees_p1, df_donnees_p2, data_common, data_ll, days_in_month)
+                
+                print("="*80)
+                print("Create Trip")
+
+                # trip = json_construction.add_activity_and_set_to_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context)
+                trip = json_previoustrip['content'].append(MultipleActivity)
+                print(trip)
+                              
+                print("Je suis dans 'request.session.get('continuetrip') == None' ")
+                api.update_trip(token=token, 
                             data=trip, 
                             url_base=url_base, 
                             topiaid=context['triptopiaid'])
     
+                
+                print("ok alors la on innove")
+            
+            
+            
+            
+            # api.update_trip(token=token, 
+            #                 data=trip, 
+            #                 url_base=url_base, 
+            #                 topiaid=context['triptopiaid'])
+  
     
-    # api.close(token)
 
         return render(request, 'LL_send_data.html', {'info': 'OK'}
                     #   , {'info': api.send_trip(token, trip, url_base)}
