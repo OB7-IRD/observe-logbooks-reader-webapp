@@ -288,7 +288,7 @@ def getProgram(request, domaine):
             # print(key, value)
             dataPro["id"].append(key)
             dataPro["value"].append(value)
-            print("="*20, "dataPro", "="*20)
+            # print("="*20, "dataPro", "="*20)
             # print(datat_0c_Pr)
         # print(dataPro)
         return JsonResponse({"dataPro": dataPro})

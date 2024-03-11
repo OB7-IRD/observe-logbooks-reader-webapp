@@ -433,14 +433,13 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
     for content in json_previoustrip:
         for activity in content['activityLogbook'] :
             start_time = activity.get('startTimeStamp')
-            print("date trouvée dans le json : ", start_time)
-            print("date de mon excel ", date_to_look_for)
-            # print("activity['settingStartTimeStamp'] == ", activity["activityLogbook"]["settingStartTimeStamp"])
+            # print("date trouvée dans le json : ",s start_time)
+            # print("date de mon excel ", date_to_look_for)
             if start_time and start_time.startswith(date_to_look_for) :
-                print("False : erreur pour l'utilisateur")
+                # print("False : erreur pour l'utilisateur")
                 return True
-            else : 
-                print("True : donc mon logbook est nouveau et peut être ajouté au précédent")
+            # else : 
+            #     print("True : donc mon logbook est nouveau et peut être ajouté au précédent")
 
     return False
             
@@ -640,6 +639,30 @@ def add_activity_and_set_to_trip(json_previoustrip, MultipleActivity):
     return trip
 
 
+def remove_keys(obj, keys_to_remove):
+    if isinstance(obj, dict):
+        for key in keys_to_remove:
+            obj.pop(key, None)
+        for value in obj.values():
+            remove_keys(value, keys_to_remove)
+    elif isinstance(obj, list):
+        for item in obj:
+            remove_keys(item, keys_to_remove)
+    return obj
+
+def replace_null_false_true(obj):
+    if isinstance(obj, dict):
+        return {key: replace_null_false_true(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [replace_null_false_true(item) for item in obj]
+    elif obj == "null":
+        return None
+    elif obj == "true":
+        return True
+    elif obj == "false":
+        return False
+    else:
+        return obj
 
 
 def pretty_print(json_data, file="sample.json", mode="a"):
@@ -653,6 +676,8 @@ def pretty_print(json_data, file="sample.json", mode="a"):
     # print(json_data)
     json_formatted_str = json.dumps(
         json_data, indent=2, default=palangre_syc.api.serialize)
+    print("¤"*20, "pretty print function" ,"¤"*20)
+    print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
     with open(file, mode) as outfile:
         outfile.write(json_formatted_str)
 

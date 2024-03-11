@@ -156,14 +156,14 @@
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 {% translate "Date de départ" %}
                                             </td>
-                                            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' %}
+                                            {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
                                                 <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
                                                     {{ previous_trip.startDate |slice:':10'}} 
                                                 </td>
                                             {% else %}
-                                            <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date">
-                                            </td>
+                                                <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                    <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date">
+                                                </td>
                                             {% endif %}
                                         </tr>
 
@@ -171,7 +171,7 @@
                                             <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 {% translate "Port de départ" %}
                                             </td>
-                                            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' and previous_trip.depPort != 'null' %}
+                                            {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' and previous_trip.depPort != 'null' %}
                                                 <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
                                                     {{ previous_trip.depPort }} 
                                                 </td>

@@ -280,7 +280,7 @@ def latest_trip(token, url_base, vessel_id, programme_topiaid):
 def load_json_file(file_path):
     try:
         with open(file_path, 'r') as file:
-            # a voir s'il faut ajouter '.decode('utf8')'
+            # a voir s'il faut ajouter '.decode('utf8')'    
             data = json.load(file)
             return data
     except FileNotFoundError:
