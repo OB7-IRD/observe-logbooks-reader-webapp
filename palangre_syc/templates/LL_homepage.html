@@ -26,6 +26,15 @@
     <!-- Content -->
     <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
         <div>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+
             <!-- ADD TRANSLATION ON URL -->
             <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
 
@@ -203,7 +212,7 @@
                                             </td>
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
                                                 <select id="endPort" name="endPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
-                                                    <option value="" selected>Non concerné</option>
+                                                    <option value="" selected> {% translate 'Non concerné' %} </option>
                                                     {% for port in list_ports %}
                                                       <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
                                                     {% endfor %}

@@ -445,7 +445,7 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
             
     
 
-def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, DAYS_IN_A_MONTH):
+def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, start_extraction, end_extraction):
     # days_in_a_month = len(extract_positions(df_donnees_p1))
     # MultipleSet = []
     if isinstance(palangre_syc.views.extract_gearInfo_LL(df_donnees_p1), tuple) : 
@@ -462,7 +462,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
         
         
     MultipleActivity = []
-    for i in range(0, DAYS_IN_A_MONTH):
+    for i in range(start_extraction, end_extraction):
         set = {
             'homeId': None,
             'comment': None,
@@ -625,17 +625,6 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, contex
         'observationsAvailability': False,
         'logbookAvailability': True,
     })
-    return trip
-
-
-
-def add_activity_and_set_to_trip(json_previoustrip, MultipleActivity):
-
-    json_previoustrip['content'].append(MultipleActivity)
-    
-    return json.dumps(json_previoustrip, indent=2)
-    
-    
     return trip
 
 

@@ -217,7 +217,7 @@ def send_trip(token, data, url_base):
 
     print("Post")
     pretty_print(data)
-    res = requests.post(url, data=data_json, headers=headers, timeout=15)
+    res = requests.post(url, data=data_json, headers=headers, timeout=30)
 
     print("Code resultat de la requete", res.status_code)
     print("url envoyé : ", url)
