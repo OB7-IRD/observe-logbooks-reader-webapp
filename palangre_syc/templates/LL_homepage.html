@@ -26,19 +26,10 @@
     <!-- Content -->
     <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
         <div>
-            {% if messages %}
-                <ul class="messages">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-
-
             <!-- ADD TRANSLATION ON URL -->
             <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
 
-            {% if continuetrip == 'Continuer cette marée' or 'Continue the trip' %}
+            {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
                 <div class = "rounded-md p-4 flex justify-center items-center">
                     <div class = "text-center text-2xl font-semibold mb-6">
                         {% blocktranslate trimmed %}
@@ -75,6 +66,28 @@
                 </div>
             {% endif %}
 
+
+            {% comment %} {% if messages %}
+                {% for message in messages %}
+                <div class="font-regular relative block w-full max-w-screen-md rounded-lg px-4 py-4 text-base 
+                {% if message.tags == 'success' %}
+                    bg-green-200
+                {% elif message.tags == 'error' %}
+                    bg-red-200
+                {% elif message.tags == 'warning' %}
+                    bg-yellow-500
+                {% else %}
+                    bg-grey-100
+                {% endif %}" data-dismissible="alert">
+                
+                    <div class="ml-8 mr-12 mb-5 font-sans text-center text-xl font-semibold font-semibold leading-snug tracking-normal text-black antialiased">
+                    <ul class="messages">     
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    </ul>      
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %} {% endcomment %}
 
                 <!-- First line div -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -455,16 +468,14 @@
 
                 <!-- Div buttons -->
                 <div class="flex justify-center items-center inline-flex">
-                    <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/>
+                    {% comment %} faire un truc mieux pour le bouton -->
+                    <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
+                    <a href="../logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
+                        {% translate "Annuler"%}
+                    </a>
                     <input id = "sendform" value = {% translate "Envoyer le journal de bord"%} type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
                 </div>
             <!-- End Div buttons -->
-
-
-
-
-
-
             {% csrf_token %}
             </form>
         </div>
@@ -542,104 +553,6 @@
 {% comment %} <script src="{% static 'theme/assets/js/code.js' %}"></script> {% endcomment %}
 
 
-<!--script>
-    {% comment %} $(document).ready(function() {
-        $('#dataTable').DataTable();
-    }); {% endcomment %}
-
-    window.app = {
-        newtrip_question: null,
-        endtrip_question: null,
-        showModal: false,
-        // Other properties and methods...
-    };
-
-    
-    {% comment %} $("#validate_modal").click(function sendAnswers() { {% endcomment %}
-    function sendAnswers() {
-        const newtrip_question = app.newtrip_question;
-        const endtrip_question = app.endtrip_question;
-        println(newtrip_question)
-
-        if (newtrip_question != null && endtrip_question != null) {
-            data = $("#checking_logbook").serialize();
-            console.log(data);
-            $.ajax({
-                type: 'POST',
-                {% comment %} url:'{% url 'checking logbook' %}', {% endcomment %}
-                url: '/checking_logbook/',
-                data: data,
-                dataType: "json",
-                
-                success: function(response){
-                    console.log(response);
-                    if (response.message == 'success'){
-                        console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
-
-                    }else{
-                        console.log("2message unsuccess"+response.message);
-                    }
-                },
-                error: function(response){
-                    console.log(response);
-                    console.log('not a success mais je peux pas te dire pourquoi');
-                }
-            });
-        } else {
-            alert('Please answer both questions.');
-        }
-    }
-</script !-->
-
-
-
-{% comment %} <script>
-$(document).ready(function(){
-    $("#btn_dep_end_infos").click(function(e){
-        e.preventDefault()
-        console.log("Radio new trip : " + $("input[type='radio'][name='newtrip_question']:checked").val());
-        console.log("Radio end trip : " + $("input[type='radio'][name='endtrip_question']:checked").val());        
-
-        if (($("input[type='radio'][name='newtrip_question']:checked").val() != undefined)
-        && ($("input[type='radio'][name='endtrip_question']:checked").val() != undefined)) {
-            // console.log($("#dep_end_infos").serialize());
-            data = $("#dep_end_infos").serialize();
-            
-           // var csrftoken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
-           // console.log(csrftoken);
-
-            var current_url = window.location.href;
-            var modifiedUrl = current_url.replace('http://127.0.0.1:8000/palangre_syc/', '');
-            console.log("url ? : " + modifiedUrl);
-            $("#extracted_logbook").show();
-            
-            $.ajax({
-                type: 'POST',
-                //url: 'checking_logbook/'+$("#dep_end_infos").attr('action'),                data: data,
-                //url: 'checking_logbook',
-                //url : modifiedUrl,
-               // dataType: "json",
-            
-            });
-
-           // $("#div_upload").show(1500);
-          //  $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
-
-          //  var domaine = $("#domaine").val()
-          //  dropZone(domaine);
-    
-            console.log('Affiche les réponses envoyées : '+$("#dep_end_infos").val());
-        }
-
-        else{
-            alert('Merci de selectionner tous les champs avant d\'appliquer');
-        }
-
-    });
-
-});
-
-</script> {% endcomment %}
 
 
 {% endblock content %}

@@ -570,7 +570,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
     return MultipleActivity
 
 
-def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, context):
+def create_trip(df_donnees_p1, MultipleActivity, data_common, context):
     # Dans le trip on a fixé :
     # tripType = Marée de pêche commerciale
     # observer = unknown car non présent
@@ -579,15 +579,16 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, contex
     # species semble être TargetSpecies - a voir si on développe
 
     trip = {
-        'homeId': None,}
+        'homeId': None,
+        'startDate': context['startDate']}
 
-    if apply_conf['startDate'] != None :
-        trip.update({'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']), })
-    else : 
-        trip.update({'startDate': context['startDate'], })
+    # if apply_conf['startDate'] != None :
+    #     trip.update({'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']), })
+    # else : 
+    #     trip.update({'startDate': context['startDate'], })
         
     trip.update({
-        'endDate': create_starttimestamp_from_fieldDate(apply_conf['endDate']),
+        'endDate': context['endDate'],
         'noOfCrewMembers': palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId': None,
         'gearUseFeatures': None,
@@ -600,22 +601,15 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, apply_conf, contex
         'observer': 'fr.ird.referential.common.Person#1254317601353#0.6617065204572095',
         'vessel': get_vessel_topiaID(df_donnees_p1, data_common),
         'observationsProgram': None,
-        'logbookProgram': apply_conf['programme'],
+        'logbookProgram': context['programtopiaid'],
         'captain': get_captain_topiaID(df_donnees_p1, data_common),
         'observationsDataEntryOperator': None,
         'logbookDataEntryOperator': get_lb_operator_topiaID(df_donnees_p1, data_common),
         'sampleDataEntryOperator': None,
         'landingDataEntryOperator': None,
-        'ocean': apply_conf['ocean'],})
-    
-    if apply_conf['depPort'] != None :
-        trip.update({'departureHarbour': apply_conf['depPort'], })
-    else : 
-        trip.update({'departureHarbour': context['depPort_topiaid'], })
-        
-    
-    trip.update({ 
-        'landingHarbour': apply_conf['endPort'],
+        'ocean': context['oceantopiaid'],
+        'departureHarbour': context['depPort'],
+        'landingHarbour': context['endPort'],
         'observationsDataQuality': None,
         'logbookDataQuality': None,
         'generalComment': None,
