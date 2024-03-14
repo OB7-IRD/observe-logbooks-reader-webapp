@@ -27,7 +27,9 @@
     <div id = "extracted_logbook" class="bg-green-200 grid place-items-center w-full min-h-screen transition-all p-12">
         <div>
             <!-- ADD TRANSLATION ON URL -->
-            <form method="POST" id="dep_end_infos" action="{% url 'send logbook2Observe' %}">
+            <form method="POST" id="dep_end_infos" action="
+            {% comment %} {% url 'send logbook2Observe' %}"> {% endcomment %}
+            {% url 'checking logbook' %}"> 
 
             {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
                 <div class = "rounded-md p-4 flex justify-center items-center">
@@ -67,7 +69,7 @@
             {% endif %}
 
 
-            {% comment %} {% if messages %}
+            {% if messages %}
                 {% for message in messages %}
                 <div class="font-regular relative block w-full max-w-screen-md rounded-lg px-4 py-4 text-base 
                 {% if message.tags == 'success' %}
@@ -87,7 +89,7 @@
                     </div>
                 </div>
                 {% endfor %}
-            {% endif %} {% endcomment %}
+            {% endif %}
 
                 <!-- First line div -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -184,7 +186,8 @@
                                                 </td>
                                             {% else %}
                                                 <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                    <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date">
+                                                    <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date"
+                                                    required >
                                                 </td>
                                             {% endif %}
                                         </tr>
@@ -199,7 +202,7 @@
                                                 </td>
                                             {% else %}
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-                                                <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
+                                                <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl" required>
                                                     <option value="" selected> {% translate "Non concerné" %} </option>
                                                     {% for port in list_ports %}
                                                       <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
@@ -214,8 +217,7 @@
                                                 {% translate "Date d'arrivée" %}
                                             </td>
                                             <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
-
-                                                <input type="date" id="endDate" name="endDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date">
+                                                <input type="date" id="endDate" name="endDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date" required >
                                             </td>
                                         </tr>
 
