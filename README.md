@@ -22,7 +22,15 @@ mkdocs -h # Print help message and exit.
 
 ## Documentation réalisée par le biais de Sphinx
 ```
-pip install pydata-sphinx-themesphinx-quickstart docs
+pip install pydata-sphinx-theme
+sphinx-quickstart docs
+
+pip install mystr_parser
+pip install sphinx_design
+pip install sphinx_copybutton
+pip install sphinx_codeautolink
+pip install sphinx-serve
+
 ```
 Pour lancer la documentation :
 
@@ -30,4 +38,5 @@ Pour lancer la documentation :
 cd docs
 make html # Build the documentation 
 sphinx-serve & # Lance le serveur 
+sphinx-serve -b build -h 127.0.0.1
 ```
