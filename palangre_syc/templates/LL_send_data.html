@@ -5,7 +5,7 @@
 
 {% block title %}
 
-Palangre aux Seychelles
+{% translate "Palangre aux Seychelles"%}
 
 {% endblock title %}
 
@@ -13,25 +13,12 @@ Palangre aux Seychelles
 {% endblock navigation %}
 
 {% block heading %}
-<h1>Envoie des données dans la base</h1>
+<h1> {% translate "Envoie des données dans la base" %}</h1>
 {% endblock heading %}
 
 {% block content %}
-
-
-
-    
-   
-        
-
-
-    {% comment %} <form action="{% url 'send logbook2Observe' %}" method="post">
-        {% csrf_token %}
-        {{ info | safe }}
-    </form> {% endcomment %}
   
-  
-<div class="m-5">
+<div class="mb-5">
   {% if messages %}
     {% for message in messages %}
       <div class="font-regular relative block w-full max-w-screen-md rounded-lg px-4 py-4 text-base 
@@ -73,5 +60,5 @@ Palangre aux Seychelles
 {% endblock content %}
 
 {% block footer %}
-<p>&copy; En cours de développement </p>
+<p>&copy; {% translate "En cours de développement" %}</p>
 {% endblock footer %}

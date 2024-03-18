@@ -215,35 +215,39 @@ def read_excel(file_path, num_page):
     return df_donnees
 
 
-def extract_vesselInfo_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe 
-    les données relatives au bateau 'Vessel information'
-    '''
-    # On extrait les données propres au 'Vessel information'
+def extract_vessel_info(df_donnees):
+    """
+    Extraction des cases 'Vessel Information'
+
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
     df_vessel = df_donnees.iloc[7:16, 0]
-    np_vessel = np.array(df_vessel)
-
     # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
-    entries = [(item.split(":")[0].strip(), item.split(":")[
-                1].strip() if ':' in item else '') for item in np_vessel]
-    np_vessel_clean = np.array(
-        entries, dtype=[('Logbook_name', 'U50'), ('Value', 'U50')])
-    # On applique un filtre pour les caractères spéciaux
-    np_vessel_clean['Logbook_name'] = remove_spec_char_from_list(
-        np_vessel_clean['Logbook_name'])
-    df_vessel = pd.DataFrame(np_vessel_clean)
-    df_vessel['Logbook_name'] = df_vessel['Logbook_name'].apply(
-        lambda x: x.strip())
+    df_vessel_clean = df_vessel.str.split(':', expand=True)
+    # S'assurer que toutes les valeurs sont des chaînes de caractères
+    df_vessel_clean = df_vessel_clean.map(lambda x: str(x).strip() if x is not None else '')
+    df_vessel_clean.columns = ['Logbook_name', 'Value']
+    # On enlève les caractères spéciaux
+    df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
 
-    return df_vessel
+    return df_vessel_clean
 
 
-def extract_cruiseInfo_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les données relatives à la marée
-    '''
-    # On extrait les données propres au 'Vessel information'
+def extract_cruise_info(df_donnees):
+    """
+    Extraction des cases 'Cruise Information'
+
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
+    # On extrait les données propres au 'Cruise information'
     df_cruise1 = df_donnees.iloc[9:10, 11:20]
     df_cruise2 = df_donnees.iloc[9:10, 20:29]
 
@@ -262,34 +266,52 @@ def extract_cruiseInfo_LL(df_donnees):
     np_cruise[:, 1] = vect(np_cruise[:, 1])
 
     df_cruise = pd.DataFrame(np_cruise, columns=['Logbook_name', 'Value'])
-    df_cruise['Logbook_name'] = remove_spec_char_from_list(
-        df_cruise['Logbook_name'])
-    df_cruise['Logbook_name'] = df_cruise['Logbook_name'].apply(
-        lambda x: x.strip())
+    
+    # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
+    df_cruise['Logbook_name'] = df_cruise.iloc[:, 0].str.replace(':', '').str.strip()
 
+    # Appliquer la fonction strip sur les cellules de la colonne 'Value' si l'élément correspond à une zone de texte
+    df_cruise['Value'] = df_cruise.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
+
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    df_cruise['Logbook_name'] = remove_spec_char_from_list(df_cruise['Logbook_name'])
+
+    # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
+    df_cruise['Logbook_name'] = df_cruise['Logbook_name'].str.strip()
+    
     return df_cruise
 
-def extract_reportInfo_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les données
-    relatives aux info de report
-    '''
+def extract_report_info(df_donnees):
+    """
+    Extraction des cases 'Report Information'
+
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
     # On extrait les données propres au 'Vessel information'
     df_report = df_donnees.iloc[7:9, 29:35]
 
-    # On supprimes les colonnes qui sont vides
-    df_report = del_empty_col(df_report)
-    np_report = np.array(df_report)
+    # On supprime les colonnes qui sont vides
+    df_report = df_report.dropna(axis=1, how='all')
 
-    # On applique la fonction strip sur les cellules de la colonnes Valeur,
-    # si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)
-    np_report[:, 0:1] = vect(np_report[:, 0:1])
+    # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
+    df_report.iloc[:, 0] = df_report.iloc[:, 0].str.replace(':', '').str.strip()
 
-    df_report = pd.DataFrame(np_report, columns=['Logbook_name', 'Value'])
-    df_report['Logbook_name'] = remove_spec_char_from_list(
-        df_report['Logbook_name'])
+    # Nettoyer la colonne 'Value' en appliquant strip() si l'élément correspond à une chaîne de caractères
+    df_report.iloc[:, 1] = df_report.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
+    # Renommer les colonnes
+    df_report.columns = ['Logbook_name', 'Value']
+
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    df_report['Logbook_name'] = remove_spec_char_from_list(df_report['Logbook_name'])
+
+    # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
+    df_report['Logbook_name'] = df_report['Logbook_name'].str.strip()
+    
     return df_report
 
 
@@ -605,7 +627,6 @@ def extract_tunas(df_donnees):
     df_tunas = df_tunas.map(zero_if_empty)
     # print(df_tunas)
     df_tunas.reset_index(drop=True, inplace=True)
-    # print(df_tunas)
     return df_tunas
 
 
@@ -877,7 +898,7 @@ def get_previous_trip_infos2(request, df_donnees_p1, data_common):
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = json_construction.get_vessel_topiaID(
+    vessel_topiaid = json_construction.get_vessel_topiaid(
         df_donnees_p1, data_common)
     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
     vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
@@ -965,7 +986,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = json_construction.get_vessel_topiaID(df_donnees_p1, data_common)
+    vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, data_common)
     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
     vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
     programme_topiaid = request.session.get('dico_config')['programme']
@@ -1204,9 +1225,9 @@ def checking_logbook(request):
         file_path = request.session.get('file_path')
                 
         df_donnees_p1 = read_excel(file_path, 1)
-        df_vessel = extract_vesselInfo_LL(df_donnees_p1)
-        df_cruise = extract_cruiseInfo_LL(df_donnees_p1)
-        df_report = extract_reportInfo_LL(df_donnees_p1)
+        df_vessel = extract_vessel_info(df_donnees_p1)
+        df_cruise = extract_cruise_info(df_donnees_p1)
+        df_report = extract_report_info(df_donnees_p1)
         df_gear = extract_gearInfo_LL(df_donnees_p1)
         df_line = extract_lineMaterial_LL(df_donnees_p1)
         df_target = extract_target_LL(df_donnees_p1)
@@ -1337,9 +1358,6 @@ def checking_logbook(request):
                 if context['df_previous'] is not None : 
                     data_to_homepage.update({'previous_trip': context['df_previous'],
                             'continuetrip': context['continuetrip'],})
-                
-                print("data_to_homepage "*15)
-                print(data_to_homepage)
                 
                 return render(request, 'LL_homepage.html', data_to_homepage)
             
@@ -1516,22 +1534,24 @@ def send_logbook2Observe(request):
             start_extraction = int(startDate[8:10]) - 1
 
             if context['endDate'][5:7] == logbook_month:
-                end_extraction = int(context['endDate'][8:10]) - 1
+                end_extraction = int(context['endDate'][8:10])
                 print("startDate & endDate in month logbook : ", start_extraction, end_extraction)
             
             else:
                 end_extraction = len(extract_positions(df_donnees_p1))
+                print("endDATEEEEEe : ", end_extraction)
                 print("startDate in month logbook : ", start_extraction, end_extraction)
         
         else:
             start_extraction = 0
-            if context['endDate'][5:7] == logbook_month:
-                end_extraction = int(context['endDate'][8:10]) - 1
-                print("endDate in month logbook : ", start_extraction, end_extraction)
+            # if context['endDate'][5:7] == logbook_month:
+            end_extraction = int(context['endDate'][8:10])
+            print("endDATEEEEEe : ", end_extraction)
+            print("endDate in month logbook : ", start_extraction, end_extraction)
             
-            else:
-                end_extraction = len(extract_positions(df_donnees_p1))
-                print("nothing in month logbook : ", start_extraction, end_extraction)
+            # else:
+            #     end_extraction = len(extract_positions(df_donnees_p1))
+            #     print("nothing in month logbook : ", start_extraction, end_extraction)
                               
         if context['continuetrip'] is None:
             # NEW TRIP

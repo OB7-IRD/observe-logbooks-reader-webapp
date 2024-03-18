@@ -21,60 +21,13 @@ Palangre aux Seychelles
     <!-- last trip extracted data -->
     {% if df_previous_trip.iterrows != None %}
 
-
-        {% comment %} <div class = "rounded-md p-4 flex justify-center items-center">
-            <div class = "text-center text-2xl mb-6">
-                {% blocktranslate trimmed %}
-                La dernière marée enregistrée sur Observe pour le navire
-                   <b> {{ vessel }} </b>
-                selon le programme {{ programme }} et dans l'océan {{ ocean }}
-
-                est la suivante : 
-                {% endblocktranslate %}
-            </div>  
-        </div>  
-
-        <div class = "p-6 flex justify-center items-center">
-
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
-                
-                <div class="text-center mb-1 text-2xl">
-                    {% translate "Marée initiée le" %} <b> {{ startDate|slice:':10' }} </b> 
-                    {% blocktranslate %} depuis le port de {{ depPort }} {% endblocktranslate %}
-                </div>
-
-                <div class="text-center mb-1 text-2xl">
-                    {% translate "Actuellement cloturée le " %} 
-                    <b> {{ endDate |slice:':10'}} </b>
-                </div>
-
-                <div class="text-center mb-1 text-2xl">
-                    {% translate "Menée par le capitaine " %} <b> {{ captain }} </b>
-                </div>
-                
-            </div>
-        </div>
-
-        <div class = "rounded-md p-4 flex justify-center items-center">
-            <div class = "text-center text-2xl mb-6">
-                {% translate "Que souhaitez-vous faire ?"%}
-                <br> <br> <br>
-                <div class="flex justify-center text-2xm items-right inline-flex">
-                    <input id = "continuetrip" value = {% translate "'Continuer cette marée'"%} type="submit" name="continuetrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-                </div>
-
-                <div class="flex justify-center text-2xm items-right inline-flex">
-                    <input id = "newtrip" value = {% translate "'Créer une nouvelle marée'" %} type="submit" name="newtrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
-                </div>
-            </div>  
-        </div> {% endcomment %}
-
         <!-- ON AFFICHE UN TABLEAU AVEC L'ENSEMBLE DES TRIP PRECEDENTS POUR UN PROGRAMME ET UN NAVIRE -->
 
         <div class="container mx-auto px-4 sm:px-4 py-8">
             <div>
                 <h2 class="text-2xl font-semibold leading-tight">
-                    Données de marées associées au programme : {{ program }} </h2>
+                    {% translate "Données de marées associées au programme : " %}
+                    {{ program }} </h2>
             </div>
 
             <div class="-mx-2 sm:-mx-2 px-2 sm:px-8 py-2 overflow-x-auto">
@@ -108,9 +61,7 @@ Palangre aux Seychelles
                         </thead>
 
                         <tbody>
-
-                            {% for index, row in df_previous_trip.iterrows %}
-                                
+                            {% for index, row in df_previous_trip.iterrows %}     
                                 <tr>
                                     <td>
                                         <input type="radio" id="radio_previoustrip" name="radio_previoustrip" value="{{ row.0 }}"/>
@@ -143,16 +94,10 @@ Palangre aux Seychelles
                                     <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
                                         {{ row.ocean }}
                                     </td>
-
-
                                 </tr>
                             {% endfor %}
                         </tbody>
-
-                    
                     </table>
-                    
-
                 </div>
             </div>
         </div>

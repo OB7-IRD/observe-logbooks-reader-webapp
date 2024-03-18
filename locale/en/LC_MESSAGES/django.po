@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-08 11:55+0400\n"
+"POT-Creation-Date: 2024-03-18 09:39+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgstr "Longliners in Seychelles"
 msgid "Page d'accueil pour les données de palangre"
 msgstr "Home page for longline data"
 
-#: .\palangre_syc\templates\LL_homepage.html:35
+#: .\palangre_syc\templates\LL_homepage.html:38
 #, python-format
 msgid ""
 "La dernière marée enregistrée sur Observe pour le navire "
@@ -36,92 +36,97 @@ msgstr ""
 "The last trip recorded on Observe for the vessel %(previous_trip.vessel)s is "
 "as follows: "
 
-#: .\palangre_syc\templates\LL_homepage.html:48
+#: .\palangre_syc\templates\LL_homepage.html:51
 #, python-format
 msgid "Marée initiée le %(startDate)s depuis le port de %(depPort)s"
 msgstr "Trip initiated on %(startDate)s from the %(depPort)s harbour"
 
-#: .\palangre_syc\templates\LL_homepage.html:55
+#: .\palangre_syc\templates\LL_homepage.html:58
 #, python-format
 msgid "Actuellement cloturée le %(endDate)s"
 msgstr "Currently ended on %(endDate)s"
 
-#: .\palangre_syc\templates\LL_homepage.html:61
+#: .\palangre_syc\templates\LL_homepage.html:64
 #, python-format
 msgid "Menée par %(captain)s"
 msgstr "Led by Captain %(captain)s"
 
-#: .\palangre_syc\templates\LL_homepage.html:76
+#: .\palangre_syc\templates\LL_homepage.html:106
 msgid "Journal du "
 msgstr "Logbook for "
 
-#: .\palangre_syc\templates\LL_homepage.html:101
+#: .\palangre_syc\templates\LL_homepage.html:131
 #, python-format
 msgid "Océan %(ocean)s"
 msgstr "%(ocean)s ocean"
 
-#: .\palangre_syc\templates\LL_homepage.html:111
+#: .\palangre_syc\templates\LL_homepage.html:141
 #, python-format
 msgid "Programme %(programme)s"
 msgstr "%(programme)s program"
 
-#: .\palangre_syc\templates\LL_homepage.html:120
+#: .\palangre_syc\templates\LL_homepage.html:150
 msgid "Rapporté "
 msgstr "Reported"
 
-#: .\palangre_syc\templates\LL_homepage.html:125
+#: .\palangre_syc\templates\LL_homepage.html:155
 msgid "par"
 msgstr "by"
 
-#: .\palangre_syc\templates\LL_homepage.html:130
+#: .\palangre_syc\templates\LL_homepage.html:160
 msgid "le "
 msgstr "on"
 
-#: .\palangre_syc\templates\LL_homepage.html:147
+#: .\palangre_syc\templates\LL_homepage.html:177
 msgid "Informations de marée"
 msgstr "Trip information"
 
-#: .\palangre_syc\templates\LL_homepage.html:157
+#: .\palangre_syc\templates\LL_homepage.html:187
+#: .\palangre_syc\templates\LL_previoustrippage.html:94
 msgid "Date de départ"
 msgstr "Departure date"
 
-#: .\palangre_syc\templates\LL_homepage.html:172
+#: .\palangre_syc\templates\LL_homepage.html:203
+#: .\palangre_syc\templates\LL_previoustrippage.html:97
 msgid "Port de départ"
 msgstr "Departure port"
 
-#: .\palangre_syc\templates\LL_homepage.html:181
+#: .\palangre_syc\templates\LL_homepage.html:212
+#: .\palangre_syc\templates\LL_homepage.html:236
 msgid "Non concerné"
 msgstr "Not concerned"
 
-#: .\palangre_syc\templates\LL_homepage.html:192
+#: .\palangre_syc\templates\LL_homepage.html:223
+#: .\palangre_syc\templates\LL_previoustrippage.html:101
 msgid "Date d'arrivée"
 msgstr "Arrival date"
 
-#: .\palangre_syc\templates\LL_homepage.html:202
+#: .\palangre_syc\templates\LL_homepage.html:232
+#: .\palangre_syc\templates\LL_previoustrippage.html:104
 msgid "Port d'arrivée"
 msgstr "Arrival port"
 
-#: .\palangre_syc\templates\LL_homepage.html:236
+#: .\palangre_syc\templates\LL_homepage.html:266
 msgid "Informations sur le navire"
 msgstr "Vessel information"
 
-#: .\palangre_syc\templates\LL_homepage.html:271
+#: .\palangre_syc\templates\LL_homepage.html:301
 msgid "Informations sur le matériel"
 msgstr "Gear information"
 
-#: .\palangre_syc\templates\LL_homepage.html:323
+#: .\palangre_syc\templates\LL_homepage.html:353
 msgid "Informations sur la ligne de pêche"
 msgstr "Main line information"
 
-#: .\palangre_syc\templates\LL_homepage.html:375
+#: .\palangre_syc\templates\LL_homepage.html:405
 msgid "Espèces visées"
 msgstr "Target species"
 
-#: .\palangre_syc\templates\LL_homepage.html:411
+#: .\palangre_syc\templates\LL_homepage.html:441
 msgid "Âppats utilisés"
 msgstr "Baits used"
 
-#: .\palangre_syc\templates\LL_homepage.html:441
+#: .\palangre_syc\templates\LL_homepage.html:471
 msgid ""
 "Au moins une information du logbook n'est pas correcte, merci de la "
 "vérifier. Si vous décidez d'envoyer le journal de bord, l'information éronée "
@@ -131,62 +136,39 @@ msgstr ""
 "you decide to send the logbook, the incorrect information will not be "
 "retransmitted."
 
-#: .\palangre_syc\templates\LL_homepage.html:451
+#: .\palangre_syc\templates\LL_homepage.html:485
 msgid "Annuler"
 msgstr "Cancel"
 
-#: .\palangre_syc\templates\LL_homepage.html:452
+#: .\palangre_syc\templates\LL_homepage.html:487
 msgid "Envoyer le journal de bord"
 msgstr "'Send the logbook'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:25
-#, python-format
-msgid ""
-"La dernière marée enregistrée sur Observe pour le navire <b> %(vessel)s </b> "
-"selon le programme %(programme)s et dans l'océan %(ocean)s est la suivante :"
-msgstr ""
-"The last trip recorded on Observe for the vessel <b> %(vessel)s </b> "
-"according to the %(programme)s program and in the %(ocean)s Ocean is as "
-"follows: "
+#: .\palangre_syc\templates\LL_previoustrippage.html:107
+msgid "Océan"
+msgstr "Ocean"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:42
-msgid "Marée initiée le"
-msgstr "Trip started on "
-
-#: .\palangre_syc\templates\LL_previoustrippage.html:43
-#, python-format
-msgid " depuis le port de %(depPort)s "
-msgstr "from the %(depPort)s harbour"
-
-#: .\palangre_syc\templates\LL_previoustrippage.html:49
-msgid "Actuellement cloturée le "
-msgstr "Currently ended on "
-
-#: .\palangre_syc\templates\LL_previoustrippage.html:54
-msgid "Menée par le capitaine "
-msgstr "Led by Captain "
-
-#: .\palangre_syc\templates\LL_previoustrippage.html:62
-msgid "Que souhaitez-vous faire ?"
-msgstr "What would you like to do?"
-
-#: .\palangre_syc\templates\LL_previoustrippage.html:65
+#: .\palangre_syc\templates\LL_previoustrippage.html:167
 msgid "'Continuer cette marée'"
 msgstr "'Continue the trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:69
+#: .\palangre_syc\templates\LL_previoustrippage.html:171
 msgid "'Créer une nouvelle marée'"
 msgstr "'Create a new trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:80
+#: .\palangre_syc\templates\LL_previoustrippage.html:181
 msgid "'Cette marée est une nouvelle marée'"
 msgstr "'This trip is a new trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:92
+#: .\palangre_syc\templates\LL_previoustrippage.html:193
 msgid "En cours de développement"
 msgstr "In development"
 
-#: .\palangre_syc\views.py:363
+#: .\palangre_syc\templates\LL_send_data.html:61
+msgid "Retour à la zone de dépôt"
+msgstr "Back to the drop-off zone"
+
+#: .\palangre_syc\views.py:335
 msgid ""
 "Les données remplies dans le fichier soumis ne correspondent pas au type de "
 "données attendues. Ici on attend seulement des entiers."
@@ -194,17 +176,49 @@ msgstr ""
 "The data in the submitted file does not correspond to the expected data "
 "type. Only integers are expected here."
 
-#: .\palangre_syc\views.py:402
+#: .\palangre_syc\views.py:376
 msgid "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."
 msgstr "Only one line material is expected here. Please check the data."
 
-#: .\palangre_syc\views.py:406
+#: .\palangre_syc\views.py:381
 msgid ""
 "La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. "
 "Veuillez vérifier les données."
 msgstr ""
 "The table between lines 13 and 16 in column 'AC' has not been entered. "
 "Please check the data."
+
+#: .\palangre_syc\views.py:1296
+msgid ""
+"La date de début de marée que vous avez saisie ne semble pas correspondre à "
+"une activité 'departure' du logbook. Vérifiez les données."
+msgstr "The trip start date you have entered does not seem to correspond to a 'departure' activity in the logbook. Please check the data."
+
+#: .\palangre_syc\views.py:1315
+msgid ""
+"Le logbook soumis n'a pas pu être saisi dans la base de données car il a "
+"déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"
+msgstr "The logbook submitted could not be entered in the database because it had already been sent on a previous trip. Please check on the application."
+
+#: .\palangre_syc\views.py:1321
+msgid ""
+"Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est "
+"pas consécutif à la marée précédente"
+msgstr "The logbook submitted could not be entered in the database because it did not follow the previous trip."
+
+#: .\palangre_syc\views.py:1327
+msgid ""
+"La date de fin de trip doit être dans le mois. Saisir le dernier jour du "
+"mois dans le cas où le trip n'est pas réellement fini."
+msgstr "The trip end date must be within the month. Enter the last day of the month if the trip is not actually finished."
+
+#: .\palangre_syc\views.py:1601
+msgid "Le logbook a bien été envoyé dans la base"
+msgstr "The logbook has been sent to the database."
+
+#: .\palangre_syc\views.py:1604
+msgid "Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"
+msgstr "There must be an error in it because the logbook has not been sent"
 
 #: .\venv\Lib\site-packages\IPython\core\tests\test_completer.py:428
 msgid "open('foo"
@@ -1774,6 +1788,10 @@ msgstr ""
 msgid "show this help message and exit"
 msgstr ""
 
+#: .\venv\Lib\site-packages\myst_parser\sphinx_ext\mathjax.py:109
+msgid "Permalink to this equation"
+msgstr ""
+
 #: .\webapps\templates\home.html:22
 msgid "Tableau de bord"
 msgstr ""
@@ -1782,13 +1800,39 @@ msgstr ""
 msgid "Choisir une langue"
 msgstr ""
 
-#: .\website\settings.py:115
+#: .\website\settings.py:117
 msgid "English"
 msgstr ""
 
-#: .\website\settings.py:116
+#: .\website\settings.py:118
 msgid "Français"
 msgstr ""
+
+#, python-format
+#~ msgid ""
+#~ "La dernière marée enregistrée sur Observe pour le navire <b> %(vessel)s </"
+#~ "b> selon le programme %(programme)s et dans l'océan %(ocean)s est la "
+#~ "suivante :"
+#~ msgstr ""
+#~ "The last trip recorded on Observe for the vessel <b> %(vessel)s </b> "
+#~ "according to the %(programme)s program and in the %(ocean)s Ocean is as "
+#~ "follows: "
+
+#~ msgid "Marée initiée le"
+#~ msgstr "Trip started on "
+
+#, python-format
+#~ msgid " depuis le port de %(depPort)s "
+#~ msgstr "from the %(depPort)s harbour"
+
+#~ msgid "Actuellement cloturée le "
+#~ msgstr "Currently ended on "
+
+#~ msgid "Menée par le capitaine "
+#~ msgstr "Led by Captain "
+
+#~ msgid "Que souhaitez-vous faire ?"
+#~ msgstr "What would you like to do?"
 
 #, python-format
 #~ msgid "Menée par %(previous_trip.captain)s"
