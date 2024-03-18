@@ -1,18 +1,8 @@
----
-title: Django webapp documentation
-summary: A brief description of my document.
-authors:
-    - Clémentine Violette
-    - Adelphe-Christian N'Goran
-date: 2024-02-19
-some_url: https://example.com
----
+Welcome to Application d'import des données LogBook's documentation!
+====================================================================
 
-# Django webapp
-
-Developed by Adelphe and Clémentine
-
-## Global introduction
+Global introduction
+===================
 
 To briefly introduce the Django webapp : 
 The aim is to automatically send different sourced files to the [Observe](https://umr-marbec.fr/en/the-observatories/ob7) database (add a better link there). 
@@ -23,7 +13,8 @@ For now, the app is developed for the purseiners' logbooks and in development fo
 The input data varies depending on the type of fishering we are studying (purseiners - ps/longliners - ll). The webapp project is then sliced into the ps and the ll. 
 
 
-## Webapp navigation
+Webapp navigation
+=================
 
 To access the webapp, a connection trough the Observe database id is mandatory. 
 
@@ -37,7 +28,8 @@ Afterwards, depending on the data you have and want to send to the database, you
 You then get to the drop zone platfrom. Selecting all the previous info helps the webapp to treat the specific input data you are submitting. You can then send them to the Observe api. If there is some types errors in the cells or some unexpected operating informations, you will be notified.
 
 
-## Project layout
+Project layout
+==============
 
 Here we present the hierarchical structure of the webapp
 
@@ -47,16 +39,14 @@ Here we present the hierarchical structure of the webapp
         
         api-traitement # Code for conecting, getting infos for the Observe api
 
-        media # Where the referential are stocked 
+        media
 
         palangre-syc  # Code related to the Seychelles' longliners logbooks
         
-        webapps # Code for the common parts - when the operator get to fill the the form
+        webapps # Code for the common parts 
+        
+        website # Where the specificities of development are
         
             media # temporary files - where the dropped logbooks are stocked before being send
-        
-        website # Where the settings are - (?)
-        
-        manage.py # file needed to launch the app 
 
-
+            ...

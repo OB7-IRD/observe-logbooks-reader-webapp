@@ -1,7 +1,7 @@
 # Longliners
 
 The longliner part is developed for logbooks in the Indian Ocean with a specific kind of format. The one expected in this section is like : 
-![image](img/logbook_ll.png)
+![image](../img/logbook_ll.png)
 
  
 ## Data extraction
