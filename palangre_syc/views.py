@@ -1,24 +1,25 @@
-from django.template import RequestContext
-from django.urls import reverse
-from django.utils import translation
+import time
+
 import os
 import re
 import json
 import datetime
 import warnings
-from django.http import HttpResponseRedirect, JsonResponse
-from django.utils.translation import activate
-
-from django.utils.translation import gettext as _
-from django.utils.translation import gettext
 
 
 import pandas as pd
 import numpy as np
 import openpyxl
 
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.contrib import messages
+from django.utils.translation import gettext as _
+from django.utils import translation
+# from django.http import HttpResponseRedirect, JsonResponse
+# from django.utils.translation import activate
+# from django.template import RequestContext
+# from django.urls import reverse
+# from django.utils.translation import gettext
 
 from palangre_syc import api
 from palangre_syc import json_construction
@@ -68,7 +69,7 @@ def np_removing_semicolon(numpy_table, num_col):
     return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
 
 
-def dms_to_decimal(degrees, minutes, direction):
+def dms_to_decimal2(degrees, minutes, direction):
     """Transforme des degrés minutes secondes en décimal
 
     Args:
@@ -89,6 +90,22 @@ def dms_to_decimal(degrees, minutes, direction):
         decimal_degrees *= -1
     return decimal_degrees
 
+def dms_to_decimal(degrees, minutes, direction):
+    """Transforme des degrés minutes secondes en décimal
+
+    Args:
+        degrees (int), minutes (int): value
+        direction (str): N S E W
+
+    Returns:
+        float: value
+    """
+    if degrees is None:
+        return None
+
+    decimal_degrees = degrees + minutes / 60.0
+    decimal_degrees = np.where(direction.isin(['S', 'W']), -decimal_degrees, decimal_degrees)
+    return decimal_degrees
 
 def convert_to_time_or_text(value):
     '''
@@ -133,34 +150,6 @@ def zero_if_empty(value):
         return int(value)
 
 
-def from_topiad_to_value2(topiad, domaine=None):
-    """
-    Fonction qui retourne le label 1 pour un topiad donné 
-    dans la base common si un domaine n'est pas précisé
-
-    Args:
-        topiad
-        domaine si nécessaire (palangre, senne)
-
-    Returns:
-        label1
-    """
-    if domaine is None:
-        with open('./data_common.json', 'r', encoding='utf-8') as f:
-            data_common = json.load(f)
-        for element in data_common['content']['fr.ird.observe.entities.referential.common.Ocean']:
-            if element['topiaId'] == topiad:
-                return element['label2']
-
-    else:
-        with open('./data_ll.json', 'r', encoding='utf-8') as f:
-            data_ll = json.load(f)
-
-        for element in data_ll['content']['fr.ird.observe.entities.referential.ll.common.Program']:
-            if element['topiaId'] == topiad:
-                return element['label2']
-
-
 def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
     """
     Fonction générale qui retourne le label output pour un topiad donné 
@@ -191,9 +180,14 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
         with open('./data_ll.json', 'r', encoding='utf-8') as f:
             data_ll = json.load(f)
         category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
-        for element in data_ll['content'][category]:
-            if element['topiaId'] == topiaid:
-                return element[label_output]
+        if data_ll['content'][category] is not None:
+            for element in data_ll['content'][category]:
+                if element['topiaId'] == topiaid:
+                    return element[label_output]
+        else:
+            print("please do check the orthographe of lookingfor element")
+            return None
+
 
 
 # FILE_PATH = './palangre_syc/media/Aout2022-FV GOLDEN FULL NO.168.xlsx'
@@ -235,7 +229,6 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
 
     return df_vessel_clean
-
 
 def extract_cruise_info(df_donnees):
     """
@@ -291,7 +284,7 @@ def extract_report_info(df_donnees):
     Returns:
         df
     """
-    # On extrait les données propres au 'Vessel information'
+    # On extrait les données 
     df_report = df_donnees.iloc[7:9, 29:35]
 
     # On supprime les colonnes qui sont vides
@@ -314,215 +307,220 @@ def extract_report_info(df_donnees):
     
     return df_report
 
+def extract_gear_info(df_donnees):
+    """
+    Extraction des cases 'Gear'
 
-def extract_gearInfo_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les données relatives à l'équipement
-    '''
-    # On extrait les données propres au 'Vessel information'
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
+     # On extrait les données 
     df_gear = df_donnees.iloc[12:16, 11:21]
 
     # On supprimes les colonnes qui sont vides
     df_gear = del_empty_col(df_gear)
 
-    np_gear = np.array(df_gear)
-    # on nettoie la colonne en enlevant les espaces et les ':'
-    np_gear[:, 0] = np_removing_semicolon(np_gear, 0)
+    # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
+    df_gear.iloc[:, 0] = df_gear.iloc[:, 0].str.replace(':', '').str.strip()
 
-    # On applique la fonction strip sur les cellules de la colonnes Valeur,
-    # si l'élément correspond à une zone de texte
+    # Nettoyer la colonne 'Value' en appliquant strip() si l'élément correspond à une chaîne de caractères
+    df_gear.iloc[:, 1] = df_gear.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
-    # vect = np.vectorize(strip_if_string)
-    # np_gear[:, 1] = vect(np_gear[:, 1])
-    # if not np_gear[:, 1].apply(lambda x: isinstance(x, int))
+    # Renommer les colonnes
+    df_gear.columns = ['Logbook_name', 'Value']
 
-    df_gear = pd.DataFrame(np_gear, columns=['Logbook_name', 'Value'])
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'])
 
-    # Vérifie si toutes les cellules de la colonne sont des entiers
-    toutes_int = df_gear['Value'].apply(
-        lambda cellule: isinstance(cellule, int)).all()
-    # print("toutes int ? ", toutes_int)
+    # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
+    df_gear['Logbook_name'] = df_gear['Logbook_name'].str.strip()
+    
+    # On vérifie que les données du excel sont des entiers
+    toutes_int = df_gear['Value'].apply(lambda cellule: isinstance(cellule, int)).all()
     if toutes_int:
         # Applique la fonction vect si toutes les cellules sont des entiers
         df_gear['Value'] = np.vectorize(strip_if_string)(df_gear['Value'])
-    # print("df_gear ? ", df_gear)
-
-    df_gear['Logbook_name'] = remove_spec_char_from_list(
-        df_gear['Logbook_name'])
-    df_gear['Logbook_name'] = df_gear['Logbook_name'].apply(
-        lambda x: x.strip())
 
     if not df_gear['Value'].apply(lambda x: isinstance(x, int)).all():
-        message = _(
-            "Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers.")
+        message = _("Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers.")
         return df_gear, message
 
     return df_gear
 
+def extract_line_material(df_donnees):
+    """
+    Extraction des cases 'Gear'
 
-def extract_lineMaterial_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les données 
-    relatives aux matériel des lignes
-    '''
-    # On extrait les données propres au 'Vessel information'
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
+    # On extrait les données
     df_line = df_donnees.iloc[12:16, 21:29]
 
     # On supprimes les colonnes qui sont vides
     df_line = del_empty_col(df_line)
 
-    np_line = np.array(df_line)
+    # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
+    df_line.iloc[:, 0] = df_line.iloc[:, 0].str.replace(':', '').str.strip()
 
-    # On applique la fonction strip sur les cellules de la
-    # colonnes Valeur, si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)
-    np_line[:, 0:1] = vect(np_line[:, 0:1])
+    # Nettoyer la colonne 'Value' en appliquant strip() si l'élément correspond à une chaîne de caractères
+    df_line.iloc[:, 1] = df_line.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
+    
+    # Renommer les colonnes
+    df_line.columns = ['Logbook_name', 'Value']
 
-    df_line = pd.DataFrame(np_line, columns=['Logbook_name', 'Value'])
-    df_line['Logbook_name'] = remove_spec_char_from_list(
-        df_line['Logbook_name'])
-    df_line['Logbook_name'] = df_line['Logbook_name'].apply(
-        lambda x: x.strip())
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    df_line['Logbook_name'] = remove_spec_char_from_list(df_line['Logbook_name'])
 
+    # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
+    df_line['Logbook_name'] = df_line['Logbook_name'].str.strip()
+    
+    # Filtrer les lignes qui sont cochées
     df_line_used = df_line.loc[df_line['Value'] != "None"]
 
-    # print(df_line_used)
-
     # Traduire chaque valeur du DataFrame df_line_used
-    df_line_used['Logbook_name'] = df_line_used['Logbook_name'].apply(
-        lambda x: gettext(x) if isinstance(x, str) else x)
-    # print(df_line_used['Logbook_name'])
+    # df_line_used['Logbook_name'] = df_line_used['Logbook_name'].apply(
+    #     lambda x: _(x) if isinstance(x, str) else x)
 
     if len(df_line_used) > 1:
-        message = _(
-            "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
+        message = _("Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
         return df_line_used, message
 
     if len(df_line_used) == 0:
-        message = _(
-            "La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. Veuillez vérifier les données.")
+        message = _("La table entre les lignes 13 à 16 de la colonne 'AC' ne sont pas saisies. Veuillez vérifier les données.")
         return df_line_used, message
-
-    # df_line_used = [[_(valeur) for valeur in ligne] for ligne in df_line_used]
 
     return df_line_used
 
+def extract_target_species(df_donnees):
+    """
+    Extraction des cases 'Target species'
 
-def extract_target_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les données relatives aux target spécifiques
-    '''
-    # On extrait les données propres au 'Vessel information'
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
+    # On extrait les données
     df_target = df_donnees.iloc[12:16, 29:34]
 
     # On supprimes les colonnes qui sont vides
     df_target = del_empty_col(df_target)
 
-    np_target = np.array(df_target)
+    # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
+    df_target.iloc[:, 0] = df_target.iloc[:, 0].str.replace(':', '').str.strip()
 
-    np_target[:, 0] = np_removing_semicolon(np_target, 0)
-    # On applique la fonction strip sur les cellules de
-    # la colonnes Valeur, si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)
-    np_target[:, 0:1] = vect(np_target[:, 0:1])
+    # Nettoyer la colonne 'Value' en appliquant strip() si l'élément correspond à une chaîne de caractères
+    df_target.iloc[:, 1] = df_target.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
+    
+    # Renommer les colonnes
+    df_target.columns = ['Logbook_name', 'Value']
 
-    df_target = pd.DataFrame(np_target,
-                             columns=['Logbook_name', 'Value'])
-    df_target['Logbook_name'] = remove_spec_char_from_list(
-        df_target['Logbook_name'])
-    df_target['Logbook_name'] = df_target['Logbook_name'].apply(
-        lambda x: x.strip())
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    df_target['Logbook_name'] = remove_spec_char_from_list(df_target['Logbook_name'])
 
-    # for element in df_target['Value']:
-    #     print(element, type(element))
+    # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
+    df_target['Logbook_name'] = df_target['Logbook_name'].str.strip()
+    
+    # Filtrer les lignes qui sont cochées
+    df_target_used = pd.DataFrame()
+    for index, row in df_target.iterrows():
+        if row['Value'] is not None:
+            df_target_used.loc[len(df_target_used), 'Logbook_name'] = df_target.loc[index, 'Logbook_name']
+    
+    return df_target_used
 
-    # df_targeted = df_target.loc[df_target['Value'] == None]
-    # print(df_targeted)
-    # filtered = [row['Logbook_name'] for row in df_target if row['Value'] != 'None']
-    # Supposons que df_target est votre DataFrame pandas
-    # filtered = df_target.loc[df_target['Value'] == 'P', 'Logbook_name']
+def extract_logbook_date(df_donnees):
+    """
+    Extraction des cases relatives au mois et à l'année du logbook
 
-    # filtered = [row for row in df_target if row['Value'] is not None]
-    # print(filtered)
+    Args:
+        df_donnees (df): excel p1
 
-    return df_target
-
-
-def extract_logbookDate_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe le mois et l'année du logbook
-    '''
+    Returns:
+        df
+    """
     # On extrait les données propres au 'Vessel information'
     df_month = df_donnees.iloc[17, 5]
     df_year = df_donnees.iloc[17, 11]
 
-    np_date = np.array([('Month', df_month), ('Year', df_year)],
-                       dtype=[('Logbook_name', 'U10'), ('Value', int)])
-    df_date = pd.DataFrame(np_date)
-    df_date['Logbook_name'] = remove_spec_char_from_list(
-        df_date['Logbook_name'])
+    date = {'Logbook_name': ['Month', 'Year'],
+            'Value': [int(df_month), int(df_year)]}
+    df_date = pd.DataFrame(date)
+    
+    df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'])
 
     return df_date
 
+def extract_bait(df_donnees):
+    """
+    Extraction des cases relatives au type d'appât utilisé
 
-def extract_bait_LL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe le type de d'appat utilisé
-    '''
-    # On extrait les données propres au 'Vessel information'
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
+    # On extrait les données
     df_squid = df_donnees.iloc[19, 16]
     df_sardine = df_donnees.iloc[19, 20]
     df_mackerel = df_donnees.iloc[19, 24]
     df_muroaji = df_donnees.iloc[19, 28]
     df_other = df_donnees.iloc[19, 32]
 
-    np_bait = np.array([('Squid', df_squid),
-                        ('Sardine', df_sardine),
-                        ('Mackerel', df_mackerel),
-                        ('Muroaji', df_muroaji),
-                        ('Other', df_other),],
-                       dtype=[('Logbook_name', 'U10'), ('Value', 'U10')])
-    df_bait = pd.DataFrame(np_bait)
-
-    df_bait_used = df_bait.loc[df_bait['Value'] != "None"]
-
+    bait = {'Logbook_name': ['Squid', 'Sardine', 'Mackerel', 'Muroaji', 'Other'],
+            'Value': [df_squid, df_sardine, df_mackerel, df_muroaji, df_other]}
+    
+    df_bait = pd.DataFrame(bait)
+    
+    # Filtrer les lignes qui sont cochées
+    df_bait_used = pd.DataFrame()
+    for index, row in df_bait.iterrows():
+        if row['Value'] is not None:
+            df_bait_used.loc[len(df_bait_used), 'Logbook_name'] = df_bait.loc[index, 'Logbook_name']
+    
     return df_bait_used
 
-
 def extract_positions(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe 
-    les position de chaque coup de peche par jour 
-    en décimal type float
-    '''
-    day = df_donnees.iloc[24:55, 0]
-    df_lat_dms = df_donnees.iloc[24:55, 1:4]
-    df_long_dms = df_donnees.iloc[24:55, 4:7]
-    colnames = ['Degrees', 'Minutes', 'Direction']
-    df_lat_dms.columns = colnames
-    df_long_dms.columns = colnames
+    """
+    Extraction des cases relatives aux données de position
+    
+    Args:
+        df_donnees (df): excel p1
 
-    df_lat_dms['Latitude'] = np.where(df_lat_dms.isnull().any(axis=1), np.nan,
-                                      df_lat_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1))
-
-    df_long_dms['Longitude'] = np.where(df_long_dms.isnull().any(axis=1), np.nan,
-                                        df_long_dms.apply(lambda row: dms_to_decimal(row['Degrees'], row['Minutes'], row['Direction']), axis=1))
-
-    df_position = pd.DataFrame({'Day': day,
-                                'Latitude': df_lat_dms['Latitude'],
-                                'Longitude': df_long_dms['Longitude']})
-
-    df_position = df_position.dropna()
-
-    df_position['Latitude'] = df_position['Latitude'].round(2)
-    df_position['Longitude'] = df_position['Longitude'].round(2)
-
+    Returns:
+        df
+    """
+    data = df_donnees.iloc[24:55, :7]
+    colnames = ['Day', 'Latitude_Degrees', 'Latitude_Minutes', 'Latitude_Direction',
+                'Longitude_Degrees', 'Longitude_Minutes', 'Longitude_Direction']
+    data.columns = colnames
+    
+    #  On converti les données de position en degrés décimal
+    data['Latitude'] = dms_to_decimal(data['Latitude_Degrees'], data['Latitude_Minutes'], data['Latitude_Direction'])
+    data['Longitude'] = dms_to_decimal(data['Longitude_Degrees'], data['Longitude_Minutes'], data['Longitude_Direction'])
+    
+    # Supprimer les lignes avec des valeurs nulles et conserver les colonnes d'intérêt
+    data = data.dropna(subset=['Latitude', 'Longitude'])
+    df_position = data[['Latitude', 'Longitude']]
+    
+    # for index, row in df_position.iterrows():
+    #     df_position.loc[index, 'Latitude'] = round(pd.to_numeric(df_position.loc[index, 'Latitude'], errors='coerce'), 2)
+    #     df_position.loc[index, 'Longitude'] = round(pd.to_numeric(df_position.loc[index, 'Longitude'], errors='coerce'), 2)
+    
     df_position.reset_index(drop=True, inplace=True)
 
     return df_position
 
-
-def get_VesselActivity_topiaID(startTimeStamp, data_ll):
+def get_vessel_activity_topiaid(startTimeStamp, data_ll):
     '''
     Fonction qui prend en argument une heure de depart
     et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
@@ -546,72 +544,143 @@ def get_VesselActivity_topiaID(startTimeStamp, data_ll):
     else:
         code = "OTH"
 
-    VesselActivities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
-    for VesselActivity in VesselActivities:
-        if VesselActivity.get("code") == code:
-            return VesselActivity["topiaId"], VesselActivity["label1"]
+    vessel_activities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
+    for vessel_activity in vessel_activities:
+        if vessel_activity.get("code") == code:
+            return vessel_activity["topiaId"], vessel_activity["label1"]
 
     return None
 
-
 def extract_time(df_donnees, data_ll):
-    '''
-    Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
-    Elle retourne un champ type horaire, sauf si le bateau est en mouvement
-    '''
+    """
+    Extraction des cases relatives aux horaires des coups de pêche
+    
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df: type horaire, sauf si le bateau est en mouvement
+    """
     day = df_donnees.iloc[24:55, 0]
     df_time = df_donnees.iloc[24:55, 7:8]
     colnames = ['Time']
     df_time.columns = colnames
     df_time['Time'] = df_time['Time'].apply(convert_to_time_or_text)
-    # df_time['Time'] = pd.to_datetime(df_time['Time'], errors='ignore')
 
     df_time.reset_index(drop=True, inplace=True)
 
-    VesselActivities = np.empty((len(day), 1), dtype=object)
+    vessel_activities = np.empty((len(day), 1), dtype=object)
     for ligne in range(len(day)):
-        VesselActivity = get_VesselActivity_topiaID(
+        vessel_activity = get_vessel_activity_topiaid(
             df_time.iloc[ligne]['Time'], data_ll)
-        VesselActivities[ligne, 0] = VesselActivity[0]
-    np_time = np.column_stack((day, df_time, VesselActivities))
+        vessel_activities[ligne, 0] = vessel_activity[0]
+    np_time = np.column_stack((day, df_time, vessel_activities))
     df_time = pd.DataFrame(np_time, columns=['Day', 'Time', 'VesselActivity'])
 
     return df_time
 
-
 def extract_temperature(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les horaires des coups de pêche 
-    Elle retourne un champ type horaire, sauf si le bateau est en mouvement
-    '''
+    """
+    Extraction des cases relatives aux températures
+    
+    Args:
+        df_donnees (df): excel p1
+
+    Returns:
+        df
+    """
     df_temp = df_donnees.iloc[24:55, 8:9]
     colnames = ['Température']
     df_temp.columns = colnames
-
     df_temp.reset_index(drop=True, inplace=True)
     return df_temp
 
+def extract_fishing_effort(df_donnees):
+    """
+    Extraction des cases relatives aux efforts de pêche
+    
+    Args:
+        df_donnees (df): excel p1
 
-def extract_fishingEffort(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les efforts de peche
-    '''
-    day = df_donnees.iloc[24:55, 0]
-    df_fishingEffort = df_donnees.iloc[24:55, 9:12]
+    Returns:
+        df
+    """
+    df_fishing_effort = df_donnees.iloc[24:55, [0, 9, 10, 11]].copy()
+    df_fishing_effort.columns = ['Day', 'Hooks per basket', 'Total hooks', 'Total lightsticks']
+    df_fishing_effort['Total hooks / Hooks per basket'] = df_fishing_effort['Total hooks'] / df_fishing_effort['Hooks per basket']
+    df_fishing_effort.reset_index(drop=True, inplace=True)
+    return df_fishing_effort
 
-    np_fishingEffort = np.column_stack((day, df_fishingEffort))
+def extract_fish_p1(df_donnees):
+    """
+    Extraction des cases relatives à ce qui a été pêché
+    
+    Args:
+        df_donnees (df): excel p1
 
-    df_fishingEffort = pd.DataFrame(np_fishingEffort, columns=[
-                                    'Day', 'Hooks per basket', 'Total hooks', 'Total lightsticks'])
+    Returns:
+        df
+    """
+    df_fishes = df_donnees.iloc[24:55, 12:36]
 
-    df_fishingEffort['Total hooks / Hooks per basket'] = df_fishingEffort['Total hooks'] / \
-        df_fishingEffort['Hooks per basket']
+    colnames = ['No RET SBF', 'Kg RET SBF',
+                'No RET ALB', 'Kg RET ALB',
+                'No RET BET', 'Kg RET BET',
+                'No RET YFT', 'Kg RET YFT', 
+                'No RET SWO', 'Kg RET SWO',
+                'No RET MLS', 'Kg RET MLS',
+                'No RET BUM', 'Kg RET BUM',
+                'No RET BLM', 'Kg RET BLM',
+                'No RET SFA', 'Kg RET SFA',
+                'No RET SSP', 'Kg RET SSP', 
+                'No RET OIL', 'Kg RET OIL',
+                'No RET XXX', 'Kg RET XXX']
+    
+    df_fishes.columns = colnames
+    df_fishes = df_fishes.map(zero_if_empty)
+    df_fishes.reset_index(drop=True, inplace=True)
+    
+    return df_fishes
+    
+def extract_bycatch_p2(df_donnees):
+    """
+    Extraction des cases relatives à ce qui a été pêché mais accessoires    
+    
+    Args:
+        df_donnees (df): excel p2
 
-    df_fishingEffort.reset_index(drop=True, inplace=True)
+    Returns:
+        df
+    """
+    df_bycatch = df_donnees.iloc[15:46, 1:39]
 
-    return df_fishingEffort
-
-
+    colnames = ['No RET FAL', 'Kg RET FAL',
+                'No ESC FAL', 'No DIS FAL',
+                'No RET BSH', 'Kg RET BSH',
+                'No ESC BSH', 'No DIS BSH',
+                'No RET MAK', 'Kg RET MAK',
+                'No ESC MAK', 'No DIS MAK',
+                'No RET MSK', 'Kg RET MSK',
+                'No ESC MSK', 'No DIS MSK', 
+                'No RET SPN', 'Kg RET SPN',
+                'No ESC SPN', 'No DIS SPN', 
+                'No RET TIG', 'Kg RET TIG',
+                'No ESC TIG', 'No DIS TIG', 
+                'No RET PSK', 'Kg RET PSK',
+                'No ESC PSK', 'No DIS PSK',
+                'No ESC THR', 'No DIS THR',
+                'No ESC OCS', 'No DIS OCS', 
+                'No ESC MAM', 'No DIS MAM', 
+                'No ESC SBD', 'No DIS SBD',
+                'No ESC TTX', 'No DIS TTX']
+    
+    df_bycatch.columns = colnames
+    df_bycatch = df_bycatch.map(zero_if_empty)
+    df_bycatch.reset_index(drop=True, inplace=True)
+    
+    return df_bycatch
+    
+    
 def extract_tunas(df_donnees):
     '''
     Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
@@ -714,8 +783,8 @@ def extract_sharksMSK(df_donnees):
     Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
     '''
     df_sharksSPN = df_donnees.iloc[15:46, 13:17]
-    colnames = ['No RET SPN', 'Kg RET SPN',
-                'No ESC SPN', 'No DIS SPN']
+    colnames = ['No RET MSK', 'Kg RET MSK',
+                'No ESC MSK', 'No DIS MSK']
     df_sharksSPN.columns = colnames
 
     df_sharksSPN = df_sharksSPN.map(zero_if_empty)
@@ -860,7 +929,6 @@ def research_dep(df_donnees_p1, data_ll, startDate):
     """
     Fonction qui recherche si 'dep' est présent dans la case à la date donnée par l'utilisateur
 
-
     Args:
         df_donnees_p1 (dataframe): _description_
         data_ll (dataframe): données de références
@@ -870,7 +938,7 @@ def research_dep(df_donnees_p1, data_ll, startDate):
         bool: True si la date saisie correspond à un departure, False si non
     """
     data = extract_time(df_donnees=df_donnees_p1, data_ll=data_ll)
-    print("#"*20, "research_dep function", "#"*20)
+    # print("#"*20, "research_dep function", "#"*20)
     day = startDate[8:10] 
     dep_rows = data[data['Time'].str.lower().str.contains('dep', case=False, na=False)]
     
@@ -901,15 +969,15 @@ def get_previous_trip_infos2(request, df_donnees_p1, data_common):
     vessel_topiaid = json_construction.get_vessel_topiaid(
         df_donnees_p1, data_common)
     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
-    vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
+    vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
     programme_topiaid = request.session.get('dico_config')['programme']
-    programme_topiaid_WS = programme_topiaid.replace("#", "-")
+    programme_topiaid_ws = programme_topiaid.replace("#", "-")
 
-    print("="*20, vessel_topiaid_WS, "="*20)
-    print("="*20, programme_topiaid_WS, "="*20)
+    print("="*20, vessel_topiaid_ws, "="*20)
+    print("="*20, programme_topiaid_ws, "="*20)
 
-    previous_trip = api.trip_for_prof_vessel(
-        token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
+    previous_trip = api.trip_for_prog_vessel(
+        token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
 
@@ -992,10 +1060,10 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     programme_topiaid = request.session.get('dico_config')['programme']
     programme_topiaid_WS = programme_topiaid.replace("#", "-")
 
-    print("="*20, vessel_topiaid_WS, "="*20)
-    print("="*20, programme_topiaid_WS, "="*20)
+    # print("="*20, vessel_topiaid_WS, "="*20)
+    # print("="*20, programme_topiaid_WS, "="*20)
 
-    previous_trip = api.trip_for_prof_vessel(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
+    previous_trip = api.trip_for_prog_vessel(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
     
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
@@ -1010,7 +1078,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
         for num_trip in range(len(parsed_previous_trip['content'])):
             # print("boucle for, essai : ", num_trip)
             trip_topiaid = parsed_previous_trip['content'][num_trip]['topiaId'].replace("#", "-")
-            print("="*20, trip_topiaid, "="*20)
+            # print("="*20, trip_topiaid, "="*20)
             trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
             # print(trip_info)
             # parsed_trip_info = json.loads(trip_info.decode('utf-8'))
@@ -1050,71 +1118,53 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
             
             df_trip.loc[num_trip] = trip_info_row
             
+        ####### Optimisation GPT 
+        # trips_info = []
+
+        # for trip in parsed_previous_trip['content']:
+        #     trip_topiaid = trip['topiaId'].replace("#", "-")
+        #     trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
+        #     trip_data = trip_info['content'][0]
+
+        #     depPort = trip_data.get('departureHarbour')
+        #     depPort_name = None
+        #     if depPort:
+        #         depPort_name = from_topiaid_to_value(topiaid=depPort,
+        #                                               lookingfor='Harbour',
+        #                                               label_output='label2',
+        #                                               domaine=None)
+
+        #     endPort = trip_data.get('landingHarbour')
+        #     endPort_name = None
+        #     if endPort:
+        #         endPort_name = from_topiaid_to_value(topiaid=endPort,
+        #                                               lookingfor='Harbour',
+        #                                               label_output='label2',
+        #                                               domaine=None)
+
+        #     ocean = from_topiaid_to_value(topiaid=trip_data['ocean'],
+        #                                   lookingfor='Ocean',
+        #                                   label_output='label2',
+        #                                   domaine=None)
+
+        #     trip_info_row = [trip_data['topiaId'], 
+        #                      trip_data['startDate'],
+        #                      depPort, 
+        #                      depPort_name, 
+        #                      trip_data['endDate'],
+        #                      endPort,
+        #                      endPort_name,
+        #                      ocean]
+
+        #     trips_info.append(trip_info_row)
+
+        # df_trip = pd.DataFrame(trips_info, columns=["triptopiaid", "startDate", "depPort_topiad", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
+        
+    
         return(df_trip)
-            
-            
-            
-        
-        
-        
-        
-#         trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace(
-#             "#", "-")
-#         print("="*20, trip_topiaid, "="*20)
-
-#         # on récupère les infos du trip enregistré dans un fichier json
-#         api.get_one(token, url_base, trip_topiaid)
-
-# ###### if selected file : 
-
-#         # with open(file = "previoustrip.json", mode = "w") as outfile:
-#         #     outfile.write(response.text)
-        
-#         json_previoustrip = api.load_json_file("previoustrip.json")
-#         # print(json_previoustrip)
-
-#         # On récupère les infos que l'on voudra afficher
-#         trip_info = json_previoustrip['content'][0]
-
-#         captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
-#                                              lookingfor='Person',
-#                                              label_output='lastName',
-#                                              domaine=None)
-
-#         vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
-#                                             lookingfor='Vessel',
-#                                             label_output='label2',
-#                                             domaine=None)
-
-#         dico_trip_infos = {'startDate': trip_info['startDate'],
-#                            'endDate': trip_info['endDate'],
-#                            'captain': captain_name,
-#                            'vessel': vessel_name,
-#                            'triptopiaid': trip_topiaid}
-
-#         try:
-#             departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
-#                                                       lookingfor='Harbour',
-#                                                       label_output='label2',
-#                                                       domaine=None)
-
-#             dico_trip_infos.update({
-#                 'depPort': departure_harbour,
-#                 'depPort_topiaid': trip_info['departureHarbour'],
-#             })
-
-#         except KeyError:
-#             # departure_harbour = 'null'
-
-#             dico_trip_infos.update({
-#                 'depPort': 'null',
-#                 'depPort_topiaid': 'null',
-#             })
-
-#         return dico_trip_infos
-
-    else:
-        return None
+    
+    # else:
+    #     return None
 
 
 
@@ -1125,16 +1175,16 @@ def presenting_previous_trip(request):
 
 
     if 'context' in request.session:
-        print("+"*50, "Avant que tout commence", "+"*50)
-        print(request.session['context'])
-        print("+"*50, "Avant que tout commence", "+"*50)
+        # print("+"*50, "Avant que tout commence", "+"*50)
+        # print(request.session['context'])
+        # print("+"*50, "Avant que tout commence", "+"*50)
         del request.session['context'] 
         
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
 
     print("="*20, "presenting_previous_trip", "="*20)
-    print("apply conf : ", apply_conf)
+    # print("apply conf : ", apply_conf)
 
     programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
                                       lookingfor='Program',
@@ -1167,21 +1217,22 @@ def presenting_previous_trip(request):
         with open('./data_common.json', 'r', encoding='utf-8') as f:
             data_common = json.load(f)
 
-        # On récupères le dictionnnaire de données jugées intéressantes de la précédente marée
-        # print("#"*50)
-        # print(get_previous_trip_infos(request, df_donnees_p1, data_common))
-        # print("*"*50)
-        
-        try:
+
+        try :
+            start_time = time.time()
             df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
-            print("°"*20, "presenting_previous_trip - context updated", "°"*20)
-            context.update({'df_previous_trip': df_previous_trip})
+            end_time = time.time()
             
-        # Si y a pas de previous trip associé
-        except:
-            context.update({'df_previous_trip':None})
+            
+            print("Temps d'exécution:", end_time - start_time, "secondes")
+            print("°"*20, "presenting_previous_trip - context updated", "°"*20)
+            context.update({'df_previous': df_previous_trip})
+        
+        except :
+            context.update({'df_previous': None})
+            
     
-    # request.session['context'] = context
+    request.session['context'] = context
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -1225,43 +1276,30 @@ def checking_logbook(request):
         file_path = request.session.get('file_path')
                 
         df_donnees_p1 = read_excel(file_path, 1)
+        df_donnees_p2 = read_excel(file_path, 2)
+        
         df_vessel = extract_vessel_info(df_donnees_p1)
         df_cruise = extract_cruise_info(df_donnees_p1)
         df_report = extract_report_info(df_donnees_p1)
-        df_gear = extract_gearInfo_LL(df_donnees_p1)
-        df_line = extract_lineMaterial_LL(df_donnees_p1)
-        df_target = extract_target_LL(df_donnees_p1)
-        df_date = extract_logbookDate_LL(df_donnees_p1)
-        df_bait = extract_bait_LL(df_donnees_p1)
-        df_fishingEffort = extract_fishingEffort(df_donnees_p1)
+        df_gear = extract_gear_info(df_donnees_p1)
+        df_line = extract_line_material(df_donnees_p1)
+        df_target = extract_target_species(df_donnees_p1)
+        df_date = extract_logbook_date(df_donnees_p1)
+        df_bait = extract_bait(df_donnees_p1)
+        df_fishing_effort = extract_fishing_effort(df_donnees_p1)
         df_position = extract_positions(df_donnees_p1)
         df_time = extract_time(df_donnees_p1, data_ll)
         df_temperature = extract_temperature(df_donnees_p1)
-        df_tunas = extract_tunas(df_donnees_p1)
-        df_billfishes = extract_billfishes(df_donnees_p1)
-        df_otherfish = extract_otherfish(df_donnees_p1)
-        df_donnees_p2 = read_excel(file_path, 2)
-        df_sharksFAL = extract_sharksFAL(df_donnees_p2)
-        df_sharksBSH = extract_sharksBSH(df_donnees_p2)
-        df_sharksMAK = extract_sharksMAK(df_donnees_p2)
-        df_sharksSPN = extract_sharksSPN(df_donnees_p2)
-        df_sharksTIG = extract_sharksTIG(df_donnees_p2)
-        df_sharksPSK = extract_sharksPSK(df_donnees_p2)
-        df_sharksTHR = extract_sharksTHR(df_donnees_p2)
-        df_sharksOCS = extract_sharksOCS(df_donnees_p2)
-        df_mammals = extract_mammals(df_donnees_p2)
-        df_seabirds = extract_seabird(df_donnees_p2)
-        df_turtles = extract_turtles(df_donnees_p2)
+        df_fishes = extract_fish_p1(df_donnees_p1)
+        df_bycatch = extract_bycatch_p2(df_donnees_p2)
 
-        df_activity = pd.concat([df_position, df_time.loc[:, 'Time'], df_temperature,
-                                df_fishingEffort, df_tunas, df_billfishes, df_otherfish,
-                                df_sharksFAL, df_sharksBSH, df_sharksMAK,
-                                df_sharksSPN, df_sharksTIG, df_sharksPSK,
-                                df_sharksTHR, df_sharksOCS,
-                                df_mammals, df_seabirds, df_turtles],
+
+        df_activity = pd.concat([df_fishing_effort.loc[:,'Day'], df_position, df_time.loc[:, 'Time'], df_temperature,
+                                df_fishing_effort.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
+                                df_fishes,
+                                df_bycatch],
                                 axis=1)
 
-        # previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
         list_ports = get_list_harbours(data_common)
         
         data_to_homepage = {
@@ -1302,13 +1340,33 @@ def checking_logbook(request):
             logbook_month = str(df_date.loc[df_date['Logbook_name'] == 'Month', 'Value'].values[0])
             logbook_year = str(df_date.loc[df_date['Logbook_name'] == 'Year', 'Value'].values[0])
             
-            context.update({'endDate' : json_construction.create_starttimestamp_from_fieldDate(endDate),
+            
+            context.update({'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                             'endPort': endPort if endPort != '' else None})
             
-            if context['df_previous'] is None:
+            #############################
+            # messages d'erreurs
+            if (int(context['endDate'][5:7]) + int(context['endDate'][:4])) != (int(logbook_month) + int(logbook_year)):
+                messages.error(request, _("La date de fin de trip doit être dans le mois. Saisir le dernier jour du mois dans le cas où le trip n'est pas réellement fini."))
+                probleme = True
+            #############################
+            
+            #############################
+            # messages d'erreurs
+            if isinstance(df_gear, tuple):
+                messages.error(request, _("Les informations concernant la longueur du matériel de pêche doivent être des entiers."))
+                probleme = True
+            #############################
+            
+            
+            
+            if context['df_previous'] == None:
                 # NOUVELLE MAREE
-                context.update({'startDate': json_construction.create_starttimestamp_from_fieldDate(startDate), 
-                                'depPort': depPort})
+                context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
+                                'depPort': depPort,
+                                'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+                                'endPort': endPort if endPort != '' else None
+                                })
                 
                 #############################
                 is_dep_match = research_dep(df_donnees_p1, data_ll, startDate)
@@ -1319,7 +1377,8 @@ def checking_logbook(request):
                 #############################
                 
             else:
-    
+                # CONTINUE TRIP
+
                 with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
                     json_previoustrip = json.load(f)
                 
@@ -1341,16 +1400,13 @@ def checking_logbook(request):
                     probleme = True
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
                 #############################
-        
-            #############################
-            # messages d'erreurs
-            if (int(context['endDate'][5:7]) + int(context['endDate'][:4])) != (int(logbook_month) + int(logbook_year)):
-                messages.error(request, _("La date de fin de trip doit être dans le mois. Saisir le dernier jour du mois dans le cas où le trip n'est pas réellement fini."))
-                probleme = True
-            #############################
+                
+                context.update({'startDate': context['df_previous']['startDate'], 
+                                'depPort': context['df_previous']['depPort_topiaid'],
+                                'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+                                'endPort': endPort if endPort != '' else None})
 
-            if probleme == True:
-                #     # CONTINUE TRIP
+            if probleme is True:
                 # on doit ajouter les infos quand meme 
                 data_to_homepage.update({'programme': context['program'],
                                         'ocean': context['ocean'],})
@@ -1361,15 +1417,8 @@ def checking_logbook(request):
                 
                 return render(request, 'LL_homepage.html', data_to_homepage)
             
-            else : 
-                if context['continuetrip'] is None:
-                    context.update({'startDate': json_construction.create_starttimestamp_from_fieldDate(startDate), 
-                                    'depPort': depPort})
-
-                context.update({'endDate' : json_construction.create_starttimestamp_from_fieldDate(endDate),
-                                'endPort': endPort if endPort != '' else None})
-    
-                return send_logbook2Observe(request)
+            else :
+                return send_logbook2observe(request)
                 
               
         print("continue the trip : ", continuetrip)
@@ -1393,14 +1442,14 @@ def checking_logbook(request):
             
         # si on contiue un trip, on récupère ses infos pour les afficher
         # if continuetrip is not None and request.POST.get('radio_previoustrip') is not None: 
-        if continuetrip is not None :    
+        if continuetrip is not None and 'radio_previoustrip' in request.POST:    
             # si on a choisi de continuer un trip 
             triptopiaid = request.POST.get('radio_previoustrip')         
-            trip_topiaidWS = triptopiaid.replace("#", "-")
-            print("="*20, trip_topiaidWS, "="*20)
+            trip_topiaid_ws = triptopiaid.replace("#", "-")
+            print("="*20, trip_topiaid_ws, "="*20)
 
             # on récupère les infos du trip enregistré dans un fichier json
-            api.get_one(token, url_base, trip_topiaidWS)
+            api.get_one(token, url_base, trip_topiaid_ws)
             
             json_previoustrip = api.load_json_file("previoustrip.json")
             
@@ -1443,19 +1492,15 @@ def checking_logbook(request):
         
         else : 
             dico_trip_infos = None
+            continuetrip = None
         
         context.update({"df_previous" : dico_trip_infos,
                         "continuetrip": continuetrip})
-        
-        # print("context2 :", context)
-        request.session['context'] = context
-        # print("context3 :", context)
-        
+
         print("+"*50, "A la fin de la fonction", "+"*50)
         print(context)
         print("+"*50, "END A la fin de la fonction", "+"*50)
 
-        
 
         data_to_homepage.update({
             'programme': context['program'],
@@ -1472,8 +1517,8 @@ def checking_logbook(request):
         pass
     return render(request, 'LL_homepage.html')
 
-
-def send_logbook2Observe(request):
+ 
+def send_logbook2observe(request):
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
     if request.method == 'POST':
@@ -1515,44 +1560,31 @@ def send_logbook2Observe(request):
         # sinon on extrait jusqu'a la endDate
        
         # On transforme pour que les données soient comparables
-        logbook_month = str(extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0])
-        logbook_year = str(extract_logbookDate_LL(df_donnees_p1).loc[extract_logbookDate_LL(df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0])
+        logbook_month = str(extract_logbook_date(df_donnees_p1).loc[extract_logbook_date(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0])
+
         if len(logbook_month) == 1:
             logbook_month = '0' + logbook_month
             print(logbook_month, type(logbook_month))
         else:
             logbook_month = str(logbook_month)
         
+        # if context['df_previous'] is not None :
+        #     startDate = context['df_previous']['startDate']
+        # else : 
+        #     startDate = context['startDate'] 
         
-        if context['df_previous'] is not None :
-            startDate = context['df_previous']['startDate']
-        else : 
-            startDate = context['startDate'] 
-        
+        startDate = context['startDate'] 
         
         if startDate[5:7] == logbook_month:
             start_extraction = int(startDate[8:10]) - 1
-
             if context['endDate'][5:7] == logbook_month:
                 end_extraction = int(context['endDate'][8:10])
-                print("startDate & endDate in month logbook : ", start_extraction, end_extraction)
-            
             else:
                 end_extraction = len(extract_positions(df_donnees_p1))
-                print("endDATEEEEEe : ", end_extraction)
-                print("startDate in month logbook : ", start_extraction, end_extraction)
-        
         else:
             start_extraction = 0
-            # if context['endDate'][5:7] == logbook_month:
             end_extraction = int(context['endDate'][8:10])
-            print("endDATEEEEEe : ", end_extraction)
-            print("endDate in month logbook : ", start_extraction, end_extraction)
-            
-            # else:
-            #     end_extraction = len(extract_positions(df_donnees_p1))
-            #     print("nothing in month logbook : ", start_extraction, end_extraction)
-                              
+              
         if context['continuetrip'] is None:
             # NEW TRIP
             

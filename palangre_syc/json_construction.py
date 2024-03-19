@@ -1,6 +1,7 @@
 import json
 import pandas as pd
 import palangre_syc.api
+import palangre_syc.views
 
 def get_captain_topiaid(df_donnees_p1, data_common):
     """
@@ -16,7 +17,7 @@ def get_captain_topiaid(df_donnees_p1, data_common):
     """
     for captain in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
 
-        captain_logbook = palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(
+        captain_logbook = palangre_syc.views.extract_cruise_info(df_donnees_p1).loc[palangre_syc.views.extract_cruise_info(
             df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
         captain_json = captain['firstName'] + ' ' + captain['lastName']
         if captain_logbook == captain_json:
@@ -40,7 +41,7 @@ def get_operator_topiaid(df_donnees_p1, data_common):
     """
     for person in data_common['content']['fr.ird.observe.entities.referential.common.Person']:
 
-        reported_logbook = palangre_syc.views.extract_reportInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_reportInfo_LL(
+        reported_logbook = palangre_syc.views.extract_report_info(df_donnees_p1).loc[palangre_syc.views.extract_report_info(
             df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
         reported_json = person['firstName'] + ' ' + person['lastName']
         if reported_logbook == reported_json:
@@ -62,12 +63,12 @@ def get_vessel_topiaid(df_donnees_p1, data_common):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    vessel_Logbook = palangre_syc.views.extract_vesselInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_vesselInfo_LL(
+    vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(
         df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     for vessel in data_common["content"]["fr.ird.observe.entities.referential.common.Vessel"]:
         if 'nationalId' in vessel:
             vessel_json = vessel['nationalId']
-            if vessel_Logbook == vessel_json:
+            if vessel_logbook == vessel_json:
                 return vessel['topiaId']
 
     # il faudrait faire un message qui dit de vérifier si le bateau est bien existant et présent dans la base
@@ -106,9 +107,9 @@ def get_species_topiaid(fao_code_logbook, data_common):
     """
     species = data_common["content"]["fr.ird.observe.entities.referential.common.Species"]
 
-    for Specie in species:
-        if fao_code_logbook == Specie.get("faoCode"):
-            return Specie["topiaId"]
+    for specie in species:
+        if fao_code_logbook == specie.get("faoCode"):
+            return specie["topiaId"]
         # On part du principe que si le code fao n'est pas exactement trouvé, c'est qu'il s'agit d'une espèce non identifié
         
     return "fr.ird.referential.common.Species#1433499266610#0.696541526820511"
@@ -137,6 +138,64 @@ def get_catchfate_topiaid(catchfate_logbook, data_ll):
 
 # Opimisation éventuelle : ajouter unparamètre qui permettrait de distinguer les fish des bycatch
 # notamment si les by catch son relachées A alive ou D dead
+
+
+def get_processing_topiaid(fao_code, data_ll):
+    """
+    Fonction qui associe un process on board à une espèce de poisson
+
+    Args:
+        fao_code (str): espèce de poisson
+        data_ll (json):  Données de références 'longliners'
+
+    Returns:
+        topiaid: OnBoardProcess
+    """
+    ''' on associe pour chaque espèce un processing et on lui ajoute en onBoardProcessing '''
+    if fao_code == 'SBF' or fao_code == 'BET' or fao_code == 'YFT':
+        processing_code = "GG"
+    elif fao_code == 'SWO' or fao_code == 'MLS' or fao_code == 'BUM' or fao_code == 'BLM' or fao_code == 'SFA' or fao_code == 'SSP':
+        processing_code = "HG"
+    elif fao_code == 'ALB' or  fao_code == 'OIL' or fao_code == 'XXX':
+        processing_code = "WL"
+    else : 
+        processing_code = "UNK"
+    
+    processings = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.OnBoardProcessing"]
+    for processing in processings:
+        if 'code' in processing:
+            if processing.get("code") == processing_code:
+                
+                return processing["topiaId"]
+        else :
+            return None
+
+def get_target_species_topiaid(df_donnees_p1, data_common):
+    """
+    Fonction qui va récupérer les topiaid de chacune des espèces visées dans une liste
+
+    Args:
+        df_donnees_p1 (dataframe): page 1 du doc excel
+        data_common (json):  Données de références 'common'
+
+    Returns:
+        list de topiaid
+    """
+    data = palangre_syc.views.extract_target_species(df_donnees_p1)
+    list_target_topiaid = []
+    for target in data['Logbook_name']:
+        if 'Tropical Tuna' in target: 
+            # list_target_topiaid.loc[len(list_target_topiaid)] = get_species_topiaid("YFT", data_common)
+            list_target_topiaid.append(get_species_topiaid("YFT", data_common))
+            list_target_topiaid.append(get_species_topiaid("BET", data_common))
+        elif 'Albacore Tuna' in target:
+            list_target_topiaid.append(get_species_topiaid("ALB", data_common))
+        elif 'Swordfish' in target: 
+            list_target_topiaid.append(get_species_topiaid("SWO", data_common))
+        else: 
+            list_target_topiaid.append(get_species_topiaid("XXX*", data_common))
+        
+    return list_target_topiaid
 
 def construction_catch_table(fish_file):
     """
@@ -194,8 +253,8 @@ def create_catch_table_fish_perday(fish_file, row_number):
 
                 if col[:2] == 'Kg':
                     fish_file_colname = 'Kg' + ' ' + col_end_name
-                    totalWeight = fish_file.loc[row_number, fish_file_colname]
-                    df_catches.loc[index, 'totalWeight'] = totalWeight
+                    total_weight = fish_file.loc[row_number, fish_file_colname]
+                    df_catches.loc[index, 'totalWeight'] = total_weight
                     # df_catches.loc[index, 'totalWeight'] = int(df_catches.loc[index, 'totalWeight'])
 
                 # a voir si on veut des Nan car il n'y a pas de donnée ou des 0
@@ -274,7 +333,7 @@ def create_branchelines_composition(df_donnees_p1):
     """
     branchlines_composition = [{
         'homeId': None,
-        'length': palangre_syc.views.extract_gearInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        'length': palangre_syc.views.extract_gear_info(df_donnees_p1).loc[palangre_syc.views.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
         'proportion': None,
         'tracelineLength': None,
         'topType': "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
@@ -294,11 +353,10 @@ def create_bait_composition(bait_datatable, data_ll):
     Returns:
         _type_: le json rempli à partir des infos de mon logbook
     """
-    baits_used = bait_datatable.loc[bait_datatable['Value'] != "None"]
-    total_baits = len(baits_used)
+    total_baits = len(bait_datatable)
     MultipleBaits = []
 
-    for index, row in baits_used.iterrows():
+    for index, row in bait_datatable.iterrows():
         BaitsComposition = {
             "homeId": None,
             "proportion": 100/total_baits,
@@ -324,7 +382,7 @@ def create_floatline_composition(df_gear):
     """
     floatlines_composition = [{
         "homeId": None,
-        # "length": palangre_syc.views.extract_gearInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
+        # "length": palangre_syc.views.extract_gear_info(df_donnees_p1).loc[palangre_syc.views.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
         "length": df_gear.loc[df_gear['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
         "proportion": 100,
         "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
@@ -332,7 +390,6 @@ def create_floatline_composition(df_gear):
     return floatlines_composition
 
 # peut etre ajouter le healthStatus
-
 
 def create_catches(datatable, data_common, data_ll):
     """
@@ -369,7 +426,7 @@ def create_catches(datatable, data_common, data_ll):
                         "species": get_species_topiaid(datatable.loc[n_ligne_datatable, 'fao_code'], data_common),
                         "predator": [],
                         "catchHealthStatus": None,
-                        "onBoardProcessing": None,
+                        "onBoardProcessing": get_processing_topiaid(datatable.loc[n_ligne_datatable, 'fao_code'], data_ll),
                         "weightMeasureMethod": None
                         })
         MultipleCatches.append(catches)
@@ -396,16 +453,16 @@ def create_starttimestamp(df_donnees_p1, data_ll, index_day, need_hour=bool):
         time_ = '00:00:00'
 
     date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
-        palangre_syc.views.extract_logbookDate_LL(df_donnees_p1).loc[palangre_syc.views.extract_logbookDate_LL(
+        palangre_syc.views.extract_logbook_date(df_donnees_p1).loc[palangre_syc.views.extract_logbook_date(
             df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0],
-        palangre_syc.views.extract_logbookDate_LL(df_donnees_p1).loc[palangre_syc.views.extract_logbookDate_LL(
+        palangre_syc.views.extract_logbook_date(df_donnees_p1).loc[palangre_syc.views.extract_logbook_date(
             df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0],
         palangre_syc.views.extract_time(
             df_donnees_p1, data_ll).loc[index_day, 'Day'],
         time_)
     return date_formated
 
-def create_starttimestamp_from_fieldDate(date):
+def create_starttimestamp_from_field_date(date):
     """ 
     Fonction qui permet d'avoir le bon format de date-time pour envoyer le json
 
@@ -441,27 +498,23 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
                 return True
     return False
             
-    
-
 def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, start_extraction, end_extraction):
-    # days_in_a_month = len(extract_positions(df_donnees_p1))
-    # MultipleSet = []
-    if isinstance(palangre_syc.views.extract_gearInfo_LL(df_donnees_p1), tuple):
-        df_gear, _ = palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)
+    
+    #############################
+    # messages d'erreurs
+    if isinstance(palangre_syc.views.extract_gear_info(df_donnees_p1), tuple):
+        df_gear, _ = palangre_syc.views.extract_gear_info(df_donnees_p1)
     else:
-        df_gear = palangre_syc.views.extract_gearInfo_LL(df_donnees_p1)
+        df_gear = palangre_syc.views.extract_gear_info(df_donnees_p1)
         
     # mais pour l'instant on ne traite pas cette info anyways 
-    if isinstance(palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1), tuple):
-        df_line, _ = palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1)
+    if isinstance(palangre_syc.views.extract_line_material(df_donnees_p1), tuple):
+        df_line, _ = palangre_syc.views.extract_line_material(df_donnees_p1)
     else:
-        df_line = palangre_syc.views.extract_lineMaterial_LL(df_donnees_p1)
-      
-        
-        
-        
+        df_line = palangre_syc.views.extract_line_material(df_donnees_p1)  
+    #############################
+
     
-        
     MultipleActivity = []
     for i in range(start_extraction, end_extraction):
         set = {
@@ -471,9 +524,9 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
             'basketsPerSectionCount': None,
             'branchlinesPerBasketCount': None,
             'totalSectionsCount': None,
-            'totalBasketsCount': palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'],
-            'totalHooksCount': palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total hooks'],
-            'totalLightsticksCount': palangre_syc.views.extract_fishingEffort(df_donnees_p1).loc[i, 'Total lightsticks'],
+            'totalBasketsCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'],
+            'totalHooksCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks'],
+            'totalLightsticksCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total lightsticks'],
             'weightedSnap': False,
             'snapWeight': None,
             'weightedSwivel': False,
@@ -502,13 +555,13 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, data_common, data_ll, 
                     'haulingBreaks': None,
                     'monitored': False,
                     # En fait "totalLineLength" serait de plusierus km, ce qui ne correspond pas avec le champ "Set Line length m"
-                    # 'totalLineLength' : extract_gearInfo_LL(df_donnees_p1).loc[extract_gearInfo_LL(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+                    # 'totalLineLength' : extract_gear_info(df_donnees_p1).loc[extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
                     'totalLineLength': None,
                     'basketLineLength': None,
                     'lengthBetweenBranchlines': df_gear.loc[df_gear['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
                     })
 
-        bait_datatable = palangre_syc.views.extract_bait_LL(df_donnees_p1)
+        bait_datatable = palangre_syc.views.extract_bait(df_donnees_p1)
         set.update({'baitsComposition': create_bait_composition(
             bait_datatable, data_ll), })
 
@@ -575,16 +628,9 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, context):
 
     trip = {
         'homeId': None,
-        'startDate': context['startDate']}
-
-    # if apply_conf['startDate'] != None :
-    #     trip.update({'startDate': create_starttimestamp_from_fieldDate(apply_conf['startDate']), })
-    # else : 
-    #     trip.update({'startDate': context['startDate'], })
-        
-    trip.update({
+        'startDate': context['startDate'],
         'endDate': context['endDate'],
-        'noOfCrewMembers': palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1).loc[palangre_syc.views.extract_cruiseInfo_LL(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
+        'noOfCrewMembers': palangre_syc.views.extract_cruise_info(df_donnees_p1).loc[palangre_syc.views.extract_cruise_info(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId': None,
         'gearUseFeatures': None,
         'activityObs': None,
@@ -610,10 +656,11 @@ def create_trip(df_donnees_p1, MultipleActivity, data_common, context):
         'generalComment': None,
         'observationsComment': None,
         'logbookComment': None,
-        'species': None,
+        'species': get_target_species_topiaid(df_donnees_p1, data_common),
         'observationsAvailability': False,
         'logbookAvailability': True,
-    })
+    }
+    
     return trip
 
 
@@ -651,11 +698,11 @@ def pretty_print(json_data, file="sample.json", mode="a"):
         file (str, optional): Nom de fichier json de sortie "sample.json".
         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
     """
-    # print(json_data)
+    
     json_formatted_str = json.dumps(
         json_data, indent=2, default=palangre_syc.api.serialize)
-    print("¤"*20, "pretty print function" ,"¤"*20)
-    print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
+    # print("¤"*20, "pretty print function" ,"¤"*20)
+    # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
     with open(file, mode) as outfile:
         outfile.write(json_formatted_str)
 

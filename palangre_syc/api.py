@@ -1,6 +1,5 @@
 import datetime
 import json
-import tempfile
 import numpy as np
 import requests
 import yaml
@@ -71,11 +70,11 @@ def get_referential_ll():
     """
 
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/referential/ll?'
-    api_Token = 'authenticationToken=' + get_token() +'&'
+    api_token = 'authenticationToken=' + get_token() +'&'
     api_infos = 'config.loadReferential=&config.recursive=&config.prettyPrint=true&config.serializeNulls=&referentialLocale='
     
     # Constitution du lien url pour accéder à l'API et donc générer un token
-    api_url = api_base + api_Token + api_infos
+    api_url = api_base + api_token + api_infos
     response = requests.get(api_url, timeout=15)
     
     # si la réponse est un succès, on extrait que le Token
@@ -202,7 +201,7 @@ def update_trip(token, data, url_base, topiaid):
     url = url_base + '/data/ll/common/Trip/' + topiaid
 
     print("PUT for updating the data")
-    # pretty_print(data)
+    pretty_print(data)
     res = requests.put(url, data=data_json, headers=headers, timeout=15)
     
     print("Code resultat de la requete", res.status_code)
@@ -250,7 +249,7 @@ def send_trip(token, data, url_base):
             outfile.write(res.text)
 
 
-def trip_for_prof_vessel(token, url_base, vessel_id, programme_topiaid):
+def trip_for_prog_vessel(token, url_base, vessel_id, programme_topiaid):
     """
     Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
 
