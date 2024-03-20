@@ -101,6 +101,20 @@ $(document).ready(function(){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
+
+            $.ajax({
+                type: 'POST',
+                url: 'logbook/del_files',
+                data: data,
+                dataType: "json",
+                success: function(response){
+                    console.log(" Bien ");
+                },
+                error: function(response){
+                    console.log('erreur de suppression');
+                }
+            });
+
             if ($("#apply select[name='ty_doc']").val() == "ps"){
                 $.ajax({
                     type: 'POST',

@@ -297,6 +297,21 @@ def postProg_info(request):
         return JsonResponse({"message": "success", "domaine": request.session.get('dico_config')['domaine']})
     return JsonResponse({"message": "Veuillez ressayer svp."})
 
+
+def logbook_del_files(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+        logbooks_files = os.listdir("media/logbooks")
+
+        if len(logbooks_files) > 0:
+            for file in logbooks_files:
+                os.remove("media/logbooks/"+ file)
+
+            print("Suppression des logbook trouvés")
+        else:
+            print("Aucun logbook trouvé dans le cache")
+    return JsonResponse({})
+
 @login_required
 def domaineSelect(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
