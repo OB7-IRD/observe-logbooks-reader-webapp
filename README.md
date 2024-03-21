@@ -40,3 +40,9 @@ make html # Build the documentation
 sphinx-serve & # Lance le serveur 
 sphinx-serve -b build -h 127.0.0.1
 ```
+
+# To build the CSS style 
+
+```bash
+python3 manage.py tailwind build
+```
