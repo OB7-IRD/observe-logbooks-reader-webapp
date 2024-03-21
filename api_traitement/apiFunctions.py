@@ -9,6 +9,7 @@ import json
 
 from api_traitement.json_fonctions import *
 
+
 # Convert date
 def date_convert(time_to_convert):
     return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
@@ -32,7 +33,7 @@ def getToken(baseUrl, data):
 
 
 # recuperer toutes les données de la senne
-def getAll_for_Mod_ps_and_common(token, module, baseUrl):
+def get_all_referential_data(token, module, baseUrl):
     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
     ac_cap = requests.get(url)
     if ac_cap.status_code == 200:
@@ -55,11 +56,33 @@ def load_data(token, baseUrl, forceUpdate=False):
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
-        ref_common = getAll_for_Mod_ps_and_common(token, "common", url)
-        ps_logbook = getAll_for_Mod_ps_and_common(token, "ps/logbook", url)
-        ps_common = getAll_for_Mod_ps_and_common(token, "ps/common", url)
+        ref_common = get_all_referential_data(token, "common", url)
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)
 
-        allData = {**ref_common, **ps_logbook, **ps_common}
+        program = {
+            'Program': {
+                'seine' :ps_common["Program"],
+                'longline':ll_common["Program"]
+            }
+        }
+        vesselActivity = {
+            'VesselActivity': {
+                'seine' :ps_common["VesselActivity"],
+                'longline':ll_common["VesselActivity"]
+            }
+        }
+
+        # Suppression des éléments suivant
+        del ps_common["Program"]
+        del ll_common["Program"]
+        del ps_common["VesselActivity"]
+        del ll_common["VesselActivity"]
+
+        allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
+
+        # allData = {**ref_common, **ps_logbook, **ps_common}
 
         file_name = "media/data/data_" + str(day) + ".json"
 
@@ -111,11 +134,12 @@ def load_data2():
 
 
 # Retourne ID d'un module en fonction des arguments donnés
-def getId(allData, module, argment, nbArg=False):
+def getId(allData, module, argment, nbArg=False, domaine=None):
     """
         :param allData:
         :param module:
         :param argment:
+        :param domaine: "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
         :param nbArg: permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
                      par defaut quand c'est False nous avons 1 argument en paramentre
                      si c'est egale True, nous avons 2 arguments en parametre
@@ -125,7 +149,10 @@ def getId(allData, module, argment, nbArg=False):
     dataKey = [k for (k, v) in allData.items()]
 
     if module in dataKey:
-        tempDic = allData[module]
+        if domaine != None:
+            tempDic = allData[module][domaine]
+        else:
+            tempDic = allData[module]
 
         if nbArg:
             # 2 arguments
@@ -156,98 +183,15 @@ def getOcean_Program(allData, search="Ocean"):
     """
         search => Ocean ou Program
     """
-    prog_dic = {}
-    for val in allData[search]:
-        prog_dic[val["topiaId"]] = val["label2"]
-    return prog_dic
+    if allData == []: return {}
 
-
-# Traitement du logbook
-def traiLogbook2(logB):
-    # Chargement du fichier
-    # wb = Workbook()
-
-    try:
-        wb = op.load_workbook(logB)
-    except Exception as e:
-        return '', '', '', "Error : Fichier illisible" + str(e)
-
-    if logB.name.split('.')[1] == "xlsm":
-        # Recuperer le non du bateau et autres information utils
-        #   st.text(wb.get_sheet_names())
-        maree_log = wb["1.Marée"]
-
-        # Recuperer la feuille active
-        act_sheet = wb["2.Logbook"]
+    if search == "Ocean":
+        return { val["topiaId"] : val["label2"] for val in allData[search]}
     else:
-        # Recuperer le non du bateau et autres information utils
-        maree_log = wb["Marée"]
-        # st.text(wb.get_sheet_names())
-
-        # Recuperer la feuille active
-        act_sheet = wb["Logbook"]
-
-    info_bat = {
-        "Navire": maree_log["F"][1].value,
-        "Depart_Port": maree_log["F"][12].value,
-        "Depart_Date": str(maree_log["F"][13].value).split(" ")[0],
-        "Arrivee_Port": maree_log["F"][17].value,
-        "Arrivee_Date": str(maree_log["F"][18].value).split(" ")[0],
-        "Arrivee_Loch": maree_log["F"][20].value,
-    }
-
-    observ = {
-        "captain": maree_log["D"][9].value,
-        "mar_homeId": maree_log["D"][10].value,
-    }
-
-    # Variable pour recuperer les donnée dans le logbook
-    data = []
-    obj = []
-
-    # Recuperation des lignes qui nous interesses à partir de la ligne 33 dans le fichier
-    i = 1
-    for row in act_sheet.rows:
-        if i >= 33:
-            for index in range(len(row)):
-                obj.append(row[index].value)
-            data.append(obj)
-            obj = []
-        i = i + 1
-
-    # Transformer le tableau "data" en dataFrame pour faciliter la manipulation des données
-    data = pd.DataFrame(np.array(data))
-
-    # Titrer le tableau
-    data = data.rename(
-        columns={0: "date", 1: "heure", 2: "lat1", 3: "lat2", 4: "lat3", 5: "long1", 6: "long2", 7: "long3", 8: "zee",
-                 9: "temp_mer", 10: "vent_dir", 11: "vent_vit", 12: "calee_porta", 13: "calee_nul", 14: "calee_type",
-                 15: "cap_alb_yft_p10_tail", 16: "cap_alb_yft_p10_cap", 17: "cap_alb_yft_m10_tail",
-                 18: "cap_alb_yft_m10_cap", 19: "cap_lst_skj_tail", 20: "cap_lst_skj_cap", 21: "cap_pat_bet_p10_tail",
-                 22: "cap_pat_bet_p10_cap", 23: "cap_pat_bet_m10_tail", 24: "cap_pat_bet_m10_cap",
-                 25: "cap_ger_alb_tail", 26: "cap_ger_alb_cap", 27: "cap_aut_esp_oth_esp", 28: "cap_aut_esp_oth_tail",
-                 29: "cap_aut_esp_oth_cap", 30: "cap_rej_dsc_esp", 31: "cap_rej_dsc_tail", 32: "cap_rej_dsc_cap",
-                 33: "asso_bc_libre", 34: "asso_objet", 35: "asso_balise", 36: "asso_baliseur", 37: "asso_requin",
-                 38: "asso_baleine", 39: "asso_oiseaux", 40: "obj_flot_act_sur_obj", 41: "obj_flot_typ_obj",
-                 42: "obj_flot_typ_dcp_deriv", 43: "obj_flot_risq_mail_en_surf", 44: "obj_flot_risq_mail_sou_surf",
-                 45: "bouee_inst_act_bou", 46: "bouee_inst_bou_prst_typ", 47: "bouee_inst_bou_prst_id",
-                 48: "bouee_inst_bou_deplo_typ", 49: "bouee_inst_bou_deplo_id", 50: "comment"})
-
-    #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
-
-    # Suppression des lignes identiques c.a.d les doublons
-    df_data = data.drop_duplicates(keep=False)
-    df_data.loc[:, "date"] = df_data.loc[:, "date"].fillna(method="ffill").values
-
-    df_data = df_data.loc[:, :"comment"]
-
-    if info_bat['Depart_Date'] == 'None':
-        info_bat['Depart_Date'] = str(df_data['date'].iloc[0]).split(' ')[0]
-
-    if info_bat['Arrivee_Date'] == 'None':
-        info_bat['Arrivee_Date'] = str(df_data['date'].iloc[-1]).split(' ')[0]
-
-    return info_bat, df_data, observ, ''
+        return {
+            "seine": { val["topiaId"] : val["label2"] for val in allData[search]["seine"]},
+            "longline": { val["topiaId"] : val["label2"] for val in allData[search]["longline"]},
+        }
 
 
 # Traitement du logbook
@@ -326,7 +270,13 @@ def traiLogbook(logB):
 
     # Suppression des lignes identiques c.a.d les doublons
     df_data = data.drop_duplicates(keep=False)
-    df_data.loc[:, "date"] = df_data.loc[:, "date"].fillna(method="ffill").values
+
+    df_data.loc[:, "date"] = df_data.date.fillna(method="ffill")
+
+    # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
+    if df_data.date.isnull().sum() > 0:
+        df_data = df_data[~df_data["date"].isna()]
+        df_data.reset_index(drop=True, inplace=True) #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
 
     df_data = df_data.loc[:, :"comment"]
 
@@ -881,113 +831,31 @@ def add_trip(token, content, url_base):
             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
 
 
-def errorFilter3(response):
-    allMessages = []
-    error = json.loads(response)
-    for val in error['exception']['result']['data']:
-        for i in range(len(val['messages'])):
-            allMessages.append("champs erreur: \n" + str(val['messages'][i]['fieldName']))
-            allMessages.append("\n Message Erreur: \n" + str(val['messages'][i]['message']))
-    return allMessages
-
-
-def errorFilter2(response):
-    error = json.loads(response)
-    lati_long_date_ref = []
-    msg = []
-    comp = 0
-    for val in error['exception']['result']['data']:
-        for i in range(len(val['messages'])):
-
-            if (val['messages'][i]['fieldName'] == 'latitude') or (val['messages'][i]['fieldName'] == 'longitude') or (
-                    val['messages'][i]['fieldName'] == 'quadrant'):
-                temp = ""
-                try:
-                    temp = val['reference']['content']['date'].replace("T00:00:00.000Z", ""), \
-                        val['reference']['content']['time'].replace(":00.000Z", "").replace('1970-01-01T', '')
-
-                except:
-                    temp2 = "champs erreur: " + str(val['messages'][i]['fieldName']) + " \n Message Erreur: " + str(
-                        val['messages'][i]['message'])
-                    if temp2 not in msg:
-                        comp += 1
-                        msg.append(temp2)
-
-                if temp != "":
-                    if temp not in lati_long_date_ref:
-                        lati_long_date_ref.append(temp)
-            else:
-                temp2 = "champs erreur: " + str(val['messages'][i]['fieldName']) + " \n Message Erreur: " + str(
-                    val['messages'][i]['message'])
-                if temp2 not in msg:
-                    comp += 1
-                    msg.append(temp2)
-
-    for val_m in msg:
-        print(val_m)
-
-    if comp != 0:
-        print("nombre d'occurence: ", comp)
-
-    print("\n")
-
-    for vals in lati_long_date_ref:
-        print("Erreur sur la longitude et la latitude le ", vals[0], " à ", vals[1])
-
-
 def errorFilter(response):
     """
     Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
     """
     error = json.loads(response)
-    # print(error)
-    lati_long_date_ref = []
-    msg = []
-    comp = 0
-    comp2 = 0
-    for val in error['exception']['result']['data']:
-        for i in range(len(val['messages'])):
+    # print(error) ['exception']['result']['nodes']
 
-            if (val['messages'][i]['fieldName'] == 'latitude') or (val['messages'][i]['fieldName'] == 'longitude') or (
-                    val['messages'][i]['fieldName'] == 'quadrant'):
-                temp = ""
-                try:
-                    temp = val['reference']['content']['date'].replace("T00:00:00.000Z", ""), \
-                        val['reference']['content']['time'].replace(":00.000Z", "").replace('1970-01-01T', '')
+    def errorFonction(nodes):
+        if ('children' in nodes.keys()):
+            return errorFonction(nodes['children'][0])
 
-                except:
-                    temp2 = " *** champs erreur: " + str(
-                        val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                        val['messages'][i]['message'])
-                    if temp2 not in msg:
-                        comp += 1
-                        msg.append(temp2)
+        if ('messages' in nodes.keys()):
+            temp = nodes['messages']
+            text = nodes['datum']['text']
 
-                if temp != "":
-                    if temp not in lati_long_date_ref:
-                        lati_long_date_ref.append(temp)
-            else:
-                temp2 = " *** champs erreur: " + str(
-                    val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                    val['messages'][i]['message'])
-                if temp2 not in msg:
-                    msg.append(temp2)
+            return "<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
 
-            if temp2 in msg:
-                comp2 += 1
 
     all_message = []
-    for val_m in msg:
-        all_message.append(val_m)
 
-    if comp != 0:
-        all_message.append(" *** nombre d'occurence sur longitude et latitude: " + str(comp))
-
-    if comp2 != 0:
-        all_message.append(" *** Nombre total d'erreurs tout types confondus: " + str(comp2))
-
-    for vals in lati_long_date_ref:
-        all_message.append(" *** Erreur sur la longitude et la latitude le " + str(vals[0]) + " à " + str(vals[1]))
+    if 'messages' in error['exception']['result']['nodes'][0].keys():
+        errorFonction(error['exception']['result']['nodes'][0])
+    else:
+        for val in error['exception']['result']['nodes'][0]['children']:
+            all_message.append(errorFonction(val))
 
     return all_message
 
@@ -1069,10 +937,12 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     code_conser = getId(allData, "SpeciesFate", argment="code=6")
     code_conser_autre = getId(allData, "SpeciesFate", argment="code=15")
     code_reje = getId(allData, "SpeciesFate", argment="code=11")
-    vers_code_6 = getId(allData, "VesselActivity", argment="code=6")
-    vers_code_13 = getId(allData, "VesselActivity", argment="code=13")
-    vers_code_21 = getId(allData, "VesselActivity", argment="code=21")
-    vers_code_99 = getId(allData, "VesselActivity", argment="code=99")
+
+    vers_code_6 = getId(allData, "VesselActivity", argment="code=6", domaine="seine")
+    vers_code_13 = getId(allData, "VesselActivity", argment="code=13", domaine="seine")
+    vers_code_21 = getId(allData, "VesselActivity", argment="code=21", domaine="seine")
+    vers_code_99 = getId(allData, "VesselActivity", argment="code=99", domaine="seine")
+
     id_infoSource = getId(allData, "InformationSource", argment="code=S")
     id_dataQua = getId(allData, "DataQuality", argment="code=A")
 
@@ -1086,6 +956,8 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     tab_fpa = getAll(allData, "FpaZone", type_data="tableau")
     #############################
 
+
+
     oths = False
     oths_rej = []
     data_date = ""
@@ -1097,10 +969,14 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     not_time = False
     date = ""
     for val in group:
+        #print(val)
+
         for index, data in val[1].iterrows():
             date = data["date"]
+
             # print(str(date).replace(" ","T").replace("00:00:00","")+str(data["heure"])+".000Z")
             tab4_catches = []
+
 
             # Permet d'incrementer le homeId sans perdre le file s'il n'y a pas d'activités
             if  (data["lat1"] is not None) and (data["long1"] is not None) and (
@@ -1276,6 +1152,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
             ################# Floating Obj ##############
 
+
             tab1_Float = []
             tab2_Transmitt = []
             temp_float = None
@@ -1377,6 +1254,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
             ##############################################################################################################################################
 
             ########### Activite ############
+
 
             depart_date = info_bat['Depart_Date']
             Depart_heure = info_bat['Depart_heure']
@@ -1619,6 +1497,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                 Som_thon        = 0
                 nb += 1
 
+
         js_routeLogbooks = js_routeLogbook(activite)
 
         # print("DDDDDD DDDDD DDDD", type(data["heure"]))
@@ -1631,6 +1510,9 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
         nb = 1
         nb_r += 1
+
+
+    #print("Yes", routes)
 
     js_contents = js_content(routes, oce, prg)
     # activitiesAcquisitionMode [BY_NUMBER, BY_TIME]
@@ -1685,6 +1567,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
         js_contents["endDate"] = None
     else:
         js_contents["endDate"] = info_bat['Arrivee_Date'] + "T00:00:00.000Z"
+
 
     js_contents["captain"], js_contents["logbookDataEntryOperator"] = cap_obs_sea(allData, ob)
 

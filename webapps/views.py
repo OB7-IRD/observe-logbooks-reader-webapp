@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 from api_traitement.apiFunctions import *
 from .form import UserForm
@@ -32,8 +33,11 @@ def relordToken(req, username, password):
 
     baseUrl = data_user.url
 
+    if data_user.database == 'test' :
+        data_user.username = 'technicienweb'
+
     data_user_connect = {
-        "config.login": user,
+        "config.login": data_user.username,
         "config.password": password,
         "config.databaseName": data_user.database,
         "referentialLocale": data_user.ref_language,
@@ -58,14 +62,22 @@ def auth_login(request):
         print(user)
 
         if user is not None and user.is_active:
+            print(user)
             data_user = User.objects.get(username=user)
+
+            print("Basename 1", data_user.basename.lower())
+            print("Basename 2", basename)
+
             if basename == data_user.basename.lower():
                 token = ""
                 allData = []
                 baseUrl = data_user.url
 
+                if basename == 'test-proto.ird.fr' :
+                    data_user.username = 'technicienweb'
+
                 data_user_connect = {
-                    "config.login": user,
+                    "config.login": data_user.username,
                     "config.password": password,
                     "config.databaseName": data_user.database,
                     "referentialLocale": data_user.ref_language,
@@ -145,6 +157,8 @@ def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     apply_conf  = request.session.get('dico_config')
 
+    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
+
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
@@ -152,61 +166,79 @@ def logbook(request):
         message = tags = ''
         logbooks = os.listdir("media/logbooks")
 
-        if 0 < len(logbooks) <= 1:
-            info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
+        ######################### PALANGRE ################################"
+        # Traitement palangre
 
-            # Suprimer le ou les fichiers data logbooks
-            os.remove("media/logbooks/"+ logbooks[0])
+        # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
+        if apply_conf["domaine"] == "palangre":
+            logbooks = os.listdir("media/logbooks")
+            print("="*20, "logbook kwargs", "="*20)
+            print(logbooks)
+            print(apply_conf)
+            # return redirect(reverse("checking logbook"),
+            #                 kwargs={'selected_file': logbooks,
+            #                         'apply_conf': apply_conf})
+
+            url = reverse('checking logbook')
+            url = f"{url}?selected_file={logbooks}"
+            return redirect(url)
+
+        # traintement senne
+        if 0 < len(logbooks) <= 1:
+             info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
+
+             # Suprimer le ou les fichiers data logbooks
+             os.remove("media/logbooks/"+ logbooks[0])
+             # print(data_observateur)
 
         if message == '' and len(logbooks) > 0:
-            print("len log ", len(logbooks), " messa : ", message)
-            try:
-                file_name = "media/data/" + os.listdir('media/data')[0]
-                # Opening JSON file
-                f = open(file_name, encoding="utf8")
-                # returns JSON object as  a dictionary
-                allData = json.load(f)
+             print("len log ", len(logbooks), " messa : ", message)
+             try:
+                 file_name = "media/data/" + os.listdir('media/data')[0]
+                 # Opening JSON file
+                 f = open(file_name, encoding="utf8")
+                 # returns JSON object as  a dictionary
+                 allData = json.load(f)
 
-                allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
+                 allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
 
-                # print(content_json,'\n')
+                 #print(content_json,'\n')
 
-                if os.path.exists("media/content_json/content_json.json"):
-                    os.remove("media/content_json/content_json.json")
-                    # creer le nouveau content
-                    file_name = "media/content_json/content_json.json"
+                 if os.path.exists("media/content_json/content_json.json"):
+                     os.remove("media/content_json/content_json.json")
+                     # creer le nouveau content
+                     file_name = "media/content_json/content_json.json"
 
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
-                else:
-                    # creer le nouveau content
-                    file_name = "media/content_json/content_json.json"
+                     with open(file_name, 'w', encoding='utf-8') as f:
+                         f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+                 else:
+                     # creer le nouveau content
+                     file_name = "media/content_json/content_json.json"
 
-                    with open(file_name, 'w', encoding='utf-8') as f:
-                        f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+                     with open(file_name, 'w', encoding='utf-8') as f:
+                         f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
 
-                if allMessages == []:
-                    messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
-                else:
-                    for msg in allMessages:
-                        messages.error(request, msg)
-                        tags = "error"
+                 if allMessages == []:
+                     messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
+                 else:
+                     for msg in allMessages:
+                         messages.error(request, msg)
+                         tags = "error"
 
-                    # Mettre les messages d'erreurs dans un fichier log
-                    file_log_name = "media/log/log.txt"
+                     # Mettre les messages d'erreurs dans un fichier log
+                     file_log_name = "media/log/log.txt"
 
-                    with open(file_log_name, 'w', encoding='utf-8') as f_log:
-                        log_mess = "\r\r".join(allMessages)
-                        f_log.write(log_mess)
-            except UnboundLocalError:
-                messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
-                tags = "error2"
+                     with open(file_log_name, 'w', encoding='utf-8') as f_log:
+                         log_mess = "\r\r".join(allMessages)
+                         f_log.write(log_mess)
+             except UnboundLocalError:
+                 messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
+                 tags = "error2"
 
-                logbooks = os.listdir("media/logbooks")
+                 logbooks = os.listdir("media/logbooks")
 
-                for logbook in logbooks:
-                    os.remove("media/logbooks/"+ logbook)
-
+                 for logbook in logbooks:
+                     os.remove("media/logbooks/"+ logbook)
 
         else:
             messages.error(request, message)
@@ -215,7 +247,7 @@ def logbook(request):
         return render(request, "logbook.html",{
             "tags": tags,
             "ocean_data": datat_0c_Pr["ocean"]
-        })
+         })
 
     return render(request, "logbook.html", context={
         "ocean_data": datat_0c_Pr["ocean"]
@@ -224,19 +256,29 @@ def logbook(request):
 @login_required
 def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+
     if domaine == 'senne':
         dataPro = {
             "id":[],
             "value":[]
         }
-        for key, value in datat_0c_Pr["program"].items():
+        for key, value in datat_0c_Pr["program"]['seine'].items():
             # print(key, value)
             dataPro["id"].append(key)
             dataPro["value"].append(value)
         return JsonResponse({"dataPro": dataPro})
+
     elif domaine == 'palangre':
-        # dataPro = datat_0c_Pr["program"]
-        return JsonResponse({"dataPro": None})
+        dataPro = {
+            "id":[],
+            "value":[]
+        }
+        for key, value in datat_0c_Pr["program"]['longline'].items():
+            # print(key, value)
+            dataPro["id"].append(key)
+            dataPro["value"].append(value)
+        return JsonResponse({"dataPro": dataPro})
+
     else:
         return JsonResponse({})
 
@@ -254,6 +296,21 @@ def postProg_info(request):
         # print(request.session.get('dico_config'))
         return JsonResponse({"message": "success", "domaine": request.session.get('dico_config')['domaine']})
     return JsonResponse({"message": "Veuillez ressayer svp."})
+
+
+def logbook_del_files(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+
+        logbooks_files = os.listdir("media/logbooks")
+
+        if len(logbooks_files) > 0:
+            for file in logbooks_files:
+                os.remove("media/logbooks/"+ file)
+
+            print("Suppression des logbook trouvés")
+        else:
+            print("Aucun logbook trouvé dans le cache")
+    return JsonResponse({})
 
 @login_required
 def domaineSelect(request):

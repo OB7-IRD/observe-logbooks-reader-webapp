@@ -76,6 +76,13 @@ $(document).ready(function(){
                 success: function(response){
                     // maxFile = 4;
                     // group_file   = '.xlsx, .xlsm, .zip';
+
+                    let option = '';
+                    for (var i = 0; i < response.dataPro.id.length; i++) {
+                        option += '<option value='+response.dataPro.id[i]+'>'+response.dataPro.value[i]+'</option>';
+
+                    }
+                    $("#apply select[name='programme']").find('.after').after(option);
                 },
                 error: function(response){
                     console.log('Rien')
@@ -94,6 +101,20 @@ $(document).ready(function(){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
+
+            $.ajax({
+                type: 'POST',
+                url: 'logbook/del_files',
+                data: data,
+                dataType: "json",
+                success: function(response){
+                    console.log(" Bien ");
+                },
+                error: function(response){
+                    console.log('erreur de suppression');
+                }
+            });
+
             if ($("#apply select[name='ty_doc']").val() == "ps"){
                 $.ajax({
                     type: 'POST',
@@ -119,6 +140,34 @@ $(document).ready(function(){
                 var domaine = $("#domaine").val()
                 dropZone(domaine);
             }
+
+            // palangre
+            else if ($("#apply select[name='ty_doc']").val() == "ll"){
+                $.ajax({
+                    type: 'POST',
+                    url: 'logbook/'+$("#apply").attr('action'),
+                    data: data,
+                    dataType: "json",
+                    success: function(response){
+
+                        if (response.message == 'success'){
+                            console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
+
+                        }else{
+                            console.log(response.message);
+                        }
+                    },
+                    error: function(response){
+                        console.log('La configuration n\'a pas été enregistrer');
+                    }
+                });
+                $("#div_upload").show(1500);
+                $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+
+                var domaine = $("#domaine").val()
+                dropZone(domaine);
+            }
+
             else if (($("#apply select[name='ty_doc']").val() == "ps2") || ($("#apply select[name='ty_doc']").val() == "ers")){
                 $("#div_upload").hide(1500);
                 console.log('Rien pour l\'instant ');
