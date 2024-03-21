@@ -20,12 +20,19 @@ MarkupSafe==2.1.1
 numpy==1.23.3
 openpyxl==3.0.10
 pandas==1.4.4
-python-dateutil==2.8.2
-python-slugify==6.1.2
-pytz==2022.2.1
-PyYAML==6.0
-requests==2.28.1
-six==1.16.0
-sqlparse==0.4.2
-text-unidecode==1.3
-urllib3==1.26.10
+=======
+argcomplete @ file:///private/tmp/python-argcomplete-20231211-42231-mc1bv2/argcomplete-3.2.1
+asgiref==3.7.2
+certifi==2023.11.17
+charset-normalizer==3.3.2
+django>=4.2.10
+django-tailwind==3.8.0
+et-xmlfile==1.1.0
+idna==3.6
+MarkupSafe @ file:///private/tmp/python-markupsafe-20231211-21580-wvs9hr/MarkupSafe-2.1.3
+numpy==1.26.3
+openpyxl==3.1.2
+packaging @ file:///private/tmp/python-packaging-20231211-10905-adsfgp/packaging-23.2
+pandas==2.1.4
+Pygments>=2.15.0
+
