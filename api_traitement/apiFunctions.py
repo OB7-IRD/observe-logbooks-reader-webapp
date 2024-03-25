@@ -34,7 +34,6 @@ def getToken(baseUrl, data):
 
 # recuperer toutes les données de la senne
 def get_all_referential_data(token, module, baseUrl):
-def get_all_referential_data(token, module, baseUrl):
     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
     ac_cap = requests.get(url)
     if ac_cap.status_code == 200:
@@ -1304,7 +1303,6 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                     tab3_floatingObject.append(js_floatingObjects)
 
                 if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
-                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
                     allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
 
             except TransmitException as e:
@@ -1636,3 +1634,4 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     js_contents['logbookComment'] = "NB: Service Web"
 
     return allMessages, js_contents
+

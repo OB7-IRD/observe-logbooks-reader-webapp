@@ -30,7 +30,7 @@ urlpatterns = [
 ]
 
 urlpatterns += i18n_patterns(
-        path('', home, name="home"),
+    path('', home, name="home"),
     path('admin', admin.site.urls),
     path('login', auth_login, name="login"),
     # path('register', register, name="register"),
