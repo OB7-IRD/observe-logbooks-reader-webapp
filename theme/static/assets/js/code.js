@@ -220,7 +220,7 @@ $(document).ready(function(){
             alert('Merci de selectionner tous les champs avant d\'appliquer');
         }
 
-    });
+    };
 
     $("#my-dropzone button[class='dz-button']").click(function(e){
         e.preventDefault();
@@ -458,9 +458,5 @@ $(document).ready(function(){
         
     //     // Attach the function to the click event of the validation button
     // $('#validate-btn').click(validateAndCloseModal);
-});    
-
-
-
-
-
+    });
+});
