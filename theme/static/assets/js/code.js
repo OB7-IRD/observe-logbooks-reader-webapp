@@ -49,7 +49,7 @@ $(document).ready(function(){
             $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
             $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
             $.ajax({
-                url: '/'+$this.val(),
+                url: '/'+ $this.val(),
                 type: 'GET',
                 success: function(response){
                     // maxFile = 2;
@@ -57,6 +57,7 @@ $(document).ready(function(){
 
                     let option = '';
                     for (var i = 0; i < response.dataPro.id.length; i++) {
+                        //println(response.dataPro.id[i]);
                         option += '<option value='+response.dataPro.id[i]+'>'+response.dataPro.value[i]+'</option>';
                     }
                     $("#apply select[name='programme']").find('.after').after(option);
@@ -74,13 +75,12 @@ $(document).ready(function(){
                 url: '/'+$this.val(),
                 type: 'GET',
                 success: function(response){
-                    // maxFile = 4;
-                    // group_file   = '.xlsx, .xlsm, .zip';
+                    // maxFile = 2;
+                    // group_file   = '.xlsx, .xlsm';
 
                     let option = '';
                     for (var i = 0; i < response.dataPro.id.length; i++) {
                         option += '<option value='+response.dataPro.id[i]+'>'+response.dataPro.value[i]+'</option>';
-
                     }
                     $("#apply select[name='programme']").find('.after').after(option);
                 },
@@ -97,10 +97,50 @@ $(document).ready(function(){
     $("#btn_apply").click(function(e){
         e.preventDefault()
         // e.stopPropagation()
+
+        // deleting the previously dropped files in the drop zone
+        // everytime we click on the "appliquer" button, it will clear the 'media/logbook' folder
+        // Function to clear the contents of the 'media/logbook' file
+    
+        // function clearLogFile(callback) {
+        //     $.ajax({
+        //         type: 'GET',
+        //         url: 'media/logbook', // Assuming this URL points to the 'media/logbook' file
+        //         success: function(data) {
+        //             // Check if the file is not empty
+        //             if (data.trim() !== '') {
+        //                 // If the file is not empty, clear its contents
+        //                 $.ajax({
+        //                     type: 'POST',
+        //                     url: 'domaineSelect', // URL to a server-side script that clears the logbook file
+        //                     success: function(response) {
+        //                         console.log('Logbook file cleared successfully.');
+        //                         callback();
+        //                     },
+        //                     error: function(xhr, status, error) {
+        //                         console.error('Error clearing logbook file:', error);
+        //                         // Handle error if necessary
+        //                     }
+        //                 });
+        //             } else {
+        //                 // If the file is already empty, proceed with other actions
+        //                 callback();
+        //             }
+        //             },
+        //         error: function(xhr, status, error) {
+        //             console.error('Error reading logbook file:', error);
+        //             // Handle error if necessary
+        //         }
+        //     });
+        // }
+
+
+        
         if (($("#domaine").val() != "Domaine..." ) && ($("#programme").val() != "Programmes du domaine..." ) && ($("#ocean").val() != "Ocean..." ) && ($("#ty_doc").val() != "Types de document..." )){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
+            if ($("#apply select[name='ty_doc']").val() == "ps" || $("#apply select[name='ty_doc']").val() == "ll"){
 
             $.ajax({
                 type: 'POST',
@@ -127,7 +167,7 @@ $(document).ready(function(){
                             console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
 
                         }else{
-                            console.log(response.message);
+                            console.log("2message unsuccess"+response.message);
                         }
                     },
                     error: function(response){
@@ -173,11 +213,11 @@ $(document).ready(function(){
                 console.log('Rien pour l\'instant ');
 
             }
-            console.log($("#apply select[name='ty_doc']").val())
+            console.log('Affiche le domaine'+$("#apply select[name='ty_doc']").val())
 
         }
         else{
-            alert('Veuillez selectionner tous les champs avant d\'appliquer');
+            alert('Merci de selectionner tous les champs avant d\'appliquer');
         }
 
     });
@@ -401,7 +441,26 @@ $(document).ready(function(){
     });
     */
 
-});
+    // function validateAndCloseModal() {
+    //     var selectedOption1 = document.querySelector('input[name="selectedOption1"]:checked');
+    //     var selectedOption2 = document.querySelector('input[name="selectedOption2"]:checked');
+        
+    //     if (!selectedOption1 || !selectedOption2) {
+    //     alert("Veuillez répondre à toutes les questions avant de valider.");
+    //     return false;
+    //     } else {
+    //     // Proceed with your validation logic or form submission
+    //     // Close the modal
+    //     document.querySelector('.bg-white').style.display = 'none';
+    //     document.querySelector('.fixed').style.display = 'none';
+    //     }
+    //     }
+        
+    //     // Attach the function to the click event of the validation button
+    // $('#validate-btn').click(validateAndCloseModal);
+});    
+
+
 
 
 

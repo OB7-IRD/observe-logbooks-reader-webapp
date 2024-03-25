@@ -34,6 +34,7 @@ def getToken(baseUrl, data):
 
 # recuperer toutes les données de la senne
 def get_all_referential_data(token, module, baseUrl):
+def get_all_referential_data(token, module, baseUrl):
     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
     ac_cap = requests.get(url)
     if ac_cap.status_code == 200:
@@ -44,6 +45,8 @@ def get_all_referential_data(token, module, baseUrl):
 
             for valin in json.loads(ac_cap.text)["content"][val]:
                 dicoModule[vals].append(valin)
+        print("="*20, "get_all_referential_data", "="*20)
+        print(dicoModule)
         return dicoModule
     else:
         return "Problème de connexion pour recuperer les données"
@@ -52,6 +55,7 @@ def get_all_referential_data(token, module, baseUrl):
 # Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
 # En utilisant notre fuiseau horaire
 def load_data(token, baseUrl, forceUpdate=False):
+    print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
     files = os.listdir("media/data")
 
@@ -84,6 +88,19 @@ def load_data(token, baseUrl, forceUpdate=False):
 
         # allData = {**ref_common, **ps_logbook, **ps_common}
 
+        ref_common = get_all_referential_data(token, "common", url)
+        # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)
+        gear = {'seine' :ps_common, 'longline':ll_common}
+        # ll_logbook = getAll_for_Mod_ps_and_common(token, "ll/logbook", url)
+
+        allData = {**ref_common, **ps_logbook, **gear}
+        
+        print("="*20, "load_data SubFunction", "="*20)
+        # print(ref_common[5:])
+        
         file_name = "media/data/data_" + str(day) + ".json"
 
         with open(file_name, 'w', encoding='utf-8') as f:
@@ -104,21 +121,33 @@ def load_data(token, baseUrl, forceUpdate=False):
 
             # Suprimer l'ancienne
             os.remove("media/data/" + last_file)
+            
+            print("="*20, "allData updated", "="*20)
+            # print(allData[5:])
 
         else:
             file_name = "media/data/" + files[0]
             # Opening JSON file
-            f = open(file_name)
+            f = open(file_name , encoding='utf-8')
             # returns JSON object as  a dictionary
             allData = json.load(f)
+            
+            print("="*20, "allData already existing", "="*20)
+            # print(allData)
     else:
         list_file = os.listdir("media/data")
         for file_name in list_file:
             os.remove("media/data/" + str(file_name))
 
         allData = subFunction(token, day, baseUrl)
+        print("="*20, "subFunction getting allData", "="*20)
+        # print(al/lData[5:])
 
     return allData
+
+
+# print(load_data(token = '9f49725e-2402-46fd-ab52-c03a6ba2c529',
+#                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
 def load_data2():
@@ -179,7 +208,7 @@ def getId(allData, module, argment, nbArg=False, domaine=None):
     return Id
 
 
-def getOcean_Program(allData, search="Ocean"):
+def search_in(allData, search="Ocean"):
     """
         search => Ocean ou Program
     """
@@ -187,6 +216,35 @@ def getOcean_Program(allData, search="Ocean"):
 
     if search == "Ocean":
         return { val["topiaId"] : val["label2"] for val in allData[search]}
+    prog_dic = {}
+    if allData == [] : 
+        return prog_dic
+    
+    # print(allData)
+    
+    for val in allData[search]:
+        prog_dic[val["topiaId"]] = val["label2"]
+    # print("search_in", prog_dic)
+    return prog_dic
+
+
+# Traitement du logbook
+def traiLogbook2(logB):
+    # Chargement du fichier
+    # wb = Workbook()
+
+    try:
+        wb = op.load_workbook(logB)
+    except Exception as e:
+        return '', '', '', "Error : Fichier illisible" + str(e)
+
+    if logB.name.split('.')[1] == "xlsm":
+        # Recuperer le non du bateau et autres information utils
+        #   st.text(wb.get_sheet_names())
+        maree_log = wb["1.Marée"]
+
+        # Recuperer la feuille active
+        act_sheet = wb["2.Logbook"]
     else:
         return {
             "seine": { val["topiaId"] : val["label2"] for val in allData[search]["seine"]},
@@ -1245,6 +1303,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                                   bool_tuple=("true", "true"), argment="code=11")
                     tab3_floatingObject.append(js_floatingObjects)
 
+                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
                 if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
                     allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
 

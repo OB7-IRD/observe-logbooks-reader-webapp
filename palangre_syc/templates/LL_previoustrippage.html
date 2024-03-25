@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}
+
+Palangre aux Seychelles
+
+{% endblock title %}
+
+{% block navigation %}
+{% endblock navigation %}
+
+{% block heading %}
+<h1> {% translate  "Page d'accueil pour les données de palangre" %}</h1>
+{% endblock heading %}
+
+{% block content %}
+
+<form method="POST" id="previoustrip" action="{% url 'checking logbook' %}">
+    <!-- last trip extracted data -->
+    {% if df_previous_trip.iterrows != None %}
+
+        <!-- ON AFFICHE UN TABLEAU AVEC L'ENSEMBLE DES TRIP PRECEDENTS POUR UN PROGRAMME ET UN NAVIRE -->
+
+        <div class="container mx-auto px-4 sm:px-4 py-8">
+            <div>
+                <h2 class="text-2xl font-semibold leading-tight">
+                    {% translate "Données de marées associées au programme : " %}
+                    {{ program }} </h2>
+            </div>
+
+            <div class="-mx-2 sm:-mx-2 px-2 sm:px-8 py-2 overflow-x-auto">
+                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
+                    <table class="min-w-full leading-normal text-center" id = "dataTable">
+                        <thead>
+                            <tr>
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"></th>
+                                {% comment %} {% for col in df_previous_trip.columns|slice:"1:" %}
+                                    <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        {{ col }} 
+                                    </th>
+                                {% endfor %} {% endcomment %}
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider"> 
+                                    {% translate "Date de départ" %} 
+                                </th>
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    {% translate "Port de départ" %} 
+
+                                </th>
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    {% translate "Date d'arrivée" %} 
+                                </th>
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    {% translate "Port d'arrivée" %} 
+                                </th>
+                                <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                    {% translate "Océan" %} 
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for index, row in df_previous_trip.iterrows %}     
+                                <tr>
+                                    <td>
+                                        <input type="radio" id="radio_previoustrip" name="radio_previoustrip" value="{{ row.0 }}"/>
+                                    </td>
+                                {% comment %} {% for cell in row|slice:"1:" %}
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {% if forloop.counter0 == 0 or forloop.counter0 == 2 %}
+                                            {{ cell|slice:"0:10" }} 
+                                        {% else %}
+                                            {{ cell }} 
+                                        {% endif %}
+                                    </td>
+                                {% endfor%} {% endcomment %}
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ row.startDate|slice:"0:10" }}
+                                    </td>
+
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ row.depPort }}
+                                    </td>
+
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ row.endDate|slice:"0:10" }}
+                                    </td>
+
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ row.endPort }}
+                                    </td>
+
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ row.ocean }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class = "rounded-md p-4 flex justify-center items-center">
+            <div class = "text-center text-2xl mb-6">
+                <br> <br> <br>
+                <div class="flex justify-center text-2xm items-right inline-flex">
+                    <input id = "continuetrip" value = {% translate "'Continuer cette marée'"%} type="submit" name="continuetrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                </div>
+
+                <div class="flex justify-center text-2xm items-right inline-flex">
+                    <input id = "newtrip" value = {% translate "'Créer une nouvelle marée'" %} type="submit" name="newtrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                </div>
+            </div>  
+        </div>
+
+    {% else %}
+    <!-- for the boat first trip (in this program) -->
+    <div class="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6 mb-6">
+        <div class = "bg-yellow-100 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+            <div class="flex justify-center items-right inline-flex">
+                <input id = "newtrip" value = {% translate "'Cette marée est une nouvelle marée'" %} type="submit" name="newtrip" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% csrf_token %}
+</form>
+
+{% endblock content %}
+
+{% block footer %}
+<p>&copy;  {% translate "En cours de développement"%} </p>
+{% endblock footer %}

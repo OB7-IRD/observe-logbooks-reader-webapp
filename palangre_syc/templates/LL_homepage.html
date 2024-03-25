@@ -1,10 +1,10 @@
-{% extends "base_bs5.html" %}
+{% extends "base.html" %}
 {% load static %}
-
+{% load i18n %}
 
 {% block title %}
 
-Palangre aux Seychelles
+{% translate "Palangre aux Seychelles"%}
 
 {% endblock title %}
 
@@ -12,281 +12,591 @@ Palangre aux Seychelles
 {% endblock navigation %}
 
 {% block heading %}
-<h1>Page d'accueil pour les données de palangre</h1>
+<h1> {% translate "Page d'accueil pour les données de palangre" %}</h1>
 {% endblock heading %}
 
 {% block content %}
 
 
-    <section>
-        <h2>Mise à jour des données de références</h2>
-        <p>
-            en chargant cette page, normalement on se connecte à la base et on génère un TOKEN
-        </p>
-        <div>
-            {% if token %}
-                <p>Sortie json de la connexion et extraction du token: {{ token }}</p>
-            {% else %}
-                <p>Failed to fetch data from the API.</p>
-            {% endif %}
-        </div>
+
+
+<main class = "main items-center">
+
     
-        <!-- Button to trigger data update -->
-        <form method="post" action="{% url 'checking logbook' %}">
-            {% csrf_token %}
-            <button type="submit"> lancer le chargement des données </button>
-        </form>
+    <!-- Content -->
+    <div id = "extracted_logbook" class="bg-grey-200 grid place-items-center w-full min-h-screen transition-all p-12">
         
-    </section>
 
-   
-
-<div class ="bg-danger">
-
-    <div class = "container-fluid bg-success">
-        <div class ="bg_warning">
-            <h3> Données sélectionnées </h3>
+        {% if messages %}
+        
+        <div class="relative z-10" 
+            x-data="{ open: true }"
+            @keydown.window.escape="open = false"
+            x-show="open"
+            aria-labelledby="modal-title" 
+            x-ref="dialog" 
+            aria-modal="true">
            
-            <ul>
-                {% for key, value in apply_conf.items %}
-                    <li><strong>{{ key }}:</strong> {{ value }}</li>
-                {% endfor %}
+            <!-- div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-description="Background backdrop, show/hide based on modal state."
+            ></div -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+                x-show="open"
+            ></div>
+        
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            
+                <!-- div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg" 
+                    x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-description="Modal panel, show/hide based on modal state."
+                    @click.away="showModal = false" -->
+                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg" 
+                    x-show="open"
+                    @click.away="showModal = false">
 
-            </ul>
-        </div>    
-
-        <div class = "row">
-            <div class = "col-md-4">
-                <div class= "table-responsive">
-                    <h3 class = ""> Date du logbook </h3>
-                
-                    <table class="table" border="1" >
-                        <thead>
-                            <tr>
-                                {% for col in df_date.columns %}
-                                    <th scope="col"> {{ col }} </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_date.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope="row"> {{ cell }} </td>
-                                    {% endfor %}
-                                </tr>
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start"> 
+                        
+        
+                        <div class="mt-auto">
+                        
+                            {% for message in messages %}
+                            <div class="font-regular relative block w-full max-w-screen-md rounded-lg px-4 py-4 text-base
+                                {% if message.tags == 'success' %}
+                                    bg-green-200
+                                {% elif message.tags == 'error' %}
+                                    bg-red-200
+                                {% elif message.tags == 'warning' %}
+                                    bg-yellow-200
+                                {% else %}
+                                    bg-grey-100
+                                {% endif %}" data-dismissible="alert">
+                                
+                                <div class="ml-8 mr-12 mb-5 font-sans text-center text-xl font-semibold font-semibold leading-snug tracking-normal text-black antialiased">
+                                    <ul class="messages">     
+                                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                                    </ul>      
+                                </div>
+                            </div>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <br>
-                <div class = "table-responsive">
-                    <h3> Report information </h3>
-
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_report.columns %}
-                                    <th scope="col"> {{ col }} </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_report.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope="row"> {{ cell }} </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <br>
-                <div class = "table-responsive">
-                    <h3> Cruise information </h3>
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_cruise.columns %}
-                                    <th scope="col">
-                                        {{ col }}
-                                    </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_cruise.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope="row">
-                                        {{ cell }}
-                                    </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class= "table-responsive">                    
-                    <h3 class = ""> Vessel information </h3>
+                        
+                        </div>
                     
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_vessel.columns %}
-                                    <th scope="col"> {{ col }} </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_vessel.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope="row"> {{ cell }} </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+       
+                    </div>
                 </div>
-                <br>  
-                <div class = "table-responsive">
-                    <h3> Gear information </h3>
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_gear.columns %}
-                                    <th scope = "col"> {{ col }} </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_gear.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope = "row"> {{ cell }} </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                    <button type="button" 
+                        class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto modal-close"                            
+                        @click="open = false">
+                        Cancel
+                    </button>
+                </div>
                 </div>
             </div>
+            </div>
+        </div>
+        
+        {% endif %}
+        
+        
+        
+        
+        <div>
+            <!-- ADD TRANSLATION ON URL -->
+            <form method="POST" id="dep_end_infos" action="{% url 'checking logbook' %}"> 
 
-            <div class="col-md-4">
-                <div class = "table-responsive">
-                    <h3> Line material </h3>
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_line.columns %}
-                                    <th scope = "col">{{ col }} </th>
+                {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
+                    <div class = "rounded-md p-4 flex justify-center items-center">
+                        <div class = "text-center text-2xl font-semibold mb-6">
+                            {% blocktranslate trimmed %}
+                            La dernière marée enregistrée sur Observe pour le navire 
+                                {{ previous_trip.vessel }} 
+                            est la suivante : 
+                            {% endblocktranslate %}
+                        </div>  
+                    </div>  
+            
+                    <div class = "p-6 flex justify-center items-center">
+            
+                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-6">
+                        
+                            <div class="text-center mb-1 text-2xl">
+                                {% blocktranslate with startDate=previous_trip.startDate|slice:':10' depPort=previous_trip.depPort trimmed %}
+                                Marée initiée le {{ startDate }} 
+                                depuis le port de {{ depPort }} 
+                                {% endblocktranslate %}
+                            </div>
+            
+                            <div class="text-center mb-1 text-2xl">
+                                {% blocktranslate with endDate=previous_trip.endDate|slice:':10' trimmed %}
+                                Actuellement cloturée le {{ endDate }}
+                                {% endblocktranslate %}
+                            </div>
+            
+                            <div class="text-center mb-1 text-2xl">
+                                {% blocktranslate with captain=previous_trip.captain trimmed %}
+                                Menée par {{ captain }}
+                                {% endblocktranslate %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+
+                <!-- First line div -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center mb-1">
+                            <div class="text-2xl font-semibold mb-1"> 
+                                {% translate "Journal du " %} 
+                                {% for index, row in df_date.iterrows %}
+                                    {% if row.Logbook_name == 'Month' %}
+                                    <!-- Affichage de la valeur du mois -->
+                                        {% with month_value=row.Value %}
+                                                {% if row.Value < 10 %}
+                                                    0{{ month_value }}
+                                                {% else %}
+                                                    {{ month_value }}
+                                                {% endif %}
+                                        {% endwith %}
+                                    {% elif row.Logbook_name == 'Year' %}
+                                        <!-- Affichage de l'année -->
+                                        {% with year_value=row.Value %}
+                                            / {{ year_value }}
+                                        {% endwith %}
+                                    {% endif %}
                                 {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_line.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope = "row">{{ cell }}</td>
-                                    {% endfor %}
-                                </tr>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center mb-1">
+                            <div class="text-2xl font-semibold"> 
+                                {% blocktranslate trimmed %}
+                                Océan {{ ocean }}
+                                {% endblocktranslate %} 
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class = "text-center mb-1">
+                            <div class="text-2xl font-semibold"> 
+                                {% blocktranslate trimmed %}
+                                Programme {{ programme }}
+                                {% endblocktranslate %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 rounded-md border border-gray-100 p-6 shadow-md shadow-black/5 flex justify-center items-center">
+                        <div class="text-center text-2xl font-semibold">
+                            {% translate "Rapporté " %}
+                            {% for index, row in df_report.iterrows %}
+                                {% if row.Logbook_name == 'Person reported' %}
+                                <!-- Affichage de la valeur du mois -->
+                                    {% with report_value=row.Value %}
+                                        {% translate "par" %} {{ report_value }}
+                                    {% endwith %}
+                                {% elif row.Logbook_name == 'Date reported' %}
+                                    <!-- Affichage de l'année -->
+                                    {% with date_value=row.Value %}
+                                        {% translate "le "%} {{ date_value }}
+                                    {% endwith %}
+                                {% endif %}
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </div>     
+                    </div>
                 </div>
-                <br>
-                <div class = "table-responsive">
-                    <h3> Target species </h3>
-                    <table border="1" class = "table">
-                        <thead>
-                            <tr>
-                                {% for col in df_target.columns %}
-                                    <th scope ="col"> {{ col }} </th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for index, row in df_target.iterrows %}
-                                <tr>
-                                    {% for cell in row %}
-                                    <td scope = "row"> {{ cell }} </td>
-                                    {% endfor %}
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <!-- End First line div -->
+
+                <!-- Second line div -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-6">
+                    
+                    <div class="p-6 relative flex flex-col min-w-0 mb-4 lg:mb-0 break-words bg-gray-50 dark:bg-gray-800 w-full shadow-lg rounded">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center text-gray-900 dark:text-gray-50 flex justify-center items-center"> 
+                                        {% translate "Informations de marée" %}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <div class="block w-full overflow-x-auto">
+                                <table class="items-center mx-auto w-full bg-transparent border-collapse">
+                                    <tbody>   
+                                        <tr class="text-gray-700 dark:text-gray-100">
+                                            <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                {% translate "Date de départ" %}
+                                            </td>
+                                            {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
+                                                    {{ previous_trip.startDate |slice:':10'}} 
+                                                </td>
+                                            {% else %}
+                                                <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                    <input type="date" id="startDate" name="startDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date"
+                                                    required >
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+
+                                        <tr class="text-gray-700 dark:text-gray-100">
+                                            <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                {% translate "Port de départ" %}
+                                            </td>
+                                            {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' and previous_trip.depPort != 'null' %}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3"> 
+                                                    {{ previous_trip.depPort }} 
+                                                </td>
+                                            {% else %}
+                                            <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl" required>
+                                                    <option value="" selected> {% translate "Non concerné" %} </option>
+                                                    {% for port in list_ports %}
+                                                      <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
+                                                    {% endfor %}
+                                                </select>                                            
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+
+                                        <tr class="text-gray-700 dark:text-gray-100">
+                                            <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                {% translate "Date d'arrivée" %}
+                                            </td>
+                                            <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                <input type="date" id="endDate" name="endDate" class="w-full py-3 px-4 ring-1 ring-grey-700 rounded-xl border" placeholder="Select a date" required >
+                                            </td>
+                                        </tr>
+
+                                        <tr class="text-gray-700 dark:text-gray-100">
+                                            <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                {% translate "Port d'arrivée" %}
+                                            </td>
+                                            <td class="text-1.5xl text-black border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                <select id="endPort" name="endPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
+                                                    <option value="" selected> {% translate 'Non concerné' %} </option>
+                                                    {% for port in list_ports %}
+                                                      <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
+                                                    {% endfor %}
+                                                </select>                                            
+                                            </td>
+                                        </tr>
+                                                    
+                                        {% for index, row in df_cruise.iterrows %}
+                                            <tr class="text-gray-700 dark:text-gray-100">
+                                                
+
+                                                {% for cell in row %}
+                                                <td class="text-1.5xl border-t-0 px-4 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-3">
+                                                    {{ cell }}
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur le navire" %}
+                                    </h3>
+                                </div>
+                            </div>
+
+                            <div class="block w-full overflow-x-auto">
+                                <table class="items-center mx-auto w-full bg-transparent border-collapse">
+                                    <tbody>                
+                                        {% for index, row in df_vessel.iterrows %}
+                                            <tr class="">
+                                                {% for cell in row %}
+                                                <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                    {% if row.Value != '' %}
+                                                        {{ cell }}
+                                                    {% endif %}   
+                                                </td>
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                    </div>
                 </div>
-                <br>
-                <div class = "table-responsive">
-                    <h3> Type of baits </h3>
-                    <table border="1" class = "table">
+                <!-- End Second line div -->
+
+                <!-- Third line div -->
+                <div class="grid grid-cols-1 lg:grid-cols-6 gap-6 mb-6">
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur le matériel" %}
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <div class="block w-full overflow-x-auto">
+                            {% if df_gear|length == 2 %}    
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody> 
+                                    {% for index, row in df_gear.0.iterrows %}
+                                        <tr class="">
+                                            {% for cell in row %}
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ cell }}
+                                            </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <!-- div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
+                                {{ df_gear.1 | safe}}
+                            </div -->    
+                                    
+                            {% else %}
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>
+                                    {% for index, row in df_gear.iterrows %}
+                                        <tr class="">
+                                        {% for cell in row %}
+                                        <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                            {{ cell }}
+                                        </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md lg:col-span-2">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Informations sur la ligne de pêche" %}
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <div class="block w-full overflow-x-auto">
+                            {% if df_line|length == 2 %}    
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody> 
+                                    {% for index, row in df_line.0.iterrows %}
+                                        {% if row.Value != None %}
+                                            <tr>
+                                            {% comment %} {% for cell in row %} {% endcomment %}
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                        {% endif %}
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+
+                            <div class="text-center w-full mb-2 select-none rounded-t-lg border-t-4 border-yellow-400 bg-yellow-100 p-4 font-medium">
+                                {{ df_line.1 | safe}}
+                            </div> 
+
+
+                            {% elif df_gear|length == 1 %}
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_line.iterrows %}
+                                        {% if row.Value != None %}
+                                            <tr>
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Espèces visées" %} 
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="block w-full overflow-x-auto">
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_target.iterrows %}
+                                        <tr>
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-200 border border-gray-100 shadow-md shadow-black/5 p-6 rounded-md">
+                        <div class="rounded-t mb-0 px-0 border-0">
+                            <div class="flex flex-wrap items-center px-4 py-2">
+                                <div class="relative w-full max-w-full flex-grow flex-1">
+                                    <h3 class="text-2xl font-semibold text-center flex justify-center items-center"> 
+                                        {% translate "Âppats utilisés" %}
+                                    </h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="block w-full overflow-x-auto">
+                            <table class="items-center w-full bg-transparent border-collapse">
+                                <tbody>                
+                                    {% for index, row in df_bait.iterrows %}
+                                        {% if row.Value != 'None' %}
+                                        <tr class="">
+                                            <td class="border-t-0 px-2 align-middle text-center border-l-0 border-r-0 text-m whitespace-nowrap p-2">
+                                                {{ row.Logbook_name }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- End Third line div -->
+            
+                <!-- Div if error in the logbook -->
+                {% if df_gear|length == 2 or df_line|length == 2 %}
+                    
+                    <div class="w-full mb-2 select-none rounded-t-lg border-t-4 border-gray-400 bg-gray-100 p-4 font-medium">
+                        {% blocktranslate trimmed %} 
+                        Au moins une information du logbook n'est pas correcte, merci de la vérifier. 
+                        Si vous décidez d'envoyer le journal de bord, l'information éronée ne sera pas retransmise.
+                        {% endblocktranslate %}
+                    </div>
+                {% endif %}
+                <!-- End Div if error in the logbook -->
+
+                <!-- Div buttons -->
+                <div class="flex justify-center items-center inline-flex">
+                    {% comment %} faire un truc mieux pour le bouton -->
+                    <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
+                    <a href="../logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
+                        {% translate "Annuler"%}
+                    </a>
+                    <input id = "sendform" value = {% translate "Envoyer le journal de bord"%} type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                </div>
+                <!-- End Div buttons -->
+                {% csrf_token %}
+            </form>
+        </div>
+    
+    <!-- End Div content -->
+
+
+
+
+        <div class="container mx-auto px-4 sm:px-4 py-8">
+            <div>
+                <h2 class="text-2xl font-semibold leading-tight">Données jour par jour</h2>
+            </div>
+
+    
+
+            <div class="-mx-2 sm:-mx-2 px-2 sm:px-8 py-2 overflow-x-auto">
+                <div class="inline-block min-w-full shadow rounded-lg overflow-hidden">
+                    <table class="min-w-full leading-normal" id = "dataTable">
+
                         <thead>
                             <tr>
-                                {% for col in df_bait.columns %}
-                                    <th scope = "col"> {{ col }} </th>
+                                {% for col in df_activity.columns %}
+                                    {% comment %} {% if col != 'VesselActivity' %} {% endcomment %}
+                                    <th class="px-5 py-2 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                                        {{ col }} 
+                                    </th>
+                                    {% comment %} {% endif %} {% endcomment %}
                                 {% endfor %}
                             </tr>
                         </thead>
+
                         <tbody>
-                            {% for index, row in df_bait.iterrows %}
+                            {% for index, row in df_activity.iterrows %}
+                                
                                 <tr>
-                                    {% for cell in row %}
-                                    <td scope = "row">{{ cell }}</td>
-                                    {% endfor %}
+
+                                    {% comment %} {% for cell in row %}
+                                        {% if not starts_with(cell, 'fr.referentiel') %}
+                                            <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
+                                                {{ cell }}
+                                            </td>
+                                        {% endif %}
+                                    {% endfor %} {% endcomment %}
+
+                                
+
+                                {% for cell in row %}
+                                    <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
+                                        {{ cell }} 
+                                    </td>
+                                {% endfor%}
                                 </tr>
                             {% endfor %}
                         </tbody>
+
+                    
                     </table>
-                </div>    
+                    
+
+                </div>
             </div>
         </div>
     </div>
-</div>
     
+</main>
 
 
-<div class="container-fluid">
-    <div class="row">
-      <div class="col-md-6 text-start">
-        <a href="../logbook" class="btn btn-danger"> Retour et modification </a>
-      </div>
-  
-      <div class="col-md-6 text-end">
-        <a href="send_logbook2Observe" class="btn btn-success"> Envoyer le logbook </a>
-      </div>
-    </div>
-  </div>
+
+<!-- Inclure jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Inclure la bibliothèque DataTables -->
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+{% comment %} <script src="{% static 'theme/assets/js/code.js' %}"></script> {% endcomment %}
 
 
-<br><br><br>
 
-    <div>
-        <h3> all data - dataframe </h3>
-       <!-- {{ df_vessel | safe }} -->  
-        <table border="1" class = "table">
-            <thead>
-                <tr>
-                    {% for col in df_activity.columns %}
-                        <th scope = "col"> {{ col }} </th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for index, row in df_activity.iterrows %}
-                    <tr>
-                        {% for cell in row %}
-                        <td scope = "row"> {{ cell }} </td>
-                        {% endfor %}
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 
 {% endblock content %}
 

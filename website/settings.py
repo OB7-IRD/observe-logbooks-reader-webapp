@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -64,7 +65,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     "django_browser_reload.middleware.BrowserReloadMiddleware",
-]
+    'django.middleware.locale.LocaleMiddleware',
+    ]
+
+# MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
 ROOT_URLCONF = 'website.urls'
 
@@ -119,8 +123,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('Français')),
+    # Ajoutez d'autres langues au besoin
+] 
 
 LANGUAGE_CODE = 'fr'
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+# A list of directories where Django looks for translation files
 
 TIME_ZONE = 'UTC'
 

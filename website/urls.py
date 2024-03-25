@@ -15,10 +15,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, logbook_del_files, sendData
+from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData
+from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
-    path('', home, name="home"),
+
+    
+
+    # path('change_language/', change_language, name='change_language'),
+    # Ajoutez vos autres URL ici
+    
+    # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
+    # path("palangre_syc/", include("palangre_syc.urls")),
+]
+
+urlpatterns += i18n_patterns(
+        path('', home, name="home"),
     path('admin', admin.site.urls),
     path('login', auth_login, name="login"),
     # path('register', register, name="register"),
@@ -29,14 +41,8 @@ urlpatterns = [
     path('<str:domaine>', getProgram, name="getProgram"),
     path('logbook/apply', postProg_info, name="postProg_info"),
     path('logbook/domainselect', domaineSelect, name="domaineSelect"),
-    path('logbook/del_files', logbook_del_files, name="logbook_del_files"),
     path('logbook/sendData', sendData, name="sendData"),
-    
-    # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
     path("palangre_syc/", include("palangre_syc.urls")),
-
-    # Tailwind
-    path("__reload__/", include("django_browser_reload.urls")),
-]
+)
 
 handler404 = 'webapps.views.error_404_view'

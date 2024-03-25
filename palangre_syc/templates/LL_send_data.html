@@ -1,10 +1,11 @@
-{% extends "base_bs5.html" %}
+{% extends "base.html" %}
 {% load static %}
+{% load i18n %}
 
 
 {% block title %}
 
-Palangre aux Seychelles
+{% translate "Palangre aux Seychelles"%}
 
 {% endblock title %}
 
@@ -12,58 +13,52 @@ Palangre aux Seychelles
 {% endblock navigation %}
 
 {% block heading %}
-<h1>Envoie des données dans la base</h1>
+<h1> {% translate "Envoie des données dans la base" %}</h1>
 {% endblock heading %}
 
 {% block content %}
-
-
-
-        
-<h2>Choix du fichier d'intérêt</h2>
-   
-        
-        
-<div class="container-fluid">
-
-    <form action="{% url 'send logbook2Observe' %}" method="post">
-        {% csrf_token %}
-        {{ info | safe }}
-    </form>
   
-
-
-
-    {% comment %} <div class="row">
-      <div class="col-md-6 text-start">
-        <a href="" class="btn btn-danger"> Retour et modification </a>
-      </div>
-  
-      <div class="col-md-6 text-end">
-        <a href="/vue-succes" class="btn btn-success"> Envoyer le logbook </a>
-      </div>
-    </div> {% endcomment %}
-  
-    <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6 text-start">
-            <a href="../logbook" class="btn btn-danger"> Retour à la zone de dépôt </a>
-          </div>
+<div class="mb-5">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="font-regular relative block w-full max-w-screen-md rounded-lg px-4 py-4 text-base 
+      {% if message.tags == 'success' %}
+        bg-green-200
+      {% elif message.tags == 'error' %}
+        bg-red-200
+      {% elif message.tags == 'warning' %}
+        bg-yellow-500
+      {% else %}
+        bg-grey-100
+      {% endif %}" data-dismissible="alert">
       
+        <div class="ml-8 mr-12 mb-5 font-sans text-center text-xl font-semibold font-semibold leading-snug tracking-normal text-black antialiased">
+          <ul class="messages">     
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          </ul>      
         </div>
       </div>
-    
+    {% endfor %}
+  {% endif %}
+
+
+  <!-- Div buttons -->
+  <div class="flex justify-center items-center inline-flex m-8">
+    <a href="../logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">          {% translate "Retour à la zone de dépôt"%}
+    </a>
+  </div>
+<!-- End Div buttons -->
 
 
 </div>
 
 
-<br><br><br>
+
 
 
 
 {% endblock content %}
 
 {% block footer %}
-<p>&copy; En cours de développement </p>
+<p>&copy; {% translate "En cours de développement" %}</p>
 {% endblock footer %}
