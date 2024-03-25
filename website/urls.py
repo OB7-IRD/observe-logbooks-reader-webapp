@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import django_browser_reload
 from django.contrib import admin
 from django.urls import path, include
 from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData
@@ -43,6 +44,7 @@ urlpatterns += i18n_patterns(
     path('logbook/domainselect', domaineSelect, name="domaineSelect"),
     path('logbook/sendData', sendData, name="sendData"),
     path("palangre_syc/", include("palangre_syc.urls")),
+    path("__reload__/", include("django_browser_reload.urls"))
 )
 
 handler404 = 'webapps.views.error_404_view'
