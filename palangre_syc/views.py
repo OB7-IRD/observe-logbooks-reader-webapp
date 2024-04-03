@@ -227,8 +227,9 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
-    # print(df_vessel_clean)
 
+    print("#"*20, "extract_vessel_info df_vessel_clean", "#"*20)
+    print(df_vessel_clean)
     return df_vessel_clean
 
 def extract_cruise_info(df_donnees):
@@ -1538,8 +1539,7 @@ def checking_logbook(request):
             'continuetrip': continuetrip,
         })
         print("DATA TO HOMEPAGE TYPE AND DESCRIPTION")
-        print(type(data_to_homepage['df_activity']))
-        print(data_to_homepage)
+        print("nouveau ou pas ? ", data_to_homepage['continuetrip'], data_to_homepage['previous_trip'])
         return render(request, 'LL_homepage.html', data_to_homepage)
 
     else:
