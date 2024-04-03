@@ -265,9 +265,8 @@ def logbook(request):
     # else : 
     if apply_conf is not None :
         print("="*20, "apply_conf is not None", "="*20)
-        # print(apply_conf)
-        # print(datat_0c_Pr['program'])
-
+        print(apply_conf)
+        print(datat_0c_Pr['program'])
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
                 "program_data": datat_0c_Pr['program']['longline'],
