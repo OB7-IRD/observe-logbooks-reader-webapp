@@ -168,7 +168,7 @@ def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
-    print(datat_0c_Pr.keys())
+    # print(datat_0c_Pr.keys())
     
     # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     
@@ -265,8 +265,9 @@ def logbook(request):
     # else : 
     if apply_conf is not None :
         print("="*20, "apply_conf is not None", "="*20)
-        print(apply_conf)
-        print(datat_0c_Pr['Program'])
+        # print(apply_conf)
+        # print(datat_0c_Pr['program'])
+
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
                 "program_data": datat_0c_Pr['program']['palangre'],
@@ -274,7 +275,7 @@ def logbook(request):
             })
         elif apply_conf['domaine'] == 'senne' : 
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['senne'],
+                "program_data": datat_0c_Pr['program']['seine'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
     # print("="*20, "apply_conf is None", "="*20)
