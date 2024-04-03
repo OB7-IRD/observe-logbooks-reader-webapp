@@ -19,8 +19,8 @@ Palangre aux Seychelles
 
 <form method="POST" id="previoustrip" action="{% url 'checking logbook' %}">
     <!-- last trip extracted data -->
-    {% if df_previous_trip.iterrows != None %}
-    {% comment %} {% if df_previous != None %} {% endcomment %}
+    {% comment %} {% if df_previous_trip.iterrows != None %} {% endcomment %}
+    {% if df_previous != None %}
 
         <!-- ON AFFICHE UN TABLEAU AVEC L'ENSEMBLE DES TRIP PRECEDENTS POUR UN PROGRAMME ET UN NAVIRE -->
 
@@ -74,11 +74,11 @@ Palangre aux Seychelles
                             row : {{row}}
 
                             {{length_df_previous}}
-                            {% for key in row %}
+                            {% comment %} {% for key in index %} {% endcomment %}
                             
                                     <tr>
                                         <td>
-                                            <input type="radio" id="radio_previoustrip" name="radio_previoustrip" value="{{ triptopiaid.key }}"/>
+                                            <input type="radio" id="radio_previoustrip" name="radio_previoustrip" value="{{ row.triptopiaid }}"/>
                                         </td>
                                         {% comment %} {% for cell in row|slice:"1:" %}
                                             <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
@@ -92,7 +92,7 @@ Palangre aux Seychelles
                                     
                                         {% comment %} {% for key, value in depPort.items %} {% endcomment %}
                                         <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
-                                            {{ startDate.key|slice:"0:10" }}
+                                            {{ row.startDate|slice:"0:10" }}
                                             {% comment %} {{ row.startDate|slice:"0:10" }} {% endcomment %}
                                             
                                         </td>
@@ -113,7 +113,7 @@ Palangre aux Seychelles
                                             {{ row.ocean }}
                                         </td>
                                     </tr>
-                                {% endfor %}
+                                {% comment %} {% endfor %} {% endcomment %}
                             {% endfor %}
                         </tbody>
                     </table>

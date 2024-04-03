@@ -105,10 +105,11 @@ def auth_login(request):
                     request.session['baseUrl'] = baseUrl
                     
                     print("="*20, "if (token != "") and (allData is not [])", "="*20)
-                    
+                    print("clés présentes dans allDAta ", allData.keys())
                     datat_0c_Pr = {
                         "ocean": search_in(allData),
-                        "senne" : allData['seine'], "palangre" : allData['longline']
+                        # "senne" : allData['seine'], "palangre" : allData['longline']
+                        "program" : allData["Program"]
                     }
                     request.session['data_Oc_Pr'] = datat_0c_Pr
                     request.session['table_files'] = []
@@ -133,10 +134,15 @@ def update_data(request):
     baseUrl = request.session.get('baseUrl')
 
     allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
+    
     print("="*20, "update_data", "="*20)
+    with open('allData.json', 'w', encoding='utf-8') as f:
+            json.dump(allData, f, ensure_ascii=False, indent=4)
+    
     datat_0c_Pr = {
         "ocean": search_in(allData),
-        "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
+        # "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
+        "program": allData['program']
     }
     request.session['data_Oc_Pr'] = datat_0c_Pr
 
@@ -162,8 +168,10 @@ def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
+    print(datat_0c_Pr.keys())
     
-    ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
+    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
+    
     apply_conf  = request.session.get('dico_config')
 
     # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
@@ -258,20 +266,22 @@ def logbook(request):
     if apply_conf is not None :
         print("="*20, "apply_conf is not None", "="*20)
         print(apply_conf)
+        print(datat_0c_Pr['Program'])
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['palangre']['Program'],
+                "program_data": datat_0c_Pr['program']['palangre'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
         elif apply_conf['domaine'] == 'senne' : 
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['senne']['Program'],
+                "program_data": datat_0c_Pr['program']['senne'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
     # print("="*20, "apply_conf is None", "="*20)
     # print(apply_conf)
     return render(request, "logbook.html", context={
-                "program_data": ll_programs,
+                # "program_data": ll_programs,
+                "program_data": datat_0c_Pr["program"],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
 
@@ -280,8 +290,12 @@ def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
     if datat_0c_Pr is not None and domaine != 'favicon.ico':
-
-        datat_0c_Pr = search_in(datat_0c_Pr[domaine], "Program")
+        if domaine == "senne" : 
+            looking_for = "seine"
+        elif domaine == "palangre":
+            looking_for = "longline"
+            
+        datat_0c_Pr = search_in(datat_0c_Pr['program'], looking_for)
         print("="*20, "datat_0c_Pr search in", "="*20)
         # print(datat_0c_Pr)
         dataPro = {

@@ -8,6 +8,7 @@ import requests
 import json
 
 from api_traitement.json_fonctions import *
+import palangre_syc
 
 
 # Convert date
@@ -84,7 +85,6 @@ def load_data(token, baseUrl, forceUpdate=False):
         del ll_common["VesselActivity"]
 
         allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
-
         # allData = {**ref_common, **ps_logbook, **ps_common}
 
         ref_common = get_all_referential_data(token, "common", url)
@@ -93,12 +93,19 @@ def load_data(token, baseUrl, forceUpdate=False):
         ps_common = get_all_referential_data(token, "ps/common", url)
         ll_common = get_all_referential_data(token, "ll/common", url)
         gear = {'seine' :ps_common, 'longline':ll_common}
-        # ll_logbook = getAll_for_Mod_ps_and_common(token, "ll/logbook", url)
+        
+        #### Saving data common and longliners into media ####
+        palangre_syc.api.get_referential_ll()
+        palangre_syc.api.get_referential_common()
+        
+        
 
-        allData = {**ref_common, **ps_logbook, **gear}
+        # allData = {**ref_common, **ps_logbook, **gear}
         
         print("="*20, "load_data SubFunction", "="*20)
         # print(ref_common[5:])
+        with open('allData_load.json', 'w', encoding='utf-8') as f:
+            json.dump(allData, f, ensure_ascii=False, indent=4)
         
         file_name = "media/data/data_" + str(day) + ".json"
 
@@ -246,9 +253,7 @@ def traiLogbook2(logB):
         act_sheet = wb["2.Logbook"]
     else:
         return {
-            "seine": { val["topiaId"] : val["label2"] for val in allData[search]["seine"]},
-            "longline": { val["topiaId"] : val["label2"] for val in allData[search]["longline"]},
-        }
+            }
 
 
 # Traitement du logbook

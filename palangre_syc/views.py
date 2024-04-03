@@ -1076,7 +1076,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
         print("pour ce programme et ce vessel on a : ", len(parsed_previous_trip['content']), "trip enregistrés")
         
-        df_trip = pd.DataFrame(columns=["triptopiaid", "startDate", "depPort_topiad", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
+        df_trip = pd.DataFrame(columns=["triptopiaid", "startDate", "depPort_topiaid", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
 
 
         for num_trip in range(len(parsed_previous_trip['content'])):
@@ -1222,30 +1222,30 @@ def presenting_previous_trip(request):
             data_common = json.load(f)
 
 
-        # try :
-        start_time = time.time()
-        df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
-        end_time = time.time()
+        try :
+            start_time = time.time()
+            df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
+            end_time = time.time()
+                
+            print(df_previous_trip)
             
-        print(df_previous_trip)
             
+            print("Temps d'exécution:", end_time - start_time, "secondes")
+            print("°"*20, "presenting_previous_trip - context updated", "°"*20)
             
-        print("Temps d'exécution:", end_time - start_time, "secondes")
-        print("°"*20, "presenting_previous_trip - context updated", "°"*20)
+            if df_previous_trip is not None:
+                # length_df_previous= len(df_previous_trip)
+                df_previous_trip = df_previous_trip.to_dict("index")
+                print("df_previous_trip ", type(df_previous_trip))
+                # df_previous_trip = df_previous_trip.to_dict()
+                context.update({'df_previous': df_previous_trip,
+                                # 'length_df_previous': int(length_df_previous)
+                                })
+                # print(df_previous_trip)
+                print(context)
         
-        if df_previous_trip is not None:
-            # length_df_previous= len(df_previous_trip)
-            # df_previous_trip = df_previous_trip.to_dict()
-            # print("df_previous_trip ", type(df_previous_trip))
-            # df_previous_trip = df_previous_trip.to_dict()
-            context.update({'df_previous': df_previous_trip,
-                            # 'length_df_previous': int(length_df_previous)
-                            })
-            # print(df_previous_trip)
-            print(context)
+        except IndexError:
         
-        # except IndexError:
-        else:
             context.update({'df_previous': None})
             
     request.session['context'] = context
@@ -1369,6 +1369,7 @@ def checking_logbook(request):
             #############################
             # messages d'erreurs
             if (int(context['endDate'][5:7]) + int(context['endDate'][:4])) != (int(logbook_month) + int(logbook_year)):
+                print(int(context['endDate'][5:7]) + int(context['endDate'][:4]), "!= ", int(logbook_month) + int(logbook_year))
                 messages.error(request, _("La date de fin de trip doit être dans le mois. Saisir le dernier jour du mois dans le cas où le trip n'est pas réellement fini."))
                 probleme = True
             #############################
@@ -1400,7 +1401,9 @@ def checking_logbook(request):
                 
             else:
                 # CONTINUE TRIP
-
+                context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
+                print(context)
+                
                 with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
                     json_previoustrip = json.load(f)
                 
@@ -1417,16 +1420,19 @@ def checking_logbook(request):
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
                     probleme = True
 
-                elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
+                elif (int(context['df_previous']['endDate'].iloc[0][5:7]) + int(context['df_previous']['endDate'].iloc[0][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
                     print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
                     probleme = True
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
                 #############################
                 
+                print(context['df_previous']['depPort_topiaid'], type(context['df_previous']['depPort_topiaid']))
+                
                 context.update({'startDate': context['df_previous']['startDate'], 
                                 'depPort': context['df_previous']['depPort_topiaid'],
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                'endPort': endPort if endPort != '' else None})
+                                'endPort': endPort if endPort != '' else None, 
+                                'continuetrip': continuetrip})
 
             if probleme is True:
                 # on doit ajouter les infos quand meme 
