@@ -270,7 +270,7 @@ def logbook(request):
 
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['palangre'],
+                "program_data": datat_0c_Pr['program']['longline'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
         elif apply_conf['domaine'] == 'senne' : 
