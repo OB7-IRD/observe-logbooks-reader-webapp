@@ -1072,7 +1072,7 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     print("="*20, programme_topiaid_ws, "="*20)
 
     previous_trip = api.trip_for_prog_vessel(token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
-    print("previous trip collected : ", previous_trip)
+
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
     if parsed_previous_trip['content'] != []:
@@ -1287,6 +1287,10 @@ def checking_logbook(request):
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     if request.method == 'POST':
+        
+        radio_value = request.POST.get('radio_previoustrip')
+        print(radio_value)
+        
     
         apply_conf = request.session.get('dico_config')
         print("apply_conf : ", apply_conf)

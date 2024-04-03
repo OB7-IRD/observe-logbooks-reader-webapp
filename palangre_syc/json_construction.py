@@ -63,13 +63,6 @@ def get_vessel_topiaid(df_donnees_p1, data_common):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    
-    df = palangre_syc.views.extract_vessel_info(df_donnees_p1)    
-    print("¤"*15, " Official Number sa mère", "¤"*15)
-    # palangre_syc.views.strip_if_string(df.loc[df['Logbook_name']])
-    # print(df.loc[df['Logbook_name']])
-    # print(df.loc[df['Logbook_name'].strip == 'Official Number', 'Value'])
-    
     vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     for vessel in data_common["content"]["fr.ird.observe.entities.referential.common.Vessel"]:
         if 'nationalId' in vessel:
