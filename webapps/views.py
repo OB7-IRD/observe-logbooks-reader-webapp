@@ -266,15 +266,15 @@ def logbook(request):
     if apply_conf is not None :
         print("="*20, "apply_conf is not None", "="*20)
         print(apply_conf)
-        print(datat_0c_Pr['Program'])
+        print(datat_0c_Pr['program'])
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['palangre'],
+                "program_data": datat_0c_Pr['program']['longline'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
         elif apply_conf['domaine'] == 'senne' : 
             return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['senne'],
+                "program_data": datat_0c_Pr['program']['seine'],
                 "ocean_data": datat_0c_Pr["ocean"]
             })
     # print("="*20, "apply_conf is None", "="*20)
