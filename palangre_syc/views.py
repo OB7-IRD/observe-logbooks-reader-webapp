@@ -228,8 +228,10 @@ def extract_vessel_info(df_donnees):
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
 
-    print("#"*20, "extract_vessel_info df_vessel_clean", "#"*20)
-    print(df_vessel_clean)
+    df_vessel_clean['Logbook_name'] = df_vessel_clean['Logbook_name'].apply(lambda x: str(x).strip() if x is not None else '')
+    # Afficher le DataFrame résultant
+    # print("#"*20, "extract_vessel_info df_vessel_clean", "#"*20)
+    # print(df_vessel_clean)
     return df_vessel_clean
 
 def extract_cruise_info(df_donnees):

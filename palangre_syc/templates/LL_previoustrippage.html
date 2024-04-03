@@ -67,34 +67,15 @@ Palangre aux Seychelles
                             
                             {% for index, row in df_previous.items %}
 
-                            <br><br> 
-                            
-                            index : {{index}}
-                            
-                            row : {{row}}
 
-                            {{length_df_previous}}
-                            {% comment %} {% for key in index %} {% endcomment %}
                             
                                     <tr>
                                         <td>
                                             <input type="radio" id="radio_previoustrip" name="radio_previoustrip" value="{{ row.triptopiaid }}"/>
                                         </td>
-                                        {% comment %} {% for cell in row|slice:"1:" %}
-                                            <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
-                                                {% if forloop.counter0 == 0 or forloop.counter0 == 2 %}
-                                                    {{ cell|slice:"0:10" }} 
-                                                {% else %}
-                                                    {{ cell }} 
-                                                {% endif %}
-                                            </td>
-                                        {% endfor%} {% endcomment %}
-                                    
-                                        {% comment %} {% for key, value in depPort.items %} {% endcomment %}
+                                        
                                         <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
-                                            {{ row.startDate|slice:"0:10" }}
-                                            {% comment %} {{ row.startDate|slice:"0:10" }} {% endcomment %}
-                                            
+                                            {{ row.startDate|slice:"0:10" }}                                            
                                         </td>
 
                                         <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
