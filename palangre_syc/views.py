@@ -15,7 +15,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.utils import translation
-# from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse
 # from django.utils.translation import activate
 # from django.template import RequestContext
 # from django.urls import reverse
@@ -227,6 +227,7 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
+    # print(df_vessel_clean)
 
     return df_vessel_clean
 
@@ -918,11 +919,15 @@ def get_list_harbours(data_common):
     """
     harbours = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
     list_harbours = []
-    for harbour in harbours:
-        if harbour.get('status') == 'enabled':
-            list_harbours.append({'topiaId': harbour.get(
-                'topiaId'), 'label2': harbour.get('label2')})
-    sorted_list_harbours = sorted(list_harbours, key=lambda x: x['label2'])
+    # for harbour in harbours:
+    #     if harbour.get('status') == 'enabled':
+    #         list_harbours.append({'topiaId': harbour.get(
+    #             'topiaId'), 'label2': harbour.get('label2')})
+    # sorted_list_harbours = sorted(list_harbours, key=lambda x: x['label2'])
+    sorted_list_harbours = [{'topiaId': harbour.get('topiaId'), 'label2': harbour.get('label2')} 
+                        for harbour in harbours if harbour.get('status') == 'enabled']
+    sorted_list_harbours.sort(key=lambda x: x['label2'])
+
     return sorted_list_harbours
 
 def research_dep(df_donnees_p1, data_ll, startDate):
@@ -1056,18 +1061,17 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
     vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, data_common)
     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
-    vessel_topiaid_WS = vessel_topiaid.replace("#", "-")
+    vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
     programme_topiaid = request.session.get('dico_config')['programme']
-    programme_topiaid_WS = programme_topiaid.replace("#", "-")
+    programme_topiaid_ws = programme_topiaid.replace("#", "-")
 
-    # print("="*20, vessel_topiaid_WS, "="*20)
-    # print("="*20, programme_topiaid_WS, "="*20)
+    print("="*20, vessel_topiaid_ws, "="*20)
+    print("="*20, programme_topiaid_ws, "="*20)
 
-    previous_trip = api.trip_for_prog_vessel(token, url_base, vessel_topiaid_WS, programme_topiaid_WS)
-    
+    previous_trip = api.trip_for_prog_vessel(token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
+    print("previous trip collected : ", previous_trip)
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
-
     if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
         print("pour ce programme et ce vessel on a : ", len(parsed_previous_trip['content']), "trip enregistrés")
@@ -1163,8 +1167,8 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
     
         return(df_trip)
     
-    # else:
-    #     return None
+    else:
+        return None
 
 
 
@@ -1218,21 +1222,38 @@ def presenting_previous_trip(request):
             data_common = json.load(f)
 
 
-        try :
-            start_time = time.time()
-            df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
-            end_time = time.time()
+        # try :
+        start_time = time.time()
+        df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
+        end_time = time.time()
+            
+        print(df_previous_trip)
             
             
-            print("Temps d'exécution:", end_time - start_time, "secondes")
-            print("°"*20, "presenting_previous_trip - context updated", "°"*20)
-            context.update({'df_previous': df_previous_trip})
+        print("Temps d'exécution:", end_time - start_time, "secondes")
+        print("°"*20, "presenting_previous_trip - context updated", "°"*20)
         
-        except :
+        if df_previous_trip is not None:
+            # length_df_previous= len(df_previous_trip)
+            # df_previous_trip = df_previous_trip.to_dict()
+            # print("df_previous_trip ", type(df_previous_trip))
+            # df_previous_trip = df_previous_trip.to_dict()
+            context.update({'df_previous': df_previous_trip,
+                            # 'length_df_previous': int(length_df_previous)
+                            })
+            # print(df_previous_trip)
+            print(context)
+        
+        # except IndexError:
+        else:
             context.update({'df_previous': None})
             
-    
     request.session['context'] = context
+    # print("DONC LA ON EST DANS LA PARTIE QUI AJOUTE UN DATAFRAME DANS LE CONTEXT")
+    # The above code is attempting to print the type of the variable `df_previous` from the `context`
+    # dictionary.
+    # print(type(context['df_previous']))
+    
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -1259,6 +1280,7 @@ def checking_logbook(request):
         data_ll = json.load(f)
         
     token = api.get_token()
+    print(token)
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     if request.method == 'POST':
@@ -1365,8 +1387,8 @@ def checking_logbook(request):
                 context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                'endPort': endPort if endPort != '' else None
-                                })
+                                'endPort': endPort if endPort != '' else None,
+                                'continuetrip': None})
                 
                 #############################
                 is_dep_match = research_dep(df_donnees_p1, data_ll, startDate)
@@ -1493,6 +1515,7 @@ def checking_logbook(request):
         else : 
             dico_trip_infos = None
             continuetrip = None
+            print("on est dans le else et continue the trip = ", continuetrip)
         
         context.update({"df_previous" : dico_trip_infos,
                         "continuetrip": continuetrip})
@@ -1508,8 +1531,9 @@ def checking_logbook(request):
             'previous_trip': dico_trip_infos,
             'continuetrip': continuetrip,
         })
-    
-        
+        print("DATA TO HOMEPAGE TYPE AND DESCRIPTION")
+        print(type(data_to_homepage['df_activity']))
+        print(data_to_homepage)
         return render(request, 'LL_homepage.html', data_to_homepage)
 
     else:

@@ -318,7 +318,6 @@ def postProg_info(request):
 
 def logbook_del_files(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-
         logbooks_files = os.listdir("media/logbooks")
 
         if len(logbooks_files) > 0:
