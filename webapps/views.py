@@ -168,7 +168,7 @@ def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
-    print(datat_0c_Pr.keys())
+    # print(datat_0c_Pr.keys())
     
     # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     

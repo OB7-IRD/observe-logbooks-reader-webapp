@@ -16,7 +16,7 @@ Including another URLconf
 import django_browser_reload
 from django.contrib import admin
 from django.urls import path, include
-from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData
+from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData, logbook_del_files
 from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
@@ -43,6 +43,7 @@ urlpatterns += i18n_patterns(
     path('logbook/apply', postProg_info, name="postProg_info"),
     path('logbook/domainselect', domaineSelect, name="domaineSelect"),
     path('logbook/sendData', sendData, name="sendData"),
+    path('logbook/del_files', logbook_del_files, name="logbook_del_files"),
     path("palangre_syc/", include("palangre_syc.urls")),
     path("__reload__/", include("django_browser_reload.urls"))
 )
