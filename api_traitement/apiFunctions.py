@@ -914,7 +914,7 @@ def errorFilter(response):
     all_message = []
 
     if 'messages' in error['exception']['result']['nodes'][0].keys():
-        errorFonction(error['exception']['result']['nodes'][0])
+        all_message.append(errorFonction(error['exception']['result']['nodes'][0]))
     else:
         for val in error['exception']['result']['nodes'][0]['children']:
             all_message.append(errorFonction(val))
