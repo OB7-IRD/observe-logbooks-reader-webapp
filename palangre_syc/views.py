@@ -151,7 +151,45 @@ def zero_if_empty(value):
         return int(value)
 
 
-def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
+# def from_topiaid_to_value2(topiaid, lookingfor, label_output, domaine=None):
+#     """
+#     Fonction générale qui retourne le label output pour un topiad donné 
+#     dans la base common ou lognliner
+
+#     Args:
+#         topiad
+#         lookingfor: catégorie issu du WS dans laquelle on veut chercher notre topiaid
+#         label_output: ce qu'on veut présenter (label, nom, espèce ...)
+#         domaine si nécessaire (palangre, senne)
+
+#     Returns:
+#         nom souhaité associé au topotiad
+#     """
+#     if domaine is None:
+#         with open('./data_common.json', 'r', encoding='utf-8') as f:
+#             data_common = json.load(f)
+#         category = 'fr.ird.observe.entities.referential.common.' + lookingfor
+#         if data_common['content'][category] is not None:
+#             for element in data_common['content'][category]:
+#                 if element['topiaId'] == topiaid:
+#                     return element[label_output]
+#         else:
+#             print("please do check the orthographe of lookingfor element")
+#             return None
+
+#     else:
+#         with open('./data_ll.json', 'r', encoding='utf-8') as f:
+#             data_ll = json.load(f)
+#         category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
+#         if data_ll['content'][category] is not None:
+#             for element in data_ll['content'][category]:
+#                 if element['topiaId'] == topiaid:
+#                     return element[label_output]
+#         else:
+#             print("please do check the orthographe of lookingfor element")
+#             return None
+
+def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=None):
     """
     Fonction générale qui retourne le label output pour un topiad donné 
     dans la base common ou lognliner
@@ -165,29 +203,30 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
     Returns:
         nom souhaité associé au topotiad
     """
-    if domaine is None:
-        with open('./data_common.json', 'r', encoding='utf-8') as f:
-            data_common = json.load(f)
-        category = 'fr.ird.observe.entities.referential.common.' + lookingfor
-        if data_common['content'][category] is not None:
-            for element in data_common['content'][category]:
+    
+    if lookingfor == 'VesselActivity' or lookingfor == 'Program':
+        if domaine is None :
+            print("Error il faut préciser un domaine")
+            return None
+        else :
+            if domaine == 'palangre':
+                domaine_en = str('longline')
+            else: 
+                domaine == 'senne'
+                domaine_en = str('seine')
+            for element in allData[lookingfor][domaine_en]: 
+                if element['topiaId'] == topiaid:
+                    return element[label_output]
+        
+    else:
+        if allData[lookingfor] is not None:
+            for element in allData[lookingfor]:
                 if element['topiaId'] == topiaid:
                     return element[label_output]
         else:
             print("please do check the orthographe of lookingfor element")
             return None
 
-    else:
-        with open('./data_ll.json', 'r', encoding='utf-8') as f:
-            data_ll = json.load(f)
-        category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
-        if data_ll['content'][category] is not None:
-            for element in data_ll['content'][category]:
-                if element['topiaId'] == topiaid:
-                    return element[label_output]
-        else:
-            print("please do check the orthographe of lookingfor element")
-            return None
 
 
 
@@ -959,91 +998,94 @@ def research_dep(df_donnees_p1, allData, startDate):
         return False
     
 
-def get_previous_trip_infos2(request, df_donnees_p1, allData):
-    """Fonction qui va faire appel au WS pour :
-    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
-    et 2) trouver les informations rattachées à ce trip
+# def get_previous_trip_infos2(request, df_donnees_p1, allData):
+#     """Fonction qui va faire appel au WS pour :
+#     1) trouver l'id du trip le plus récent pour un vessel et un programme donné
+#     et 2) trouver les informations rattachées à ce trip
 
-    Args:
-        request (_type_): _description_
-        df_donnees_p1 (_type_): _description_
+#     Args:
+#         request (_type_): _description_
+#         df_donnees_p1 (_type_): _description_
 
-    Returns:
-        dictionnaire: startDate, endDate, captain
-    """
+#     Returns:
+#         dictionnaire: startDate, endDate, captain
+#     """
 
-    token = api.get_token()
-    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
+#     token = api.get_token()
+#     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-    # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, allData)
-    # Pour le webservice, il faut remplacer les # par des - dans les topiaid
-    vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
-    programme_topiaid = request.session.get('dico_config')['programme']
-    programme_topiaid_ws = programme_topiaid.replace("#", "-")
+#     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
+#     vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, allData)
+#     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
+#     vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
+#     programme_topiaid = request.session.get('dico_config')['programme']
+#     programme_topiaid_ws = programme_topiaid.replace("#", "-")
 
-    print("="*20, vessel_topiaid_ws, "="*20)
-    print("="*20, programme_topiaid_ws, "="*20)
+#     print("="*20, vessel_topiaid_ws, "="*20)
+#     print("="*20, programme_topiaid_ws, "="*20)
 
-    previous_trip = api.trip_for_prog_vessel(
-        token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
-    # on récupères les informations uniquement pour le trip avec la endDate la plus récente
-    parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
+#     previous_trip = api.trip_for_prog_vessel(
+#         token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
+#     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
+#     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
 
-    if parsed_previous_trip['content'] != []:
-        # Prévoir le cas ou le vessel n'a pas fait de trip avant
-        trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace(
-            "#", "-")
-        print("="*20, trip_topiaid, "="*20)
+#     if parsed_previous_trip['content'] != []:
+#         # Prévoir le cas ou le vessel n'a pas fait de trip avant
+#         trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace(
+#             "#", "-")
+#         print("="*20, trip_topiaid, "="*20)
 
-        # on récupère les infos du trip enregistré dans un fichier json
-        api.get_one(token, url_base, trip_topiaid)
+#         # on récupère les infos du trip enregistré dans un fichier json
+#         api.get_one(token, url_base, trip_topiaid)
 
-        json_previoustrip = api.load_json_file("previoustrip.json")
-        # print(json_previoustrip)
+#         json_previoustrip = api.load_json_file("previoustrip.json")
+#         # print(json_previoustrip)
 
-        # On récupère les infos que l'on voudra afficher
-        trip_info = json_previoustrip['content'][0]
+#         # On récupère les infos que l'on voudra afficher
+#         trip_info = json_previoustrip['content'][0]
 
-        captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
-                                            lookingfor='Person',
-                                            label_output='lastName',
-                                            domaine=None)
+#         captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
+#                                             lookingfor='Person',
+#                                             label_output='lastName',
+#                                             allData=allData,
+#                                             domaine=None)
 
-        vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
-                                            lookingfor='Vessel',
-                                            label_output='label2',
-                                            domaine=None)
+#         vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
+#                                             lookingfor='Vessel',
+#                                             label_output='label2',
+#                                             allData=allData,
+#                                             domaine=None)
 
-        dico_trip_infos = {'startDate': trip_info['startDate'],
-                            'endDate': trip_info['endDate'],
-                            'captain': captain_name,
-                            'vessel': vessel_name,
-                            'triptopiaid': trip_topiaid}
+#         dico_trip_infos = {'startDate': trip_info['startDate'],
+#                             'endDate': trip_info['endDate'],
+#                             'captain': captain_name,
+#                             'vessel': vessel_name,
+#                             'triptopiaid': trip_topiaid}
 
-        try:
-            departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
-                                                    lookingfor='Harbour',
-                                                    label_output='label2',
-                                                    domaine=None)
+#         try:
+#             departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
+#                                                     lookingfor='Harbour',
+#                                                     label_output='label2',
+#                                                     allData=allData,
+#                                                     domaine=None)
 
-            dico_trip_infos.update({
-                'depPort': departure_harbour,
-                'depPort_topiaid': trip_info['departureHarbour'],
-            })
+#             dico_trip_infos.update({
+#                 'depPort': departure_harbour,
+#                 'depPort_topiaid': trip_info['departureHarbour'],
+#             })
 
-        except KeyError:
-            # departure_harbour = 'null'
+#         except KeyError:
+#             # departure_harbour = 'null'
 
-            dico_trip_infos.update({
-                'depPort': 'null',
-                'depPort_topiaid': 'null',
-            })
+#             dico_trip_infos.update({
+#                 'depPort': 'null',
+#                 'depPort_topiaid': 'null',
+#             })
 
-        return dico_trip_infos
+#         return dico_trip_infos
 
-    else:
-        return None
+#     else:
+#         return None
 
 
 
@@ -1059,7 +1101,7 @@ def get_previous_trip_infos(request, df_donnees_p1, allData):
     Returns:
         dictionnaire: startDate, endDate, captain
     """
-
+    
     token = api.get_token()
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
@@ -1096,6 +1138,7 @@ def get_previous_trip_infos(request, df_donnees_p1, allData):
                 depPort_name = from_topiaid_to_value(topiaid=depPort,
                                 lookingfor='Harbour',
                                 label_output='label2',
+                                allData=allData,
                                 domaine=None)
             else : 
                 depPort = None
@@ -1106,14 +1149,23 @@ def get_previous_trip_infos(request, df_donnees_p1, allData):
                 endPort_name = from_topiaid_to_value(topiaid=endPort,
                                 lookingfor='Harbour',
                                 label_output='label2',
+                                allData=allData,
                                 domaine=None)
             else : 
                 endPort = None
                 endPort_name = None
             
-            ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
+            if request.LANGUAGE_CODE == 'fr':
+                ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
                                 lookingfor='Ocean',
                                 label_output='label2',
+                                allData=allData,
+                                domaine=None)
+            elif request.LANGUAGE_CODE == 'en':
+                ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
+                                lookingfor='Ocean',
+                                label_output='label1',
+                                allData=allData,
                                 domaine=None)
         
             trip_info_row = [trip_info['content'][0]['topiaId'],
@@ -1158,15 +1210,31 @@ def presenting_previous_trip(request):
 
     print("="*20, "presenting_previous_trip", "="*20)
 
-    programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
-                                    lookingfor='Program',
-                                    label_output='label2',
-                                    domaine='palangre')
+    if request.LANGUAGE_CODE == 'fr':
+        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label2',
+                                        allData=allData,
+                                        domaine='palangre')
 
-    ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
-                                lookingfor='Ocean',
-                                label_output='label2',
-                                domaine=None)
+        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                    lookingfor='Ocean',
+                                    label_output='label2',
+                                    allData=allData,
+                                    domaine=None)
+        
+    if request.LANGUAGE_CODE == 'en':
+        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label1',
+                                        allData=allData,
+                                        domaine='palangre')
+
+        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                    lookingfor='Ocean',
+                                    label_output='label1',
+                                    allData=allData,
+                                    domaine=None)
 
     context = {'domaine': apply_conf['domaine'],
                 'program': programme,
@@ -1451,15 +1519,31 @@ def checking_logbook(request):
             
         print("continue the trip : ", continuetrip)
         
-        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+        if request.LANGUAGE_CODE == 'fr':
+            programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
                                         lookingfor='Program',
                                         label_output='label2',
+                                        allData=allData,
                                         domaine='palangre')
-
-        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+            
+            ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
                                         lookingfor='Ocean',
                                         label_output='label2',
+                                        allData=allData,
                                         domaine=None)
+            
+        elif request.LANGUAGE_CODE == 'en':
+            programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label1',
+                                        allData=allData,
+                                        domaine='palangre')
+            
+            ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                lookingfor='Ocean',
+                                label_output='label1',
+                                allData=allData,
+                                domaine=None)
 
         context = {'domaine': apply_conf['domaine'],
                     'program': programme,
@@ -1470,9 +1554,9 @@ def checking_logbook(request):
             
         # si on contiue un trip, on récupère ses infos pour les afficher
         # if continuetrip is not None and request.POST.get('radio_previoustrip') is not None: 
-        if continuetrip is not None and 'radio_previoustrip' in request.POST:    
+        if continuetrip is not None and 'radio_previoustrip' in request.POST:
             # si on a choisi de continuer un trip 
-            triptopiaid = request.POST.get('radio_previoustrip')         
+            triptopiaid = request.POST.get('radio_previoustrip')      
             trip_topiaid_ws = triptopiaid.replace("#", "-")
             print("="*20, trip_topiaid_ws, "="*20)
 
@@ -1487,11 +1571,13 @@ def checking_logbook(request):
             captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
                                                 lookingfor='Person',
                                                 label_output='lastName',
+                                                allData=allData,
                                                 domaine=None)
 
             vessel_name = from_topiaid_to_value(topiaid=trip_info['vessel'],
                                                 lookingfor='Vessel',
                                                 label_output='label2',
+                                                allData=allData,
                                                 domaine=None)
 
             dico_trip_infos = {'startDate': trip_info['startDate'],
@@ -1504,6 +1590,7 @@ def checking_logbook(request):
                 departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
                                                         lookingfor='Harbour',
                                                         label_output='label2',
+                                                        allData=allData,
                                                         domaine=None)
 
                 dico_trip_infos.update({
