@@ -156,12 +156,12 @@ def load_data(token, baseUrl, forceUpdate=False):
 #                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
-def load_data2():
-    files = os.listdir("../media/data")
+def load_allData_file():
+    files = os.listdir("media/data")
 
-    file_name = "../media/data/" + files[0]
+    file_name = "media/data/" + files[0]
     # Opening JSON file
-    f = open(file_name)
+    f = open(file_name,  encoding='utf-8')
     # returns JSON object as  a dictionary
     allData = json.load(f)
 
@@ -176,8 +176,8 @@ def getId(allData, module, argment, nbArg=False, domaine=None):
         :param argment:
         :param domaine: "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
         :param nbArg: permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
-                     par defaut quand c'est False nous avons 1 argument en paramentre
-                     si c'est egale True, nous avons 2 arguments en parametre
+                    par defaut quand c'est False nous avons 1 argument en paramentre
+                    si c'est egale True, nous avons 2 arguments en parametre
         :return: Retourne ID d'un module en fonction des arguments donnés et un message
     """
     message = Id = ""
