@@ -118,7 +118,7 @@ def convert_to_time_or_text(value):
     if isinstance(value, str):
         # print("="*3, value)
         if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
-            print("first match")
+            #print("first match")
             # return date_time.strftime('%H:%M:%S')
             return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         elif re.match("[0-9]{2}:[0-9]{2}", value.strip()):
@@ -263,7 +263,7 @@ def extract_vessel_info(df_donnees):
     # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
     df_vessel_clean = df_vessel.str.split(':', expand=True)
     # S'assurer que toutes les valeurs sont des chaînes de caractères
-    df_vessel_clean = df_vessel_clean.map(lambda x: str(x).strip() if x is not None else '')
+    df_vessel_clean = df_vessel_clean.applymap(lambda x: str(x).strip() if x is not None else '')
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
@@ -681,7 +681,7 @@ def extract_fish_p1(df_donnees):
                 'No RET XXX', 'Kg RET XXX']
     
     df_fishes.columns = colnames
-    df_fishes = df_fishes.map(zero_if_empty)
+    df_fishes = df_fishes.applymap(zero_if_empty)
     df_fishes.reset_index(drop=True, inplace=True)
     
     return df_fishes
@@ -719,7 +719,7 @@ def extract_bycatch_p2(df_donnees):
                 'No ESC TTX', 'No DIS TTX']
     
     df_bycatch.columns = colnames
-    df_bycatch = df_bycatch.map(zero_if_empty)
+    df_bycatch = df_bycatch.applymap(zero_if_empty)
     df_bycatch.reset_index(drop=True, inplace=True)
     
     return df_bycatch
@@ -1274,7 +1274,7 @@ def presenting_previous_trip(request):
                 context.update({'df_previous': df_previous_trip,})
                 print(context)
         
-        except IndexError:
+        except :
             context.update({'df_previous': None})
             
     request.session['context'] = context
@@ -1428,69 +1428,15 @@ def checking_logbook(request):
             #         probleme = True
             #     #############################
             
-            try:
+            # try:
                 
-                if context['df_previous'] == None:
-                    # NOUVELLE MAREE
-                    context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
-                                    'depPort': depPort,
-                                    'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                    'endPort': endPort if endPort != '' else None,
-                                    'continuetrip': None})
-                    
-                    #############################
-                    is_dep_match = research_dep(df_donnees_p1, allData, startDate)
-                    print(is_dep_match)
-                    if is_dep_match is False:
-                        messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
-                        probleme = True
-                    #############################
-                
-                else:
-                    # CONTINUE TRIP
-                    context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
-                    print(context)
-                    
-                    with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
-                        json_previoustrip = json.load(f)
-                    
-                    # On récupère la date du jour 1 au bon format
-                    if df_time.loc[0, 'VesselActivity'] == "fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1":
-                        # Si c'est une fishing operation
-                        date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, True)
-                    else:
-                        date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
-
-                    #############################
-                    # messages d'erreurs
-                    if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
-                        messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
-                        probleme = True
-
-                    elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
-                        print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
-                        probleme = True
-                        messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
-                    #############################
-                                        
-                    context.update({'startDate': context['df_previous']['startDate'], 
-                                    'depPort': context['df_previous']['depPort_topiaid'],
-                                    'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                    'endPort': endPort if endPort != '' else None, 
-                                    'continuetrip': 'Continuer cette marée'})
-                    print("- 0 -"*30)
-                    print(context)
-                    print("- 0 -"*30)
-                    # voir si faut ajouter un truc qui ré enregistre à la session ? 
-            
-            except KeyError :
+            if context['df_previous'] == None:
                 # NOUVELLE MAREE
                 context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
-                                'continuetrip': None, 
-                                'df_previous': None})
+                                'continuetrip': None})
                 
                 #############################
                 is_dep_match = research_dep(df_donnees_p1, allData, startDate)
@@ -1499,6 +1445,65 @@ def checking_logbook(request):
                     messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
                     probleme = True
                 #############################
+            
+            else:
+                # CONTINUE TRIP
+                # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
+                # context.update({'df_previous' : context['df_previous'], orient = 'index')})
+
+                print(context)
+                
+                with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
+                    json_previoustrip = json.load(f)
+                
+                # On récupère la date du jour 1 au bon format
+                if df_time.loc[0, 'VesselActivity'] == "fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1":
+                    # Si c'est une fishing operation
+                    date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, True)
+                else:
+                    date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
+
+                print("%"*15, "context start et end Date ", "%"*15)
+                print(context['df_previous']['endDate'])
+                #############################
+                # messages d'erreurs
+                if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
+                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
+                    probleme = True
+
+                elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
+                    print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
+                    probleme = True
+                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
+                #############################
+                                    
+                context.update({'startDate': context['df_previous']['startDate'], 
+                                'depPort': context['df_previous']['depPort_topiaid'],
+                                'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+                                'endPort': endPort if endPort != '' else None, 
+                                'continuetrip': 'Continuer cette marée'})
+                print("- 0 -"*30)
+                print(context)
+                print("- 0 -"*30)
+                # voir si faut ajouter un truc qui ré enregistre à la session ? 
+        
+            # except KeyError :
+            #     # NOUVELLE MAREE
+            #     print("%"*15, startDate, type(startDate), "%"*15)
+            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
+            #                     'depPort': depPort,
+            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+            #                     'endPort': endPort if endPort != '' else None,
+            #                     'continuetrip': None, 
+            #                     'df_previous': None})
+                
+            #     #############################
+            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
+            #     print(is_dep_match)
+            #     if is_dep_match is False:
+            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
+            #         probleme = True
+            #     #############################
 
             if probleme is True:
                 # on doit ajouter les infos quand meme 

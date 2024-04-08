@@ -173,3 +173,11 @@ html_css_files = ["custom.css"]
 html_additional_pages = {
     "404": "404.html",
 }
+
+autodoc_mock_imports = ['django']
+
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
+}

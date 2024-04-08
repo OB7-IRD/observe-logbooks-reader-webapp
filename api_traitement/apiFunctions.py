@@ -57,6 +57,10 @@ def get_all_referential_data(token, module, baseUrl):
 def load_data(token, baseUrl, forceUpdate=False):
     print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
+    
+    if not os.path.exists("media/data"):
+        os.makedirs("media/data")
+
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
@@ -115,6 +119,7 @@ def load_data(token, baseUrl, forceUpdate=False):
         return allData
 
     if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
+        
         last_date = files[0].split("_")[1].split(".")[0]
         last_file = files[0]
 

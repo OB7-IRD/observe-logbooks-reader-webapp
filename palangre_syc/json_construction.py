@@ -62,7 +62,9 @@ def get_vessel_topiaid(df_donnees_p1, allData):
     Returns:
         _type_: topiaID du navire (vessel)
     """
+    print("%"*15, "get vessel topiaid", "%"*15)
     vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
+    #vessel_logbook = vessel_logbook.strip()
     for vessel in allData["Vessel"]:
         if 'nationalId' in vessel:
             vessel_json = vessel['nationalId']
@@ -271,30 +273,23 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
     Returns:
         dataframe: avec les prises réalisées pour une journée de pêche (code FAO, catchFate, nombre de prise et Poids tot)
     """
-    liste_fct_extraction = [palangre_syc.views.extract_tunas(df_donnees_p1),
-                            palangre_syc.views.extract_billfishes(
-                                df_donnees_p1),
-                            palangre_syc.views.extract_otherfish(
-                                df_donnees_p1),
-                            palangre_syc.views.extract_sharksFAL(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksBSH(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksMAK(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksSPN(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksTIG(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksPSK(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksTHR(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_sharksOCS(
-                                df_donnees_p2),
-                            palangre_syc.views.extract_mammals(df_donnees_p2),
-                            palangre_syc.views.extract_seabird(df_donnees_p2),
-                            palangre_syc.views.extract_turtles(df_donnees_p2)]
+    liste_fct_extraction = [palangre_syc.views.extract_fish_p1(df_donnees_p1),
+                            palangre_syc.views.extract_bycatch_p2(df_donnees_p2)
+                            #palangre_syc.views.extract_tunas(df_donnees_p1),
+                            #palangre_syc.views.extract_billfishes(df_donnees_p1),
+                            #palangre_syc.views.extract_otherfish(df_donnees_p1),
+                            #palangre_syc.views.extract_sharksFAL(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksBSH(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksMAK(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksSPN(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksTIG(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksPSK( df_donnees_p2),
+                            #palangre_syc.views.extract_sharksTHR(df_donnees_p2),
+                            #palangre_syc.views.extract_sharksOCS(df_donnees_p2),
+                            #palangre_syc.views.extract_mammals(df_donnees_p2),
+                            #palangre_syc.views.extract_seabird(df_donnees_p2),
+                            #palangre_syc.views.extract_turtles(df_donnees_p2)
+                            ]
 
     df_catches = pd.DataFrame(
         columns=['fao_code', 'catch_fate', 'count', 'totalWeight'])
@@ -464,11 +459,7 @@ def create_starttimestamp_from_field_date(date):
     Returns:
         datetime: pour stratDate et endDAte
     """
-    date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
-        date[:4],
-        date[5:7],
-        date[-2:],
-        '00:00:00')
+    date_formated = '{}-{:02}-{:02}T{}.000Z'.format(int(date[:4]), int(date[5:7]), int(date[-2:]), '00:00:00')
     return date_formated
 
 def search_date_into_json(json_previoustrip, date_to_look_for):
