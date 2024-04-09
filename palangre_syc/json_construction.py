@@ -264,7 +264,6 @@ def create_catch_table_fish_perday(fish_file, row_number):
 
 def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
     """
-
     Args:
         df_donnees_p1 (dataframe): page 1 du doc excel
         df_donnees_p2 (dataframe): page 2 du doc excel
@@ -482,6 +481,19 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
     return False
             
 def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction):
+    """ 
+    Fonction qui créé les activités et les set selon le format json attendu dans la base de données Observe
+
+    Args: 
+        df_donnees_p1 (dataframe): page 1 du logbook excel
+        df_donnees_p2 (dataframe): page 2 du logbook excel  
+        allData (json):  Données de références
+        start_extraction (int): numéro qui indique la ligne du logbook à partir de laquelle on commence à remplir le json (0 si on commence au 1er jour, 5 si la marée commence au 6 du mois)
+        end_extraction (int): numéro qui indique la ligne du logbook à laquelle on arrête de remplir le json (len(excel_p1) si on considère le logbook entier, 15 si la marée s'arrête au 16 du mois)
+
+    Returns:
+        json: des activités et set pour la période et le logbook soumis par l'utilisateur
+    """
     
     #############################
     # messages d'erreurs
@@ -600,10 +612,22 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
 
 
 def create_trip(df_donnees_p1, MultipleActivity, allData, context):
+    """ 
+    Fonction qui créé un trip selon le format json attendu dans la base de données Observe (avec éventuellement les information d'un précédent trip si l'utilisateur update un trip existant)
+
+    Args: 
+        df_donnees_p1 (dataframe): page 1 du logbook excel
+        MultipleActivity (json): Inofrmations de sortie de la fonction "create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction)"
+        allData (json):  Données de références
+        context (dict): infrormation concernant startDate, endDate, depPort, endPort saisies par l'utilisateur, mais aussi les information du trip à modifier / continuer si l'utilisateur choisi de continuer un trip existant
+
+    Returns:
+        json: trip
+    """
+
     # Dans le trip on a fixé :
     # tripType = Marée de pêche commerciale
-    # observer = unknown car non présent
-    # startDate et endDate sont entrées en dur aussi
+    # observer = unknown car information non présente sur le logbook
 
     # species semble être TargetSpecies - a voir si on développe
 

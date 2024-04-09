@@ -40,56 +40,29 @@ def del_empty_col(dataframe):
     dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
     return dataframe
 
-
 def strip_if_string(element):
-    '''
+    """
     Fonction qui applique la fonction python strip() si l'élement est bien de type texte
-    '''
+    """
     return element.strip() if isinstance(element, str) else element
 
-
 def remove_spec_char(char):
-    '''
+    """
     Fonction qui élimine les caractères non ascii
-    '''
+    """
     return re.sub("[^A-Z ]", "", str(char), 0, re.IGNORECASE)
 
-
 def remove_spec_char_from_list(char_list):
-    '''
-    Applique remove_spec_char à chaque élément d'une liste de chaînes
-    '''
+    """
+    Fonction qui applique remove_spec_char à chaque élément d'une liste de chaînes
+    """
     return [remove_spec_char(item) for item in char_list]
 
-
 def np_removing_semicolon(numpy_table, num_col):
-    '''
-    Fonction qui prend une numpy table et ne retourne 
-    que la partie avant les deux point de la colonne demandée
-    '''
-    return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
-
-
-def dms_to_decimal2(degrees, minutes, direction):
-    """Transforme des degrés minutes secondes en décimal
-
-    Args:
-        degrees (int), minutes (int): value
-        direction (str): N S E W
-
-    Returns:
-        float: value
     """
-    if degrees is None:
-        return None
-
-    # if type(degrees) is str:
-    degrees = int(degrees)
-    minutes = int(minutes)
-    decimal_degrees = degrees + minutes / 60.0
-    if direction in ['S', 'W']:
-        decimal_degrees *= -1
-    return decimal_degrees
+    Fonction qui prend une numpy table et ne retourne que la partie avant les deux point (:) de la colonne demandée
+    """
+    return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
 
 def dms_to_decimal(degrees, minutes, direction):
     """Transforme des degrés minutes secondes en décimal
@@ -109,12 +82,10 @@ def dms_to_decimal(degrees, minutes, direction):
     return decimal_degrees
 
 def convert_to_time_or_text(value):
-    '''
-    Fonction qui convertit la cellule en time
-    si elle est au format type time ou date dans le excel
+    """
+    Fonction qui converti la cellule en time si elle est au format type time ou date dans le excel
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
-    '''
-    # print("heure askip : ", value)
+    """
     if isinstance(value, str):
         # print("="*3, value)
         if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
@@ -150,49 +121,10 @@ def zero_if_empty(value):
     else:
         return int(value)
 
-
-# def from_topiaid_to_value2(topiaid, lookingfor, label_output, domaine=None):
-#     """
-#     Fonction générale qui retourne le label output pour un topiad donné 
-#     dans la base common ou lognliner
-
-#     Args:
-#         topiad
-#         lookingfor: catégorie issu du WS dans laquelle on veut chercher notre topiaid
-#         label_output: ce qu'on veut présenter (label, nom, espèce ...)
-#         domaine si nécessaire (palangre, senne)
-
-#     Returns:
-#         nom souhaité associé au topotiad
-#     """
-#     if domaine is None:
-#         with open('./data_common.json', 'r', encoding='utf-8') as f:
-#             data_common = json.load(f)
-#         category = 'fr.ird.observe.entities.referential.common.' + lookingfor
-#         if data_common['content'][category] is not None:
-#             for element in data_common['content'][category]:
-#                 if element['topiaId'] == topiaid:
-#                     return element[label_output]
-#         else:
-#             print("please do check the orthographe of lookingfor element")
-#             return None
-
-#     else:
-#         with open('./data_ll.json', 'r', encoding='utf-8') as f:
-#             data_ll = json.load(f)
-#         category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
-#         if data_ll['content'][category] is not None:
-#             for element in data_ll['content'][category]:
-#                 if element['topiaId'] == topiaid:
-#                     return element[label_output]
-#         else:
-#             print("please do check the orthographe of lookingfor element")
-#             return None
-
 def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=None):
     """
     Fonction générale qui retourne le label output pour un topiad donné 
-    dans la base common ou lognliner
+    dans la base common ou longliner
 
     Args:
         topiad
@@ -211,9 +143,9 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=No
         else :
             if domaine == 'palangre':
                 domaine_en = str('longline')
-            else: 
-                domaine == 'senne'
+            else:
                 domaine_en = str('seine')
+            
             for element in allData[lookingfor][domaine_en]: 
                 if element['topiaId'] == topiaid:
                     return element[label_output]
@@ -224,7 +156,7 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=No
                 if element['topiaId'] == topiaid:
                     return element[label_output]
         else:
-            print("please do check the orthographe of lookingfor element")
+            print("please do check the orthographe of looking for element")
             return None
 
 
@@ -234,12 +166,16 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=No
 
 
 def read_excel(file_path, num_page):
-    ''' 
-    Fonction qui prend en argument un chemin d'accès d'un document excel 
-    et un numéro de page à extraire
-    et qui renvoie un tableau (dataframe) des données 
-    Attention -- num_page correspond au numéro de la page (1, 2 etc ...)
-    '''
+    """ 
+    Fonction qui extrait les informations d'un fichier excel en dataframe
+
+    Args:
+        file_path: lien vers le fichier contenant le logbook
+        num_page (int): numéro de page à extraire (1, 2 etc ...)
+
+    Returns:
+        (dataframe): du fichier excel
+    """
     classeur = openpyxl.load_workbook(filename=file_path, data_only=True)
     noms_feuilles = classeur.sheetnames
     feuille = classeur[noms_feuilles[num_page - 1]]
@@ -565,14 +501,17 @@ def extract_positions(df_donnees):
     return df_position
 
 def get_vessel_activity_topiaid(startTimeStamp, allData):
-    '''
-    Fonction qui prend en argument une heure de depart
-    et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
-    cad si'il y a une heure - on est en activité de pêche,
-    En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
-    et s'il contient 'PORT' alors le bateau est au port 
-    'FISHING
-    '''
+    """
+    Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
+    
+    Args:
+        startTimeStamp (date): information horaire - si type date alors Fishing operation, sinon on regarde le texte dans la cellule
+        allData (json): données de références
+
+    Returns:
+        topiaID de l'activité détectée
+    """
+
     if ":" in str(startTimeStamp):
         code = "FO"
 
@@ -633,6 +572,7 @@ def extract_temperature(df_donnees):
     Returns:
         df
     """
+
     df_temp = df_donnees.iloc[24:55, 8:9]
     colnames = ['Température']
     df_temp.columns = colnames
@@ -724,233 +664,6 @@ def extract_bycatch_p2(df_donnees):
     
     return df_bycatch
     
-    
-def extract_tunas(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
-    '''
-    df_tunas = df_donnees.iloc[24:55, 12:20]
-    colnames = ['No RET SBF', 'Kg RET SBF',
-                'No RET ALB', 'Kg RET ALB',
-                'No RET BET', 'Kg RET BET',
-                'No RET YFT', 'Kg RET YFT']
-    df_tunas.columns = colnames
-    # print(df_tunas)
-    df_tunas = df_tunas.map(strip_if_string)
-    df_tunas = df_tunas.map(zero_if_empty)
-    # print(df_tunas)
-    df_tunas.reset_index(drop=True, inplace=True)
-    return df_tunas
-
-
-def extract_billfishes(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les billfishes 
-    '''
-    df_billfishies = df_donnees.iloc[24:55, 20:32]
-    colnames = ['No RET SWO', 'Kg RET SWO',
-                'No RET MLS', 'Kg RET MLS',
-                'No RET BUM', 'Kg RET BUM',
-                'No RET BLM', 'Kg RET BLM',
-                'No RET SFA', 'Kg RET SFA',
-                'No RET SSP', 'Kg RET SSP']
-    df_billfishies.columns = colnames
-
-    df_billfishies = df_billfishies.map(zero_if_empty)
-
-    df_billfishies.reset_index(drop=True, inplace=True)
-    return df_billfishies
-
-
-def extract_otherfish(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les autres poissons 
-    '''
-    df_otherfish = df_donnees.iloc[24:55, 32:36]
-    colnames = ['No RET OIL', 'Kg RET OIL',
-                'No RET XXX', 'Kg RET XXX']
-    df_otherfish.columns = colnames
-
-    df_otherfish = df_otherfish.map(zero_if_empty)
-
-    df_otherfish.reset_index(drop=True, inplace=True)
-    return df_otherfish
-
-
-def extract_sharksFAL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les blacks sharks 
-    '''
-    df_sharksFAL = df_donnees.iloc[15:46, 1:5]
-    colnames = ['No RET FAL', 'Kg RET FAL',
-                'No ESC FAL', 'No DIS FAL']
-    df_sharksFAL.columns = colnames
-
-    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
-
-    df_sharksFAL.reset_index(drop=True, inplace=True)
-    return df_sharksFAL
-
-
-def extract_sharksBSH(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les blue sharks 
-    '''
-    df_sharksBSH = df_donnees.iloc[15:46, 5:9]
-    colnames = ['No RET BSH', 'Kg RET BSH',
-                'No ESC BSH', 'No DIS BSH']
-    df_sharksBSH.columns = colnames
-
-    df_sharksBSH = df_sharksBSH.map(zero_if_empty)
-
-    df_sharksBSH.reset_index(drop=True, inplace=True)
-    return df_sharksBSH
-
-
-def extract_sharksMAK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les Mako 
-    '''
-    df_sharksMAK = df_donnees.iloc[15:46, 9:13]
-    colnames = ['No RET MAK', 'Kg RET MAK',
-                'No ESC MAK', 'No DIS MAK']
-    df_sharksMAK.columns = colnames
-
-    df_sharksMAK = df_sharksMAK.map(zero_if_empty)
-
-    df_sharksMAK.reset_index(drop=True, inplace=True)
-    return df_sharksMAK
-
-
-def extract_sharksMSK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
-    '''
-    df_sharksSPN = df_donnees.iloc[15:46, 13:17]
-    colnames = ['No RET MSK', 'Kg RET MSK',
-                'No ESC MSK', 'No DIS MSK']
-    df_sharksSPN.columns = colnames
-
-    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
-
-    df_sharksSPN.reset_index(drop=True, inplace=True)
-    return df_sharksSPN
-
-
-def extract_sharksSPN(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
-    '''
-    df_sharksSPN = df_donnees.iloc[15:46, 17:21]
-    colnames = ['No RET SPN', 'Kg RET SPN',
-                'No ESC SPN', 'No DIS SPN']
-    df_sharksSPN.columns = colnames
-
-    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
-
-    df_sharksSPN.reset_index(drop=True, inplace=True)
-    return df_sharksSPN
-
-
-def extract_sharksTIG(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tiger sharks 
-    '''
-    df_sharksTIG = df_donnees.iloc[15:46, 21:25]
-    colnames = ['No RET TIG', 'Kg RET TIG',
-                'No ESC TIG', 'No DIS TIG']
-    df_sharksTIG.columns = colnames
-
-    df_sharksTIG = df_sharksTIG.map(zero_if_empty)
-
-    df_sharksTIG.reset_index(drop=True, inplace=True)
-    return df_sharksTIG
-
-
-def extract_sharksPSK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les crocodile sharks 
-    '''
-    df_sharksPSK = df_donnees.iloc[15:46, 25:29]
-    colnames = ['No RET PSK', 'Kg RET PSK',
-                'No ESC PSK', 'No DIS PSK']
-
-    df_sharksPSK.columns = colnames
-
-    df_sharksPSK = df_sharksPSK.map(zero_if_empty)
-
-    df_sharksPSK.reset_index(drop=True, inplace=True)
-    return df_sharksPSK
-
-
-def extract_sharksTHR(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les thresher sharks 
-    '''
-    df_sharksFAL = df_donnees.iloc[15:46, 29:31]
-    colnames = ['No ESC THR', 'No DIS THR']
-    df_sharksFAL.columns = colnames
-
-    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
-
-    df_sharksFAL.reset_index(drop=True, inplace=True)
-    return df_sharksFAL
-
-
-def extract_sharksOCS(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les oceanic sharks 
-    '''
-    df_sharksOCS = df_donnees.iloc[15:46, 31:33]
-    colnames = ['No ESC OCS', 'No DIS OCS']
-    df_sharksOCS.columns = colnames
-
-    df_sharksOCS = df_sharksOCS.map(zero_if_empty)
-
-    df_sharksOCS.reset_index(drop=True, inplace=True)
-    return df_sharksOCS
-
-
-def extract_mammals(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les autres mammifères marins 
-    '''
-    df_mammals = df_donnees.iloc[15:46, 33:35]
-    colnames = ['No ESC MAM', 'No DIS MAM']
-    df_mammals.columns = colnames
-    df_mammals = df_mammals.map(zero_if_empty)
-
-    df_mammals.reset_index(drop=True, inplace=True)
-    return df_mammals
-
-
-def extract_seabird(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les sea birds
-    '''
-    df_seabird = df_donnees.iloc[15:46, 35:37]
-    colnames = ['No ESC SBD', 'No DIS SBD']
-    df_seabird.columns = colnames
-
-    df_seabird = df_seabird.map(zero_if_empty)
-
-    df_seabird.reset_index(drop=True, inplace=True)
-    return df_seabird
-
-
-def extract_turtles(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les torutes 
-    '''
-    df_turtles = df_donnees.iloc[15:46, 37:39]
-    colnames = ['No ESC TTX', 'No DIS TTX']
-    df_turtles.columns = colnames
-
-    df_turtles = df_turtles.map(zero_if_empty)
-
-    df_turtles.reset_index(drop=True, inplace=True)
-    return df_turtles
-
 
 def get_list_harbours(allData):
     """
@@ -960,14 +673,8 @@ def get_list_harbours(allData):
     Returns:
         list: all the enabled ports (topiaId and label2)
     """
-    # harbours = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
+
     harbours = allData["Harbour"]
-    # list_harbours = []
-    # for harbour in harbours:
-    #     if harbour.get('status') == 'enabled':
-    #         list_harbours.append({'topiaId': harbour.get(
-    #             'topiaId'), 'label2': harbour.get('label2')})
-    # sorted_list_harbours = sorted(list_harbours, key=lambda x: x['label2'])
     sorted_list_harbours = [{'topiaId': harbour.get('topiaId'), 'label2': harbour.get('label2')} 
                         for harbour in harbours if harbour.get('status') == 'enabled']
     sorted_list_harbours.sort(key=lambda x: x['label2'])
@@ -1132,7 +839,7 @@ def presenting_previous_trip(request):
                                     allData=allData,
                                     domaine=None)
         
-    if request.LANGUAGE_CODE == 'en':
+    elif request.LANGUAGE_CODE == 'en':
         programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
                                         lookingfor='Program',
                                         label_output='label1',
@@ -1550,6 +1257,11 @@ def checking_logbook(request):
 
 
 def send_logbook2observe(request):
+    """
+    Fonction qui envoie
+    1) le trip si on créé un nouveau trip 
+    2) supprime et envoie le nouveau trip updated si on ajoute des informations de marée à un trip existant
+    """
     
     allData = apiFunctions.load_allData_file()
     
