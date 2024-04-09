@@ -26,7 +26,7 @@ def getToken(baseUrl, data):
             "referentialLocale": "FR",
         }
     """ 
-    
+
     url = baseUrl + "/init/open"
     # data.update({"config.modelVersion": "9.0"})
     rep = requests.get(url, params=data)
@@ -96,16 +96,7 @@ def load_data(token, baseUrl, forceUpdate=False):
         # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
         ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)
-        gear = {'seine' :ps_common, 'longline':ll_common}
-        
-        #### Saving data common and longliners into media ####
-        palangre_syc.api.get_referential_ll()
-        palangre_syc.api.get_referential_common()
-        
-        
-
-        # allData = {**ref_common, **ps_logbook, **gear}
+        ll_common = get_all_referential_data(token, "ll/common", url)    
         
         print("="*20, "load_data SubFunction", "="*20)
         # print(ref_common[5:])
