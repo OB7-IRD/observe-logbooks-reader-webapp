@@ -59,8 +59,12 @@ def load_data(token, baseUrl, forceUpdate=False):
     print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
     
+    # Si les dossiers ne sont pas existant, on les créés
     if not os.path.exists("media/data"):
         os.makedirs("media/data")
+
+    if not os.path.exists("media/temporary_files"):
+        os.makedirs("media/temporary_files")
 
     files = os.listdir("media/data")
 
@@ -100,8 +104,8 @@ def load_data(token, baseUrl, forceUpdate=False):
         
         print("="*20, "load_data SubFunction", "="*20)
         # print(ref_common[5:])
-        with open('allData_load.json', 'w', encoding='utf-8') as f:
-            json.dump(allData, f, ensure_ascii=False, indent=4)
+        # with open('allData_load.json', 'w', encoding='utf-8') as f:
+        #     json.dump(allData, f, ensure_ascii=False, indent=4)
         
         file_name = "media/data/data_" + str(day) + ".json"
 

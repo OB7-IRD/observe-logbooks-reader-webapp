@@ -50,6 +50,12 @@ python3 manage.py tailwind build
 # To build the auto docstring 
 
 ```
-cd docs
-sphinx-apidoc -o source palangre-syc # toward a folder with __init__ file
+cd source
+sphinx-apidoc -o api palangre-syc # toward a folder with an __init__ file
+```
+
+## To use Django translation
+```
+django-admin makemessages -a
+django-admin compilemessages
 ```

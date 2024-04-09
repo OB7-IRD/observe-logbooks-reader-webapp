@@ -3,6 +3,10 @@
 # API Reference
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 4
+
+palangre_syc
+webapps
+api_traitement
 
 ```

@@ -235,5 +235,5 @@ Builds on top of xarray to work with labeled dimensions and coordinates.
 Getting Started<getting_started/index>
 User Guide<user_guide/index>
 API <api/index>
-modules
+
 ```

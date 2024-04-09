@@ -671,12 +671,12 @@ def replace_null_false_true(obj):
         return obj
 
 
-def pretty_print(json_data, file="sample.json", mode="a"):
+def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
     """ Fonction qui affiche avec les bonnes indentations un fichier json
 
     Args:
         json_data (json): Données json en entrée
-        file (str, optional): Nom de fichier json de sortie "sample.json".
+        file (str, optional): Nom de fichier json de sortie "created_json_file.json".
         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
     """
     
