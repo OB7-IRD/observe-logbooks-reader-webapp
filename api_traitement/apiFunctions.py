@@ -25,7 +25,8 @@ def getToken(baseUrl, data):
             "config.databaseName": "database",
             "referentialLocale": "FR",
         }
-    """
+    """ 
+    
     url = baseUrl + "/init/open"
     # data.update({"config.modelVersion": "9.0"})
     rep = requests.get(url, params=data)

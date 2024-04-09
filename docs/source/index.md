@@ -230,9 +230,10 @@ Builds on top of xarray to work with labeled dimensions and coordinates.
 
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 :hidden:
 Getting Started<getting_started/index>
 User Guide<user_guide/index>
 API <api/index>
+modules
 ```

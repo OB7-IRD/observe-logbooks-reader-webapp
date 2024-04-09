@@ -46,3 +46,10 @@ sphinx-serve -b build -h 127.0.0.1
 ```bash
 python3 manage.py tailwind build
 ```
+
+# To build the auto docstring 
+
+```
+cd docs
+sphinx-apidoc -o source palangre-syc # toward a folder with __init__ file
+```

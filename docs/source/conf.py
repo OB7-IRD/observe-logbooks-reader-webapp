@@ -35,6 +35,7 @@ author = "Adelphe N'Goran, Clémentine Violette, Pascal Cauquil, Julien Lebranch
 
 extensions = [
     "sphinx.ext.autodoc",
+    'sphinx.ext.napoleon',
     "sphinx.ext.doctest",
     "sphinx.ext.coverage",
     "sphinx.ext.duration",

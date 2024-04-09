@@ -1175,7 +1175,7 @@ def get_previous_trip_infos(request, df_donnees_p1, allData):
                             trip_info['content'][0]['endDate'],
                             endPort,
                             endPort_name,
-                            ocean]
+                            ocean] # type: ignore
             
             df_trip.loc[num_trip] = trip_info_row
             
