@@ -181,7 +181,20 @@ def logbook(request):
         
         message = tags = ''
         logbooks = os.listdir("media/logbooks")
-        
+
+        #Si validé sans fichier excel televersé
+        if logbooks == []:
+            print("="*10, "Validé sans fichier excel", "="*10)
+            msg = "Merci de déposer un fichier excel avant de lancer l'extraction de données !"
+            messages.error(request, msg)
+            tags = "error2"
+
+            return render(request, "logbook.html",{
+                "tags": tags,
+                "alert_message": "Merci de téléverser un fichier excel",
+                "ocean_data": datat_0c_Pr["ocean"],
+            })
+
         # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
         if apply_conf["domaine"] == "palangre":
             logbooks = os.listdir("media/logbooks")
@@ -440,7 +453,6 @@ def file_upload_view(request):
     if request.method == "POST":
         file = request.FILES['file']
         fs = FileSystemStorage()
-
         if (file.name not in os.listdir("media/logbooks")):
             #To copy data to the base folder
             filename = fs.save("logbooks/"+file.name, file)

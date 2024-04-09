@@ -268,6 +268,17 @@
 
                 </div>
               {% endif %}
+              {% if alert_message %}
+                <script>
+                    Swal.fire({
+                      icon: "error",
+                      title: "Oops...",
+                      text: "{{ alert_message }}",
+                      showConfirmButton: false,
+                      timer: 10000,
+                      });
+                </script>
+              {% endif %}
             </div>
             {% endif %}
 
