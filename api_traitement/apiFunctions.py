@@ -46,7 +46,7 @@ def get_all_referential_data(token, module, baseUrl):
             for valin in json.loads(ac_cap.text)["content"][val]:
                 dicoModule[vals].append(valin)
         print("="*20, "get_all_referential_data", "="*20)
-        print(dicoModule)
+        # print(dicoModule)
         return dicoModule
     else:
         return "Problème de connexion pour recuperer les données"
@@ -915,9 +915,11 @@ def errorFilter(response):
 
     if 'messages' in error['exception']['result']['nodes'][0].keys():
         all_message.append(errorFonction(error['exception']['result']['nodes'][0]))
-    else:
+    try:
         for val in error['exception']['result']['nodes'][0]['children']:
             all_message.append(errorFonction(val))
+    except:
+        pass
 
     return all_message
 

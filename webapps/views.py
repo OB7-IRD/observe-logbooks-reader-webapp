@@ -175,7 +175,6 @@ def logbook(request):
     apply_conf  = request.session.get('dico_config')
 
     # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
-
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
@@ -265,8 +264,10 @@ def logbook(request):
     # else : 
     if apply_conf is not None :
         print("="*20, "apply_conf is not None", "="*20)
-        print(apply_conf)
-        print(datat_0c_Pr['program'])
+
+        # print(apply_conf)
+        # print(datat_0c_Pr['program'])
+
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
                 "program_data": datat_0c_Pr['program']['longline'],
@@ -289,8 +290,8 @@ def logbook(request):
 def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    if datat_0c_Pr is not None and domaine != 'favicon.ico':
-        if domaine == "senne" : 
+    if datat_0c_Pr is not None:
+        if domaine == "senne" :
             looking_for = "seine"
         elif domaine == "palangre":
             looking_for = "longline"
@@ -328,7 +329,6 @@ def postProg_info(request):
         return JsonResponse({"message": "success", 
                              "domaine": request.session.get('dico_config')['domaine']})
     return JsonResponse({"message": "Veuillez ressayer svp."})
-
 
 def logbook_del_files(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -432,14 +432,12 @@ def file_upload_view2(request):
             # shutil.rmtree("../media/zipfiles/")
             print(m_file)
         else:
-            print("AAAAAAAAAAAAAAAAAAAAAAA")
+            print("A"*20)
     return render(request, "logbook.html",{"files": m_file})
 
 
 def file_upload_view(request):
-
     if request.method == "POST":
-
         file = request.FILES['file']
         fs = FileSystemStorage()
 
@@ -457,25 +455,17 @@ def file_upload_view(request):
 def get_data_extract(request):
 
     #_, data, _, messages = read_data(request.FILES.get('file'))
-
     # request.session.get('table_files').append(data.to_dict())
     # request.session['table_files'] = request.session.get('table_files')
-
     # dat = os.listdir("../media/zipfiles")
 
     if request.POST.get('submit'):
-
         messages = ''
-
         logbooks = os.listdir("media/logbooks")
-
         print(logbooks)
-
         # _, data, _, messages = read_data(request.FILES.get('file'))
-
         # m_file = request.session.get('table_files')
         # print("Submit: ", len(m_file))
-
         # request.session['table_files'] = []
 
         return render(request, "logbook.html",{"files": messages })
