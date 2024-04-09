@@ -25,7 +25,8 @@ def getToken(baseUrl, data):
             "config.databaseName": "database",
             "referentialLocale": "FR",
         }
-    """
+    """ 
+
     url = baseUrl + "/init/open"
     # data.update({"config.modelVersion": "9.0"})
     rep = requests.get(url, params=data)
@@ -57,6 +58,14 @@ def get_all_referential_data(token, module, baseUrl):
 def load_data(token, baseUrl, forceUpdate=False):
     print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
+    
+    # Si les dossiers ne sont pas existant, on les créés
+    if not os.path.exists("media/data"):
+        os.makedirs("media/data")
+
+    if not os.path.exists("media/temporary_files"):
+        os.makedirs("media/temporary_files")
+
     files = os.listdir("media/data")
 
     def subFunction(token, day, url):
@@ -91,21 +100,12 @@ def load_data(token, baseUrl, forceUpdate=False):
         # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
         ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)
-        gear = {'seine' :ps_common, 'longline':ll_common}
-        
-        #### Saving data common and longliners into media ####
-        palangre_syc.api.get_referential_ll()
-        palangre_syc.api.get_referential_common()
-        
-        
-
-        # allData = {**ref_common, **ps_logbook, **gear}
+        ll_common = get_all_referential_data(token, "ll/common", url)    
         
         print("="*20, "load_data SubFunction", "="*20)
         # print(ref_common[5:])
-        with open('allData_load.json', 'w', encoding='utf-8') as f:
-            json.dump(allData, f, ensure_ascii=False, indent=4)
+        # with open('allData_load.json', 'w', encoding='utf-8') as f:
+        #     json.dump(allData, f, ensure_ascii=False, indent=4)
         
         file_name = "media/data/data_" + str(day) + ".json"
 
@@ -115,6 +115,7 @@ def load_data(token, baseUrl, forceUpdate=False):
         return allData
 
     if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
+        
         last_date = files[0].split("_")[1].split(".")[0]
         last_file = files[0]
 
@@ -156,12 +157,12 @@ def load_data(token, baseUrl, forceUpdate=False):
 #                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
-def load_data2():
-    files = os.listdir("../media/data")
+def load_allData_file():
+    files = os.listdir("media/data")
 
-    file_name = "../media/data/" + files[0]
+    file_name = "media/data/" + files[0]
     # Opening JSON file
-    f = open(file_name)
+    f = open(file_name,  encoding='utf-8')
     # returns JSON object as  a dictionary
     allData = json.load(f)
 
@@ -176,8 +177,8 @@ def getId(allData, module, argment, nbArg=False, domaine=None):
         :param argment:
         :param domaine: "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
         :param nbArg: permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
-                     par defaut quand c'est False nous avons 1 argument en paramentre
-                     si c'est egale True, nous avons 2 arguments en parametre
+                    par defaut quand c'est False nous avons 1 argument en paramentre
+                    si c'est egale True, nous avons 2 arguments en parametre
         :return: Retourne ID d'un module en fonction des arguments donnés et un message
     """
     message = Id = ""

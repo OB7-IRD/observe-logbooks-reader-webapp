@@ -148,7 +148,7 @@ def get_one(token, url_base, topiaid):
     # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
 
     if response.status_code == 200 :
-        with open(file = "previoustrip.json", mode = "w") as outfile:
+        with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
             outfile.write(response.text)
         return response.content
     
@@ -210,7 +210,7 @@ def update_trip(token, data, url_base, topiaid):
     if res.status_code == 200:
         return ("Logbook inséré avec success", 1)
     else:
-        with open(file = "errorupdate.json", mode = "w") as outfile:
+        with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
             outfile.write(res.text)
 
 
@@ -245,7 +245,7 @@ def send_trip(token, data, url_base):
     if res.status_code == 200:
         return ("Logbook inséré avec success", 1)
     else:
-        with open(file = "error.json", mode = "w") as outfile:
+        with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
             outfile.write(res.text)
 
 
@@ -296,29 +296,6 @@ def table_trip(token, url_base, vessel_id, programme_topiaid):
     api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
     response = requests.get(api_trip_request, timeout=15)
     return response.content
-
-# def getone_trip(token, url_base, trip_topiaid):
-#     """ pour un trip topiaid donné, développe ce qu'il y a dedans
-
-#     Args:
-#         token
-#         url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
-#         trip_topiaid: topiaid avec '-' à la place des '#'
-
-#     Returns:
-#         json
-#     """    
-#     api_trip = '/data/ll/common/Trip/'
-#     auth = '?authenticationToken='
-#     api_trip_request = url_base + api_trip + trip_topiaid + auth + token
-
-#     try:
-#         response = requests.get(api_trip_request, timeout=15)
-#         response.raise_for_status()  # Raise an exception for bad responses (status codes >= 400)
-#         return response.content
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error occurred: {e}")
-#         return None
 
 
 def load_json_file(file_path):

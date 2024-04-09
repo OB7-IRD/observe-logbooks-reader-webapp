@@ -59,7 +59,7 @@ def auth_login(request):
         
         user = authenticate(request, username=username,  password=password)
 
-        print("="*20, "auth_login", "="*20)        
+        print("="*20, "auth_login", "="*20)
 
         if user is not None and user.is_active:
             print(user)
@@ -98,7 +98,6 @@ def auth_login(request):
                 except:
                     pass
             
-                
                 if (token != "") and (allData != []):
                     login(request, user)
                     request.session['token'] = token
@@ -345,6 +344,9 @@ def postProg_info(request):
 
 def logbook_del_files(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        if not os.path.exists("media/logbooks"):
+            os.makedirs("media/logbooks")
+
         logbooks_files = os.listdir("media/logbooks")
 
         if len(logbooks_files) > 0:
