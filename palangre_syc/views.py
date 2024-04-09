@@ -24,6 +24,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from palangre_syc import api
 from palangre_syc import json_construction
 from api_traitement import apiFunctions
+from webapps.models import User
 
 
 def del_empty_col(dataframe):
@@ -705,7 +706,7 @@ def research_dep(df_donnees_p1, allData, startDate):
         return False
 
 
-def get_previous_trip_infos(request, df_donnees_p1, allData):
+def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     """Fonction qui va faire appel au WS pour :
     1) trouver l'id du trip le plus récent pour un vessel et un programme donné
     et 2) trouver les informations rattachées à ce trip
@@ -718,7 +719,7 @@ def get_previous_trip_infos(request, df_donnees_p1, allData):
         dictionnaire: startDate, endDate, captain
     """
     
-    token = api.get_token()
+    # token = api.get_token()
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
@@ -873,14 +874,20 @@ def presenting_previous_trip(request):
         # with open('./data_common.json', 'r', encoding='utf-8') as f:
         #     data_common = json.load(f)
 
+        # on test le token, s'il est non valide, on le met à jour
+        token = request.session['token']
+        if not apiFunctions.is_valid(token):
+            username = request.session.get('username')
+            password = request.session.get('password')
+            print(username, password)
+            token  = apiFunctions.reloadToken(request, username, password)
+            request.session['token'] = token
+
         try :
             start_time = time.time()
-            df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, allData)
+            df_previous_trip = get_previous_trip_infos(request, token, df_donnees_p1, allData)
             end_time = time.time()
                 
-            print(df_previous_trip)
-            
-            
             print("Temps d'exécution:", end_time - start_time, "secondes")
             print("°"*20, "presenting_previous_trip - context updated", "°"*20)
             
@@ -922,8 +929,15 @@ def checking_logbook(request):
     # with open('./data_ll.json', 'r', encoding='utf-8') as f:
         # data_ll = json.load(f)
         
-    token = api.get_token()
-    print(token)
+    token = request.session['token']
+    if not apiFunctions.is_valid(token):
+        username = request.session.get('username')
+        password = request.session.get('password')
+        token  = apiFunctions.reloadToken(request, username, password)
+        request.session['token'] = token
+    
+    # token = api.get_token()
+    # print(token)
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     if request.method == 'POST':
@@ -1284,8 +1298,17 @@ def send_logbook2observe(request):
         print("="*80)
         print("Load JSON data file")
 
-        token = api.get_token()
-        print("token :", token)
+        # token = api.get_token()
+        # print("token :", token)
+
+        token = request.session['token']
+        if not apiFunctions.is_valid(token):
+            username = request.session.get('username')
+            password = request.session.get('password')
+            token  = apiFunctions.reloadToken(request, username, password)
+            request.session['token'] = token
+    
+
         url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
         print("="*80)

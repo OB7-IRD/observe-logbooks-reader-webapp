@@ -6,32 +6,71 @@ import openpyxl as op
 import numpy as np
 import requests
 import json
+import yaml
 
 from api_traitement.json_fonctions import *
-import palangre_syc
+
+from webapps.models import User
+from django.contrib.auth import authenticate
 
 
+########### Token ###########
 # Convert date
-def date_convert(time_to_convert):
-    return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
 
-
-# recuperer un token
 def getToken(baseUrl, data):
     """
+    Adelphe
     data = {
             "config.login": "username",
             "config.password": "password",
             "config.databaseName": "database",
             "referentialLocale": "FR",
         }
-    """ 
+    """
 
     url = baseUrl + "/init/open"
-    # data.update({"config.modelVersion": "9.0"})
-    rep = requests.get(url, params=data)
-    print(rep.url)
-    return rep.json()['authenticationToken']
+    response = requests.get(url, params=data)
+    print(response.url)
+    token = response.json()['authenticationToken']
+
+    return token
+
+
+def is_valid(token):
+    """ 
+    Clem
+    Fonction booléenne qui teste si le token est encore valide
+    Args:
+        token (str): _description_
+    """
+    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
+    # Constitution du lien url pour accéder à l'API et fermer la connexion
+    api_url = api_base + 'authenticationToken=' + token
+    response = requests.get(api_url)
+    print("reponse of is valid function ", response.status_code)
+    return response.status_code == 200
+
+
+def reloadToken(req, username, password):
+
+    user = authenticate(req, username=username,  password=password)
+    data_user = User.objects.get(username=user)
+
+    baseUrl = data_user.url
+    
+    print("data_user.database",data_user.database)
+    if data_user.database == 'test' :
+        data_user.username = 'technicienweb'
+                
+    data_user_connect = {
+        "config.login": data_user.username,
+        "config.login": data_user.username,
+        "config.password": password,
+        "config.databaseName": data_user.database,
+        "referentialLocale": data_user.ref_language,
+    }
+
+    return getToken(baseUrl, data_user_connect)
 
 
 # recuperer toutes les données de la senne
@@ -235,7 +274,94 @@ def search_in(allData, search="Ocean"):
     return prog_dic
 
 
-# Traitement du logbook
+
+def getSome(allData, module, argment):
+    """
+    Permet de retouner un element(==> dictionnaire) du module sous forme de tableau
+    """
+    tempDic = dico = {}
+    dataKey = [k for (k, v) in allData.items()]
+
+    if module in dataKey:
+        tempDic = allData[module]
+        # print(tempDic)
+        argments = argment.split("=")
+        for val in tempDic:
+            if val[argments[0]].lower() == argments[1].lower():
+                dico = val
+
+    return [dico]
+
+
+def getAll(allData, module, type_data="dictionnaire"):
+    """
+        Permet de retourner un dictionnaire ou un tableau
+    """
+    if type_data == "tableau":
+        tab = []
+        for val in allData[module]:
+            tab.append((val["topiaId"], val["label1"]))
+
+        return tab
+    else:
+        dico = {}
+        for val in allData[module]:
+            dico[val["code"]] = val["topiaId"]
+
+        return dico
+
+
+# Fonction typique
+def getId_Data(token, url, moduleName, argment, route):
+    """
+    Permet de retourner un id en fonction du module et de la route envoyé
+    """
+    headers = {
+        "Content-Type": "application/json",
+        'authenticationToken': token
+    }
+
+    urls = url + route + moduleName + "?filters." + argment
+    rep = requests.get(urls, headers=headers)
+
+    # print(rep.url)
+
+    if rep.status_code == 200:
+        return json.loads(rep.text)["content"][0]["topiaId"]
+    else:
+        return json.loads(rep.text)["message"]
+
+
+def check_trip(token, content, url_base):
+    """
+    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
+    """
+    start = content["startDate"].replace("T00:00:00.000Z", "")
+    end = content["endDate"].replace("T00:00:00.000Z", "")
+
+    vessel_id = content["vessel"].replace("#", "-")
+
+    # print(start, end, vessel_id)
+
+    id_ = ""
+    ms_ = True
+
+    try:
+        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
+                         argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
+    except:
+        ms_ = False
+
+    return id_, ms_
+
+
+
+########### a supprimer ? fonction non utilisée
+def date_convert(time_to_convert):
+    return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
+
+
+########### Traitement du logbook SENNE ########### 
 def traiLogbook2(logB):
     # Chargement du fichier
     # wb = Workbook()
@@ -255,7 +381,6 @@ def traiLogbook2(logB):
     else:
         return {
             }
-
 
 # Traitement du logbook
 def traiLogbook(logB):
@@ -351,12 +476,10 @@ def traiLogbook(logB):
 
     return info_bat, df_data, observ, ''
 
-
 def read_data(file):
     info_bat, data_bat, obs, message = traiLogbook(file)
 
     return info_bat, data_bat, obs, message
-
 
 def read_data2(file):
     try:
@@ -472,50 +595,6 @@ def lat_long(lat1, lat2, lat3, long1, long2, long3):
 # wind:"fr.ird.referential.common.Wind#1239832686605#0.561188597983181" Ecris le scrit pour le vent pour verifier si la vitesse du vent correspond a l'interval dans la base
 
 
-# Fonction typique
-def getId_Data(token, url, moduleName, argment, route):
-    """
-    Permet de retourner un id en fonction du module et de la route envoyé
-    """
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
-
-    urls = url + route + moduleName + "?filters." + argment
-    rep = requests.get(urls, headers=headers)
-
-    # print(rep.url)
-
-    if rep.status_code == 200:
-        return json.loads(rep.text)["content"][0]["topiaId"]
-    else:
-        return json.loads(rep.text)["message"]
-
-
-def check_trip(token, content, url_base):
-    """
-    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
-    """
-    start = content["startDate"].replace("T00:00:00.000Z", "")
-    end = content["endDate"].replace("T00:00:00.000Z", "")
-
-    vessel_id = content["vessel"].replace("#", "-")
-
-    # print(start, end, vessel_id)
-
-    id_ = ""
-    ms_ = True
-
-    try:
-        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
-                         argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
-    except:
-        ms_ = False
-
-    return id_, ms_
-
-
 def get_wind_id_interval(allData, module, windSpeed):
     """
         Permet de retourner .......
@@ -531,42 +610,6 @@ def get_wind_id_interval(allData, module, windSpeed):
             except:
                 return None
     return None
-
-
-def getSome(allData, module, argment):
-    """
-    Permet de retouner un element(==> dictionnaire) du module sous forme de tableau
-    """
-    tempDic = dico = {}
-    dataKey = [k for (k, v) in allData.items()]
-
-    if module in dataKey:
-        tempDic = allData[module]
-        # print(tempDic)
-        argments = argment.split("=")
-        for val in tempDic:
-            if val[argments[0]].lower() == argments[1].lower():
-                dico = val
-
-    return [dico]
-
-
-def getAll(allData, module, type_data="dictionnaire"):
-    """
-        Permet de retourner un dictionnaire ou un tableau
-    """
-    if type_data == "tableau":
-        tab = []
-        for val in allData[module]:
-            tab.append((val["topiaId"], val["label1"]))
-
-        return tab
-    else:
-        dico = {}
-        for val in allData[module]:
-            dico[val["code"]] = val["topiaId"]
-
-        return dico
 
 
 def fpaZone_id(chaine, tableau, allData):

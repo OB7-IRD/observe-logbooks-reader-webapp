@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
 from api_traitement.apiFunctions import *
+from palangre_syc import api
 from .form import UserForm
 from django.contrib import messages
 from .models import User
@@ -26,26 +27,26 @@ def register(request):
             messages.error(request, form.errors)
     return render(request, "register.html", {"form": form})
 
-def relordToken(req, username, password):
+# def reloadToken(req, username, password):
 
-    user = authenticate(req, username=username,  password=password)
-    data_user = User.objects.get(username=user)
+#     user = authenticate(req, username=username,  password=password)
+#     data_user = User.objects.get(username=user)
 
-    baseUrl = data_user.url
+#     baseUrl = data_user.url
     
-    print(data_user.database)
-    if data_user.database == 'test' :
-        data_user.username = 'technicienweb'
+#     print(data_user.database)
+#     if data_user.database == 'test' :
+#         data_user.username = 'technicienweb'
                 
-    data_user_connect = {
-        "config.login": data_user.username,
-        "config.login": data_user.username,
-        "config.password": password,
-        "config.databaseName": data_user.database,
-        "referentialLocale": data_user.ref_language,
-    }
+#     data_user_connect = {
+#         "config.login": data_user.username,
+#         "config.login": data_user.username,
+#         "config.password": password,
+#         "config.databaseName": data_user.database,
+#         "referentialLocale": data_user.ref_language,
+#     }
 
-    return getToken(baseUrl, data_user_connect)
+#     return getToken(baseUrl, data_user_connect)
 
 def auth_login(request):
     message = ""
@@ -74,7 +75,7 @@ def auth_login(request):
                 
                 if basename == 'test-proto.ird.fr' :
                     data_user.username = 'technicienweb'
-                    print(user , data_user)
+                    request.session['username'] = data_user.username 
                 
                 print("_"*20, "baseUrl", "_"*20)
                 
@@ -129,7 +130,7 @@ def auth_login(request):
 def update_data(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = relordToken(request, username, password)
+    token  = reloadToken(request, username, password)
     baseUrl = request.session.get('baseUrl')
 
     allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
@@ -360,7 +361,7 @@ def domaineSelect(request):
 def sendData(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = relordToken(request, username, password)
+    token  = reloadToken(request, username, password)
     baseUrl = request.session.get('baseUrl')
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':

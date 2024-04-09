@@ -62,7 +62,6 @@ def get_vessel_topiaid(df_donnees_p1, allData):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    print("%"*15, "get vessel topiaid", "%"*15)
     vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     #vessel_logbook = vessel_logbook.strip()
     for vessel in allData["Vessel"]:
