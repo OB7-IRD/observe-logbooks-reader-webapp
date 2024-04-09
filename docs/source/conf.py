@@ -35,6 +35,7 @@ author = "Adelphe N'Goran, Clémentine Violette, Pascal Cauquil, Julien Lebranch
 
 extensions = [
     "sphinx.ext.autodoc",
+    'sphinx.ext.napoleon',
     "sphinx.ext.doctest",
     "sphinx.ext.coverage",
     "sphinx.ext.duration",
@@ -172,4 +173,12 @@ html_css_files = ["custom.css"]
 # use additional pages to add a 404 page
 html_additional_pages = {
     "404": "404.html",
+}
+
+autodoc_mock_imports = ['django']
+
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,
+    'show-inheritance': True,
 }

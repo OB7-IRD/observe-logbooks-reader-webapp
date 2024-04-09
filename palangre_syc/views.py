@@ -23,6 +23,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 
 from palangre_syc import api
 from palangre_syc import json_construction
+from api_traitement import apiFunctions
 
 
 def del_empty_col(dataframe):
@@ -39,56 +40,29 @@ def del_empty_col(dataframe):
     dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
     return dataframe
 
-
 def strip_if_string(element):
-    '''
+    """
     Fonction qui applique la fonction python strip() si l'élement est bien de type texte
-    '''
+    """
     return element.strip() if isinstance(element, str) else element
 
-
 def remove_spec_char(char):
-    '''
+    """
     Fonction qui élimine les caractères non ascii
-    '''
+    """
     return re.sub("[^A-Z ]", "", str(char), 0, re.IGNORECASE)
 
-
 def remove_spec_char_from_list(char_list):
-    '''
-    Applique remove_spec_char à chaque élément d'une liste de chaînes
-    '''
+    """
+    Fonction qui applique remove_spec_char à chaque élément d'une liste de chaînes
+    """
     return [remove_spec_char(item) for item in char_list]
 
-
 def np_removing_semicolon(numpy_table, num_col):
-    '''
-    Fonction qui prend une numpy table et ne retourne 
-    que la partie avant les deux point de la colonne demandée
-    '''
-    return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
-
-
-def dms_to_decimal2(degrees, minutes, direction):
-    """Transforme des degrés minutes secondes en décimal
-
-    Args:
-        degrees (int), minutes (int): value
-        direction (str): N S E W
-
-    Returns:
-        float: value
     """
-    if degrees is None:
-        return None
-
-    # if type(degrees) is str:
-    degrees = int(degrees)
-    minutes = int(minutes)
-    decimal_degrees = degrees + minutes / 60.0
-    if direction in ['S', 'W']:
-        decimal_degrees *= -1
-    return decimal_degrees
+    Fonction qui prend une numpy table et ne retourne que la partie avant les deux point (:) de la colonne demandée
+    """
+    return np.array([s.partition(':')[num_col].strip() for s in numpy_table[:, num_col]])
 
 def dms_to_decimal(degrees, minutes, direction):
     """Transforme des degrés minutes secondes en décimal
@@ -108,16 +82,14 @@ def dms_to_decimal(degrees, minutes, direction):
     return decimal_degrees
 
 def convert_to_time_or_text(value):
-    '''
-    Fonction qui convertit la cellule en time
-    si elle est au format type time ou date dans le excel
+    """
+    Fonction qui converti la cellule en time si elle est au format type time ou date dans le excel
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
-    '''
-    # print("heure askip : ", value)
+    """
     if isinstance(value, str):
         # print("="*3, value)
         if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
-            print("first match")
+            #print("first match")
             # return date_time.strftime('%H:%M:%S')
             return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         elif re.match("[0-9]{2}:[0-9]{2}", value.strip()):
@@ -149,11 +121,10 @@ def zero_if_empty(value):
     else:
         return int(value)
 
-
-def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
+def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=None):
     """
     Fonction générale qui retourne le label output pour un topiad donné 
-    dans la base common ou lognliner
+    dans la base common ou longliner
 
     Args:
         topiad
@@ -164,29 +135,30 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
     Returns:
         nom souhaité associé au topotiad
     """
-    if domaine is None:
-        with open('./data_common.json', 'r', encoding='utf-8') as f:
-            data_common = json.load(f)
-        category = 'fr.ird.observe.entities.referential.common.' + lookingfor
-        if data_common['content'][category] is not None:
-            for element in data_common['content'][category]:
+    
+    if lookingfor == 'VesselActivity' or lookingfor == 'Program':
+        if domaine is None :
+            print("Error il faut préciser un domaine")
+            return None
+        else :
+            if domaine == 'palangre':
+                domaine_en = str('longline')
+            else:
+                domaine_en = str('seine')
+            
+            for element in allData[lookingfor][domaine_en]: 
+                if element['topiaId'] == topiaid:
+                    return element[label_output]
+        
+    else:
+        if allData[lookingfor] is not None:
+            for element in allData[lookingfor]:
                 if element['topiaId'] == topiaid:
                     return element[label_output]
         else:
-            print("please do check the orthographe of lookingfor element")
+            print("please do check the orthographe of looking for element")
             return None
 
-    else:
-        with open('./data_ll.json', 'r', encoding='utf-8') as f:
-            data_ll = json.load(f)
-        category = 'fr.ird.observe.entities.referential.ll.common.' + lookingfor
-        if data_ll['content'][category] is not None:
-            for element in data_ll['content'][category]:
-                if element['topiaId'] == topiaid:
-                    return element[label_output]
-        else:
-            print("please do check the orthographe of lookingfor element")
-            return None
 
 
 
@@ -194,12 +166,16 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, domaine=None):
 
 
 def read_excel(file_path, num_page):
-    ''' 
-    Fonction qui prend en argument un chemin d'accès d'un document excel 
-    et un numéro de page à extraire
-    et qui renvoie un tableau (dataframe) des données 
-    Attention -- num_page correspond au numéro de la page (1, 2 etc ...)
-    '''
+    """ 
+    Fonction qui extrait les informations d'un fichier excel en dataframe
+
+    Args:
+        file_path: lien vers le fichier contenant le logbook
+        num_page (int): numéro de page à extraire (1, 2 etc ...)
+
+    Returns:
+        (dataframe): du fichier excel
+    """
     classeur = openpyxl.load_workbook(filename=file_path, data_only=True)
     noms_feuilles = classeur.sheetnames
     feuille = classeur[noms_feuilles[num_page - 1]]
@@ -223,7 +199,7 @@ def extract_vessel_info(df_donnees):
     # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
     df_vessel_clean = df_vessel.str.split(':', expand=True)
     # S'assurer que toutes les valeurs sont des chaînes de caractères
-    df_vessel_clean = df_vessel_clean.map(lambda x: str(x).strip() if x is not None else '')
+    df_vessel_clean = df_vessel_clean.applymap(lambda x: str(x).strip() if x is not None else '')
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
@@ -321,7 +297,7 @@ def extract_gear_info(df_donnees):
     Returns:
         df
     """
-     # On extrait les données 
+    # On extrait les données 
     df_gear = df_donnees.iloc[12:16, 11:21]
 
     # On supprimes les colonnes qui sont vides
@@ -524,15 +500,18 @@ def extract_positions(df_donnees):
 
     return df_position
 
-def get_vessel_activity_topiaid(startTimeStamp, data_ll):
-    '''
-    Fonction qui prend en argument une heure de depart
-    et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
-    cad si'il y a une heure - on est en activité de pêche,
-    En revanche si c'est du texte qui contient "CRUIS" alors on est en cruise, 
-    et s'il contient 'PORT' alors le bateau est au port 
-    'FISHING
-    '''
+def get_vessel_activity_topiaid(startTimeStamp, allData):
+    """
+    Fonction qui prend en argument une heure de depart et qui donne un topiaID de VesselActivity en fonction du type et du contenu de l'entrée
+    
+    Args:
+        startTimeStamp (date): information horaire - si type date alors Fishing operation, sinon on regarde le texte dans la cellule
+        allData (json): données de références
+
+    Returns:
+        topiaID de l'activité détectée
+    """
+
     if ":" in str(startTimeStamp):
         code = "FO"
 
@@ -548,14 +527,14 @@ def get_vessel_activity_topiaid(startTimeStamp, data_ll):
     else:
         code = "OTH"
 
-    vessel_activities = data_ll["content"]["fr.ird.observe.entities.referential.ll.common.VesselActivity"]
+    vessel_activities = allData["VesselActivity"]["longline"]
     for vessel_activity in vessel_activities:
         if vessel_activity.get("code") == code:
             return vessel_activity["topiaId"], vessel_activity["label1"]
 
     return None
 
-def extract_time(df_donnees, data_ll):
+def extract_time(df_donnees, allData):
     """
     Extraction des cases relatives aux horaires des coups de pêche
     
@@ -576,7 +555,7 @@ def extract_time(df_donnees, data_ll):
     vessel_activities = np.empty((len(day), 1), dtype=object)
     for ligne in range(len(day)):
         vessel_activity = get_vessel_activity_topiaid(
-            df_time.iloc[ligne]['Time'], data_ll)
+            df_time.iloc[ligne]['Time'], allData)
         vessel_activities[ligne, 0] = vessel_activity[0]
     np_time = np.column_stack((day, df_time, vessel_activities))
     df_time = pd.DataFrame(np_time, columns=['Day', 'Time', 'VesselActivity'])
@@ -593,6 +572,7 @@ def extract_temperature(df_donnees):
     Returns:
         df
     """
+
     df_temp = df_donnees.iloc[24:55, 8:9]
     colnames = ['Température']
     df_temp.columns = colnames
@@ -641,7 +621,7 @@ def extract_fish_p1(df_donnees):
                 'No RET XXX', 'Kg RET XXX']
     
     df_fishes.columns = colnames
-    df_fishes = df_fishes.map(zero_if_empty)
+    df_fishes = df_fishes.applymap(zero_if_empty)
     df_fishes.reset_index(drop=True, inplace=True)
     
     return df_fishes
@@ -679,273 +659,41 @@ def extract_bycatch_p2(df_donnees):
                 'No ESC TTX', 'No DIS TTX']
     
     df_bycatch.columns = colnames
-    df_bycatch = df_bycatch.map(zero_if_empty)
+    df_bycatch = df_bycatch.applymap(zero_if_empty)
     df_bycatch.reset_index(drop=True, inplace=True)
     
     return df_bycatch
     
-    
-def extract_tunas(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tunas 
-    '''
-    df_tunas = df_donnees.iloc[24:55, 12:20]
-    colnames = ['No RET SBF', 'Kg RET SBF',
-                'No RET ALB', 'Kg RET ALB',
-                'No RET BET', 'Kg RET BET',
-                'No RET YFT', 'Kg RET YFT']
-    df_tunas.columns = colnames
-    # print(df_tunas)
-    df_tunas = df_tunas.map(strip_if_string)
-    df_tunas = df_tunas.map(zero_if_empty)
-    # print(df_tunas)
-    df_tunas.reset_index(drop=True, inplace=True)
-    return df_tunas
 
-
-def extract_billfishes(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les billfishes 
-    '''
-    df_billfishies = df_donnees.iloc[24:55, 20:32]
-    colnames = ['No RET SWO', 'Kg RET SWO',
-                'No RET MLS', 'Kg RET MLS',
-                'No RET BUM', 'Kg RET BUM',
-                'No RET BLM', 'Kg RET BLM',
-                'No RET SFA', 'Kg RET SFA',
-                'No RET SSP', 'Kg RET SSP']
-    df_billfishies.columns = colnames
-
-    df_billfishies = df_billfishies.map(zero_if_empty)
-
-    df_billfishies.reset_index(drop=True, inplace=True)
-    return df_billfishies
-
-
-def extract_otherfish(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les autres poissons 
-    '''
-    df_otherfish = df_donnees.iloc[24:55, 32:36]
-    colnames = ['No RET OIL', 'Kg RET OIL',
-                'No RET XXX', 'Kg RET XXX']
-    df_otherfish.columns = colnames
-
-    df_otherfish = df_otherfish.map(zero_if_empty)
-
-    df_otherfish.reset_index(drop=True, inplace=True)
-    return df_otherfish
-
-
-def extract_sharksFAL(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les blacks sharks 
-    '''
-    df_sharksFAL = df_donnees.iloc[15:46, 1:5]
-    colnames = ['No RET FAL', 'Kg RET FAL',
-                'No ESC FAL', 'No DIS FAL']
-    df_sharksFAL.columns = colnames
-
-    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
-
-    df_sharksFAL.reset_index(drop=True, inplace=True)
-    return df_sharksFAL
-
-
-def extract_sharksBSH(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les blue sharks 
-    '''
-    df_sharksBSH = df_donnees.iloc[15:46, 5:9]
-    colnames = ['No RET BSH', 'Kg RET BSH',
-                'No ESC BSH', 'No DIS BSH']
-    df_sharksBSH.columns = colnames
-
-    df_sharksBSH = df_sharksBSH.map(zero_if_empty)
-
-    df_sharksBSH.reset_index(drop=True, inplace=True)
-    return df_sharksBSH
-
-
-def extract_sharksMAK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les Mako 
-    '''
-    df_sharksMAK = df_donnees.iloc[15:46, 9:13]
-    colnames = ['No RET MAK', 'Kg RET MAK',
-                'No ESC MAK', 'No DIS MAK']
-    df_sharksMAK.columns = colnames
-
-    df_sharksMAK = df_sharksMAK.map(zero_if_empty)
-
-    df_sharksMAK.reset_index(drop=True, inplace=True)
-    return df_sharksMAK
-
-
-def extract_sharksMSK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
-    '''
-    df_sharksSPN = df_donnees.iloc[15:46, 13:17]
-    colnames = ['No RET MSK', 'Kg RET MSK',
-                'No ESC MSK', 'No DIS MSK']
-    df_sharksSPN.columns = colnames
-
-    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
-
-    df_sharksSPN.reset_index(drop=True, inplace=True)
-    return df_sharksSPN
-
-
-def extract_sharksSPN(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les hammer head sharks 
-    '''
-    df_sharksSPN = df_donnees.iloc[15:46, 17:21]
-    colnames = ['No RET SPN', 'Kg RET SPN',
-                'No ESC SPN', 'No DIS SPN']
-    df_sharksSPN.columns = colnames
-
-    df_sharksSPN = df_sharksSPN.map(zero_if_empty)
-
-    df_sharksSPN.reset_index(drop=True, inplace=True)
-    return df_sharksSPN
-
-
-def extract_sharksTIG(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les tiger sharks 
-    '''
-    df_sharksTIG = df_donnees.iloc[15:46, 21:25]
-    colnames = ['No RET TIG', 'Kg RET TIG',
-                'No ESC TIG', 'No DIS TIG']
-    df_sharksTIG.columns = colnames
-
-    df_sharksTIG = df_sharksTIG.map(zero_if_empty)
-
-    df_sharksTIG.reset_index(drop=True, inplace=True)
-    return df_sharksTIG
-
-
-def extract_sharksPSK(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les crocodile sharks 
-    '''
-    df_sharksPSK = df_donnees.iloc[15:46, 25:29]
-    colnames = ['No RET PSK', 'Kg RET PSK',
-                'No ESC PSK', 'No DIS PSK']
-
-    df_sharksPSK.columns = colnames
-
-    df_sharksPSK = df_sharksPSK.map(zero_if_empty)
-
-    df_sharksPSK.reset_index(drop=True, inplace=True)
-    return df_sharksPSK
-
-
-def extract_sharksTHR(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les thresher sharks 
-    '''
-    df_sharksFAL = df_donnees.iloc[15:46, 29:31]
-    colnames = ['No ESC THR', 'No DIS THR']
-    df_sharksFAL.columns = colnames
-
-    df_sharksFAL = df_sharksFAL.map(zero_if_empty)
-
-    df_sharksFAL.reset_index(drop=True, inplace=True)
-    return df_sharksFAL
-
-
-def extract_sharksOCS(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les oceanic sharks 
-    '''
-    df_sharksOCS = df_donnees.iloc[15:46, 31:33]
-    colnames = ['No ESC OCS', 'No DIS OCS']
-    df_sharksOCS.columns = colnames
-
-    df_sharksOCS = df_sharksOCS.map(zero_if_empty)
-
-    df_sharksOCS.reset_index(drop=True, inplace=True)
-    return df_sharksOCS
-
-
-def extract_mammals(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les autres mammifères marins 
-    '''
-    df_mammals = df_donnees.iloc[15:46, 33:35]
-    colnames = ['No ESC MAM', 'No DIS MAM']
-    df_mammals.columns = colnames
-    df_mammals = df_mammals.map(zero_if_empty)
-
-    df_mammals.reset_index(drop=True, inplace=True)
-    return df_mammals
-
-
-def extract_seabird(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les sea birds
-    '''
-    df_seabird = df_donnees.iloc[15:46, 35:37]
-    colnames = ['No ESC SBD', 'No DIS SBD']
-    df_seabird.columns = colnames
-
-    df_seabird = df_seabird.map(zero_if_empty)
-
-    df_seabird.reset_index(drop=True, inplace=True)
-    return df_seabird
-
-
-def extract_turtles(df_donnees):
-    '''
-    Fonction qui extrait et présente dans un dataframe les infos sur les torutes 
-    '''
-    df_turtles = df_donnees.iloc[15:46, 37:39]
-    colnames = ['No ESC TTX', 'No DIS TTX']
-    df_turtles.columns = colnames
-
-    df_turtles = df_turtles.map(zero_if_empty)
-
-    df_turtles.reset_index(drop=True, inplace=True)
-    return df_turtles
-
-
-def get_list_harbours(data_common):
+def get_list_harbours(allData):
     """
     Args:
-        data_common
+        allData
 
     Returns:
         list: all the enabled ports (topiaId and label2)
     """
-    harbours = data_common["content"]["fr.ird.observe.entities.referential.common.Harbour"]
-    list_harbours = []
-    # for harbour in harbours:
-    #     if harbour.get('status') == 'enabled':
-    #         list_harbours.append({'topiaId': harbour.get(
-    #             'topiaId'), 'label2': harbour.get('label2')})
-    # sorted_list_harbours = sorted(list_harbours, key=lambda x: x['label2'])
+
+    harbours = allData["Harbour"]
     sorted_list_harbours = [{'topiaId': harbour.get('topiaId'), 'label2': harbour.get('label2')} 
                         for harbour in harbours if harbour.get('status') == 'enabled']
     sorted_list_harbours.sort(key=lambda x: x['label2'])
 
     return sorted_list_harbours
 
-def research_dep(df_donnees_p1, data_ll, startDate):
+def research_dep(df_donnees_p1, allData, startDate):
     """
     Fonction qui recherche si 'dep' est présent dans la case à la date donnée par l'utilisateur
 
     Args:
         df_donnees_p1 (dataframe): _description_
-        data_ll (dataframe): données de références
+        allData (dataframe): données de références
         startDate (date): saisie par l'utilisateur quand on créé une marée
 
     Returns:
         bool: True si la date saisie correspond à un departure, False si non
     """
-    data = extract_time(df_donnees=df_donnees_p1, data_ll=data_ll)
+    data = extract_time(df_donnees=df_donnees_p1, allData=allData)
     # print("#"*20, "research_dep function", "#"*20)
     day = startDate[8:10] 
     dep_rows = data[data['Time'].str.lower().str.contains('dep', case=False, na=False)]
@@ -955,114 +703,26 @@ def research_dep(df_donnees_p1, data_ll, startDate):
         return str(dep_dates.values[0]) in str(day)
     else:
         return False
+
+
+def get_previous_trip_infos(request, df_donnees_p1, allData):
+    """Fonction qui va faire appel au WS pour :
+    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
+    et 2) trouver les informations rattachées à ce trip
+
+    Args:
+        request (_type_): _description_
+        df_donnees_p1 (_type_): _description_
+
+    Returns:
+        dictionnaire: startDate, endDate, captain
+    """
     
-
-def get_previous_trip_infos2(request, df_donnees_p1, data_common):
-    """Fonction qui va faire appel au WS pour :
-    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
-    et 2) trouver les informations rattachées à ce trip
-
-    Args:
-        request (_type_): _description_
-        df_donnees_p1 (_type_): _description_
-
-    Returns:
-        dictionnaire: startDate, endDate, captain
-    """
-
     token = api.get_token()
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = json_construction.get_vessel_topiaid(
-        df_donnees_p1, data_common)
-    # Pour le webservice, il faut remplacer les # par des - dans les topiaid
-    vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
-    programme_topiaid = request.session.get('dico_config')['programme']
-    programme_topiaid_ws = programme_topiaid.replace("#", "-")
-
-    print("="*20, vessel_topiaid_ws, "="*20)
-    print("="*20, programme_topiaid_ws, "="*20)
-
-    previous_trip = api.trip_for_prog_vessel(
-        token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
-    # on récupères les informations uniquement pour le trip avec la endDate la plus récente
-    parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
-
-    if parsed_previous_trip['content'] != []:
-        # Prévoir le cas ou le vessel n'a pas fait de trip avant
-        trip_topiaid = parsed_previous_trip['content'][0]['topiaId'].replace(
-            "#", "-")
-        print("="*20, trip_topiaid, "="*20)
-
-        # on récupère les infos du trip enregistré dans un fichier json
-        api.get_one(token, url_base, trip_topiaid)
-
-        json_previoustrip = api.load_json_file("previoustrip.json")
-        # print(json_previoustrip)
-
-        # On récupère les infos que l'on voudra afficher
-        trip_info = json_previoustrip['content'][0]
-
-        captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
-                                             lookingfor='Person',
-                                             label_output='lastName',
-                                             domaine=None)
-
-        vessel_name = from_topiaid_to_value(topiaid=vessel_topiaid,
-                                            lookingfor='Vessel',
-                                            label_output='label2',
-                                            domaine=None)
-
-        dico_trip_infos = {'startDate': trip_info['startDate'],
-                           'endDate': trip_info['endDate'],
-                           'captain': captain_name,
-                           'vessel': vessel_name,
-                           'triptopiaid': trip_topiaid}
-
-        try:
-            departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
-                                                      lookingfor='Harbour',
-                                                      label_output='label2',
-                                                      domaine=None)
-
-            dico_trip_infos.update({
-                'depPort': departure_harbour,
-                'depPort_topiaid': trip_info['departureHarbour'],
-            })
-
-        except KeyError:
-            # departure_harbour = 'null'
-
-            dico_trip_infos.update({
-                'depPort': 'null',
-                'depPort_topiaid': 'null',
-            })
-
-        return dico_trip_infos
-
-    else:
-        return None
-
-
-def get_previous_trip_infos(request, df_donnees_p1, data_common):
-    """Fonction qui va faire appel au WS pour :
-    1) trouver l'id du trip le plus récent pour un vessel et un programme donné
-    et 2) trouver les informations rattachées à ce trip
-
-    Args:
-        request (_type_): _description_
-        df_donnees_p1 (_type_): _description_
-
-    Returns:
-        dictionnaire: startDate, endDate, captain
-    """
-
-    token = api.get_token()
-    url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
-
-    # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
-    vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, data_common)
+    vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, allData)
     # Pour le webservice, il faut remplacer les # par des - dans les topiaid
     vessel_topiaid_ws = vessel_topiaid.replace("#", "-")
     programme_topiaid = request.session.get('dico_config')['programme']
@@ -1092,9 +752,10 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
             if 'departureHarbour' in trip_info['content'][0]:
                 depPort = trip_info['content'][0]['departureHarbour']
                 depPort_name = from_topiaid_to_value(topiaid=depPort,
-                                  lookingfor='Harbour',
-                                  label_output='label2',
-                                  domaine=None)
+                                lookingfor='Harbour',
+                                label_output='label2',
+                                allData=allData,
+                                domaine=None)
             else : 
                 depPort = None
                 depPort_name = None
@@ -1102,72 +763,38 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
             if 'landingHarbour' in trip_info['content'][0]:
                 endPort = trip_info['content'][0]['landingHarbour']
                 endPort_name = from_topiaid_to_value(topiaid=endPort,
-                                  lookingfor='Harbour',
-                                  label_output='label2',
-                                  domaine=None)
+                                lookingfor='Harbour',
+                                label_output='label2',
+                                allData=allData,
+                                domaine=None)
             else : 
                 endPort = None
                 endPort_name = None
             
-            ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
-                                  lookingfor='Ocean',
-                                  label_output='label2',
-                                  domaine=None)
+            if request.LANGUAGE_CODE == 'fr':
+                ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
+                                lookingfor='Ocean',
+                                label_output='label2',
+                                allData=allData,
+                                domaine=None)
+            elif request.LANGUAGE_CODE == 'en':
+                ocean = from_topiaid_to_value(topiaid=trip_info['content'][0]['ocean'],
+                                lookingfor='Ocean',
+                                label_output='label1',
+                                allData=allData,
+                                domaine=None)
         
-            trip_info_row = [trip_info['content'][0]['topiaId'], 
+            trip_info_row = [trip_info['content'][0]['topiaId'],
                             trip_info['content'][0]['startDate'],
-                            depPort, 
-                            depPort_name, 
+                            depPort,
+                            depPort_name,
                             trip_info['content'][0]['endDate'],
                             endPort,
                             endPort_name,
-                            ocean]
+                            ocean] # type: ignore
             
             df_trip.loc[num_trip] = trip_info_row
             
-        ####### Optimisation GPT 
-        # trips_info = []
-
-        # for trip in parsed_previous_trip['content']:
-        #     trip_topiaid = trip['topiaId'].replace("#", "-")
-        #     trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
-        #     trip_data = trip_info['content'][0]
-
-        #     depPort = trip_data.get('departureHarbour')
-        #     depPort_name = None
-        #     if depPort:
-        #         depPort_name = from_topiaid_to_value(topiaid=depPort,
-        #                                               lookingfor='Harbour',
-        #                                               label_output='label2',
-        #                                               domaine=None)
-
-        #     endPort = trip_data.get('landingHarbour')
-        #     endPort_name = None
-        #     if endPort:
-        #         endPort_name = from_topiaid_to_value(topiaid=endPort,
-        #                                               lookingfor='Harbour',
-        #                                               label_output='label2',
-        #                                               domaine=None)
-
-        #     ocean = from_topiaid_to_value(topiaid=trip_data['ocean'],
-        #                                   lookingfor='Ocean',
-        #                                   label_output='label2',
-        #                                   domaine=None)
-
-        #     trip_info_row = [trip_data['topiaId'], 
-        #                      trip_data['startDate'],
-        #                      depPort, 
-        #                      depPort_name, 
-        #                      trip_data['endDate'],
-        #                      endPort,
-        #                      endPort_name,
-        #                      ocean]
-
-        #     trips_info.append(trip_info_row)
-
-        # df_trip = pd.DataFrame(trips_info, columns=["triptopiaid", "startDate", "depPort_topiad", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
-        
-    
         return(df_trip)
     
     else:
@@ -1178,30 +805,52 @@ def get_previous_trip_infos(request, df_donnees_p1, data_common):
 DIR = "./media/logbooks"
 
 
-def presenting_previous_trip(request):
 
+def presenting_previous_trip(request):
+    """Function that get all the trip associated to the vessel and the program selected
+
+    Args:
+        request
+
+    Returns:
+        html page with a table of the existings trips in observe
+    """
+    # est ce qu'on ne peut pas la mettre en variable globale ?
+    allData = apiFunctions.load_allData_file()
 
     if 'context' in request.session:
-        # print("+"*50, "Avant que tout commence", "+"*50)
-        # print(request.session['context'])
-        # print("+"*50, "Avant que tout commence", "+"*50)
-        del request.session['context'] 
+        del request.session['context']
         
     selected_file = request.GET.get('selected_file')
     apply_conf = request.session.get('dico_config')
 
     print("="*20, "presenting_previous_trip", "="*20)
-    # print("apply conf : ", apply_conf)
 
-    programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
-                                      lookingfor='Program',
-                                      label_output='label2',
-                                      domaine='palangre')
+    if request.LANGUAGE_CODE == 'fr':
+        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label2',
+                                        allData=allData,
+                                        domaine='palangre')
 
-    ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
-                                  lookingfor='Ocean',
-                                  label_output='label2',
-                                  domaine=None)
+        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                    lookingfor='Ocean',
+                                    label_output='label2',
+                                    allData=allData,
+                                    domaine=None)
+        
+    elif request.LANGUAGE_CODE == 'en':
+        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label1',
+                                        allData=allData,
+                                        domaine='palangre')
+
+        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                    lookingfor='Ocean',
+                                    label_output='label1',
+                                    allData=allData,
+                                    domaine=None)
 
     context = {'domaine': apply_conf['domaine'],
                 'program': programme,
@@ -1221,13 +870,12 @@ def presenting_previous_trip(request):
 
         df_donnees_p1 = read_excel(file_path, 1)
 
-        with open('./data_common.json', 'r', encoding='utf-8') as f:
-            data_common = json.load(f)
-
+        # with open('./data_common.json', 'r', encoding='utf-8') as f:
+        #     data_common = json.load(f)
 
         try :
             start_time = time.time()
-            df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, data_common)
+            df_previous_trip = get_previous_trip_infos(request, df_donnees_p1, allData)
             end_time = time.time()
                 
             print(df_previous_trip)
@@ -1237,26 +885,15 @@ def presenting_previous_trip(request):
             print("°"*20, "presenting_previous_trip - context updated", "°"*20)
             
             if df_previous_trip is not None:
-                # length_df_previous= len(df_previous_trip)
+                # Conversion car ne veut pas passer un dataframe en context
                 df_previous_trip = df_previous_trip.to_dict("index")
-                print("df_previous_trip ", type(df_previous_trip))
-                # df_previous_trip = df_previous_trip.to_dict()
-                context.update({'df_previous': df_previous_trip,
-                                # 'length_df_previous': int(length_df_previous)
-                                })
-                # print(df_previous_trip)
+                context.update({'df_previous': df_previous_trip,})
                 print(context)
         
-        except IndexError:
-        
+        except :
             context.update({'df_previous': None})
             
     request.session['context'] = context
-    # print("DONC LA ON EST DANS LA PARTIE QUI AJOUTE UN DATAFRAME DANS LE CONTEXT")
-    # The above code is attempting to print the type of the variable `df_previous` from the `context`
-    # dictionary.
-    # print(type(context['df_previous']))
-    
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -1275,12 +912,15 @@ def checking_logbook(request):
     """
     
     print("="*20, "checking_logbook", "="*20)
+    
+    allData = apiFunctions.load_allData_file()
 
-    with open('./data_common.json', 'r', encoding='utf-8') as f:
-        data_common = json.load(f)
+
+    # with open('./data_common.json', 'r', encoding='utf-8') as f:
+    #     data_common = json.load(f)
         
-    with open('./data_ll.json', 'r', encoding='utf-8') as f:
-        data_ll = json.load(f)
+    # with open('./data_ll.json', 'r', encoding='utf-8') as f:
+        # data_ll = json.load(f)
         
     token = api.get_token()
     print(token)
@@ -1291,6 +931,7 @@ def checking_logbook(request):
         apply_conf = request.session.get('dico_config')
         print("apply_conf : ", apply_conf)
         continuetrip = request.POST.get('continuetrip')
+        newtrip = request.POST.get('newtrip')
         context = request.session.get('context')
         print("+"*50, "Juste après le post", "+"*50)
         print(context)
@@ -1313,7 +954,7 @@ def checking_logbook(request):
         df_bait = extract_bait(df_donnees_p1)
         df_fishing_effort = extract_fishing_effort(df_donnees_p1)
         df_position = extract_positions(df_donnees_p1)
-        df_time = extract_time(df_donnees_p1, data_ll)
+        df_time = extract_time(df_donnees_p1, allData)
         df_temperature = extract_temperature(df_donnees_p1)
         df_fishes = extract_fish_p1(df_donnees_p1)
         df_bycatch = extract_bycatch_p2(df_donnees_p2)
@@ -1325,7 +966,7 @@ def checking_logbook(request):
                                 df_bycatch],
                                 axis=1)
 
-        list_ports = get_list_harbours(data_common)
+        list_ports = get_list_harbours(allData)
         
         data_to_homepage = {
             'df_vessel': df_vessel,
@@ -1353,6 +994,9 @@ def checking_logbook(request):
         # print("endDate ", endDate)
         # print("depPort ", depPort)
         # print("endPort ", endPort)
+        
+        if newtrip != None : 
+            context.update({'df_previous': None})
         
         ######### Si on a rempli les données demandées, on vérifie ce qui a été saisi
         if endDate is not None :
@@ -1385,76 +1029,97 @@ def checking_logbook(request):
             #############################
             
             
-            try:
-                if context['df_previous'] == None:
-                    # NOUVELLE MAREE
-                    context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
-                                    'depPort': depPort,
-                                    'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                    'endPort': endPort if endPort != '' else None,
-                                    'continuetrip': None})
-                    
-                    #############################
-                    is_dep_match = research_dep(df_donnees_p1, data_ll, startDate)
-                    print(is_dep_match)
-                    if is_dep_match is False:
-                        messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
-                        probleme = True
-                    #############################
+            # if context['df_previous'] == None or len(context['df_previous']) != 1:
+            #     # NOUVELLE MAREE
+            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
+            #                     'depPort': depPort,
+            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+            #                     'endPort': endPort if endPort != '' else None,
+            #                     'continuetrip': None})
                 
-                else:
-                    # CONTINUE TRIP
-                    # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
-                    print(context)
-                    
-                    with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
-                        json_previoustrip = json.load(f)
-                    
-                    # On récupère la date du jour 1 au bon format
-                    if df_time.loc[0, 'VesselActivity'] == "fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1":
-                        # Si c'est une fishing operation
-                        date = json_construction.create_starttimestamp(df_donnees_p1, data_ll, 0, True)
-                    else:
-                        date = json_construction.create_starttimestamp(df_donnees_p1, data_ll, 0, False)
-
-                    #############################
-                    # messages d'erreurs
-                    if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
-                        messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
-                        probleme = True
-
-                    elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
-                        print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
-                        probleme = True
-                        messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
-                    #############################
-                                        
-                    context.update({'startDate': context['df_previous']['startDate'], 
-                                    'depPort': context['df_previous']['depPort_topiaid'],
-                                    'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-                                    'endPort': endPort if endPort != '' else None, 
-                                    'continuetrip': 'Continuer cette marée'})
-                    print("- 0 -"*30)
-                    print(context)
-                    print("- 0 -"*30)
-                    # voir si faut ajouter un truc qui ré enregistre à la session ? 
+            #     #############################
+            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
+            #     if is_dep_match is False:
+            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
+            #         probleme = True
+            #     #############################
             
-            except KeyError :
+            # try:
+                
+            if context['df_previous'] == None:
                 # NOUVELLE MAREE
                 context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
-                                'continuetrip': None, 
-                                'df_previous': None})
+                                'continuetrip': None})
                 
                 #############################
-                is_dep_match = research_dep(df_donnees_p1, data_ll, startDate)
+                is_dep_match = research_dep(df_donnees_p1, allData, startDate)
                 print(is_dep_match)
                 if is_dep_match is False:
                     messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
                     probleme = True
                 #############################
+            
+            else:
+                # CONTINUE TRIP
+                # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
+                # context.update({'df_previous' : context['df_previous'], orient = 'index')})
+
+                print(context)
+                
+                with open ('media/temporary_files/previoustrip.json', 'r', encoding='utf-8') as f:
+                    json_previoustrip = json.load(f)
+                
+                # On récupère la date du jour 1 au bon format
+                if df_time.loc[0, 'VesselActivity'] == "fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1":
+                    # Si c'est une fishing operation
+                    date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, True)
+                else:
+                    date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
+
+                print("%"*15, "context start et end Date ", "%"*15)
+                print(context['df_previous']['endDate'])
+                #############################
+                # messages d'erreurs
+                if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
+                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
+                    probleme = True
+
+                elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
+                    print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
+                    probleme = True
+                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
+                #############################
+                                    
+                context.update({'startDate': context['df_previous']['startDate'], 
+                                'depPort': context['df_previous']['depPort_topiaid'],
+                                'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+                                'endPort': endPort if endPort != '' else None, 
+                                'continuetrip': 'Continuer cette marée'})
+                print("- 0 -"*30)
+                print(context)
+                print("- 0 -"*30)
+                # voir si faut ajouter un truc qui ré enregistre à la session ? 
+        
+            # except KeyError :
+            #     # NOUVELLE MAREE
+            #     print("%"*15, startDate, type(startDate), "%"*15)
+            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
+            #                     'depPort': depPort,
+            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+            #                     'endPort': endPort if endPort != '' else None,
+            #                     'continuetrip': None, 
+            #                     'df_previous': None})
+                
+            #     #############################
+            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
+            #     print(is_dep_match)
+            #     if is_dep_match is False:
+            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
+            #         probleme = True
+            #     #############################
 
             if probleme is True:
                 # on doit ajouter les infos quand meme 
@@ -1472,18 +1137,34 @@ def checking_logbook(request):
             else :
                 return send_logbook2observe(request)
                 
-              
+            
         print("continue the trip : ", continuetrip)
         
-        programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
-                                      lookingfor='Program',
-                                      label_output='label2',
-                                      domaine='palangre')
-
-        ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+        if request.LANGUAGE_CODE == 'fr':
+            programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label2',
+                                        allData=allData,
+                                        domaine='palangre')
+            
+            ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
                                         lookingfor='Ocean',
                                         label_output='label2',
+                                        allData=allData,
                                         domaine=None)
+            
+        elif request.LANGUAGE_CODE == 'en':
+            programme = from_topiaid_to_value(topiaid=apply_conf['programme'],
+                                        lookingfor='Program',
+                                        label_output='label1',
+                                        allData=allData,
+                                        domaine='palangre')
+            
+            ocean = from_topiaid_to_value(topiaid=apply_conf['ocean'],
+                                lookingfor='Ocean',
+                                label_output='label1',
+                                allData=allData,
+                                domaine=None)
 
         context = {'domaine': apply_conf['domaine'],
                     'program': programme,
@@ -1494,29 +1175,31 @@ def checking_logbook(request):
             
         # si on contiue un trip, on récupère ses infos pour les afficher
         # if continuetrip is not None and request.POST.get('radio_previoustrip') is not None: 
-        if continuetrip is not None and 'radio_previoustrip' in request.POST:    
+        if continuetrip is not None and 'radio_previoustrip' in request.POST:
             # si on a choisi de continuer un trip 
-            triptopiaid = request.POST.get('radio_previoustrip')         
+            triptopiaid = request.POST.get('radio_previoustrip')      
             trip_topiaid_ws = triptopiaid.replace("#", "-")
             print("="*20, trip_topiaid_ws, "="*20)
 
             # on récupère les infos du trip enregistré dans un fichier json
             api.get_one(token, url_base, trip_topiaid_ws)
             
-            json_previoustrip = api.load_json_file("previoustrip.json")
+            json_previoustrip = api.load_json_file("media/temporary_files/previoustrip.json")
             
             # On récupère les infos qu'on veut afficher
             trip_info = json_previoustrip['content'][0]
 
             captain_name = from_topiaid_to_value(topiaid=trip_info['captain'],
-                                                  lookingfor='Person',
-                                                  label_output='lastName',
-                                                  domaine=None)
+                                                lookingfor='Person',
+                                                label_output='lastName',
+                                                allData=allData,
+                                                domaine=None)
 
             vessel_name = from_topiaid_to_value(topiaid=trip_info['vessel'],
-                                                 lookingfor='Vessel',
-                                                 label_output='label2',
-                                                 domaine=None)
+                                                lookingfor='Vessel',
+                                                label_output='label2',
+                                                allData=allData,
+                                                domaine=None)
 
             dico_trip_infos = {'startDate': trip_info['startDate'],
                                 'endDate': trip_info['endDate'],
@@ -1528,6 +1211,7 @@ def checking_logbook(request):
                 departure_harbour = from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
                                                         lookingfor='Harbour',
                                                         label_output='label2',
+                                                        allData=allData,
                                                         domaine=None)
 
                 dico_trip_infos.update({
@@ -1536,6 +1220,7 @@ def checking_logbook(request):
                 })
 
             except KeyError:
+            # en théorie devrait plus y avoir ce soucis car le departure harbour sera mis en champ obligatoire 
                 dico_trip_infos.update({
                     'depPort': 'null',
                     'depPort_topiaid': 'null',
@@ -1570,8 +1255,16 @@ def checking_logbook(request):
         pass
     return render(request, 'LL_homepage.html')
 
- 
+
 def send_logbook2observe(request):
+    """
+    Fonction qui envoie
+    1) le trip si on créé un nouveau trip 
+    2) supprime et envoie le nouveau trip updated si on ajoute des informations de marée à un trip existant
+    """
+    
+    allData = apiFunctions.load_allData_file()
+    
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
     if request.method == 'POST':
@@ -1579,15 +1272,14 @@ def send_logbook2observe(request):
 
         file_path = request.session.get('file_path')
         context = request.session.get('context')
-
                 
         resultat = None
 
         print("°"*40, context)
         
-    
-        if os.path.exists("sample.json"):
-            os.remove("sample.json")
+
+        if os.path.exists("media/temporary_files/created_json_file.json"):
+            os.remove("media/temporary_files/created_json_file.json")
 
         print("="*80)
         print("Load JSON data file")
@@ -1596,11 +1288,6 @@ def send_logbook2observe(request):
         print("token :", token)
         url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
-        with open('./data_common.json', 'r', encoding='utf-8') as f:
-            data_common = json.load(f)
-        with open('./data_ll.json', 'r', encoding='utf-8') as f:
-            data_ll = json.load(f)
-
         print("="*80)
         print("Read excel file")
         print(file_path)
@@ -1608,10 +1295,6 @@ def send_logbook2observe(request):
         df_donnees_p1 = read_excel(file_path, 1)
         df_donnees_p2 = read_excel(file_path, 2)
 
-
-        # on extrait les données du logbook sur tout le mois si la date de fin > au mois
-        # sinon on extrait jusqu'a la endDate
-       
         # On transforme pour que les données soient comparables
         logbook_month = str(extract_logbook_date(df_donnees_p1).loc[extract_logbook_date(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0])
 
@@ -1620,11 +1303,6 @@ def send_logbook2observe(request):
             print(logbook_month, type(logbook_month))
         else:
             logbook_month = str(logbook_month)
-        
-        # if context['df_previous'] is not None :
-        #     startDate = context['df_previous']['startDate']
-        # else : 
-        #     startDate = context['startDate'] 
         
         startDate = context['startDate'] 
         
@@ -1637,23 +1315,22 @@ def send_logbook2observe(request):
         else:
             start_extraction = 0
             end_extraction = int(context['endDate'][8:10])
-              
+            
         if context['continuetrip'] is None:
             # NEW TRIP
             
             print("="*80)
             print("Create Activity and Set")
-            
+
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2,
-                data_common, data_ll,
+                allData,
                 start_extraction, end_extraction)
 
             print("="*80)
             print("Create Trip")
             
-            trip = json_construction.create_trip(
-                df_donnees_p1, MultipleActivity, data_common, context)
+            trip = json_construction.create_trip(df_donnees_p1, MultipleActivity, allData, context)
 
             print("Creation of a new trip")
             resultat = api.send_trip(token, trip, url_base)
@@ -1661,13 +1338,13 @@ def send_logbook2observe(request):
 
         else:   
             # CONTINUE THE TRIP 
-                     
-            with open ('./previoustrip.json', 'r', encoding='utf-8') as f:
+            
+            with open ('media/temporary_files/previoustrip.json', 'r', encoding='utf-8') as f:
                 json_previoustrip = json.load(f)
 
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2, 
-                data_common, data_ll, 
+                allData, 
                 start_extraction, end_extraction)
 
             print("="*80)
@@ -1688,13 +1365,12 @@ def send_logbook2observe(request):
             trip = json_construction.remove_keys(trip, ["topiaId", "topiaCreateDate", "lastUpdateDate"])[0]
                                 
             # permet de visualiser le fichier qu'on envoie
-            json_formatted_str = json.dumps(json_construction.remove_keys(trip, ["topiaId", "topiaCreateDate", "lastUpdateDate"]),
-                                            indent=2,
-                                            default=api.serialize)
+            # json_formatted_str = json.dumps(json_construction.remove_keys(trip, ["topiaId", "topiaCreateDate", "lastUpdateDate"]),
+            #                                 indent=2,
+            #                                 default=api.serialize)
         
-            with open(file="tripupdated.json", mode="w") as outfile:
-                outfile.write(json_formatted_str)
-                
+            # with open(file="media/temporary_files/updated_json_file.json", mode="w") as outfile:
+            #     outfile.write(json_formatted_str)
 
             resultat = api.update_trip(token=token,
                             data=trip,

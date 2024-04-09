@@ -14,6 +14,6 @@ class UserForm(UserCreationForm):
             "defaultdomain",
             "defaultprogram",
             "username",
-            "password1",
+            "password",
             "password2"
         ]

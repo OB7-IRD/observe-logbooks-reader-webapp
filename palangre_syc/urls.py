@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+# from . import views
 from palangre_syc.views import checking_logbook, send_logbook2observe, presenting_previous_trip
 
 urlpatterns = [

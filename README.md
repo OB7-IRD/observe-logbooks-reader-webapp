@@ -46,3 +46,16 @@ sphinx-serve -b build -h 127.0.0.1
 ```bash
 python3 manage.py tailwind build
 ```
+
+# To build the auto docstring 
+
+```
+cd source
+sphinx-apidoc -o api palangre-syc # toward a folder with an __init__ file
+```
+
+## To use Django translation
+```
+django-admin makemessages -a
+django-admin compilemessages
+```
