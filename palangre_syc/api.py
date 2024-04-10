@@ -5,7 +5,7 @@ import requests
 import yaml
 from json import dump
 
-from palangre_syc.json_construction import pretty_print
+# from palangre_syc.json_construction import pretty_print
 # from json_construction import pretty_print
 # from api_traitement.apiFunctions import errorFilter
 
@@ -133,62 +133,73 @@ def serialize(obj):
     return str(obj)
     # raise TypeError("Type not serializable")
     
-def get_one(token, url_base, topiaid):
-    
-    headers = {
-        'authenticationToken': token, 
-    }
-    
-    params = {
-        'config.recursive' : 'true', 
-    }
-    
-    url = url_base + '/data/ll/common/Trip/' + topiaid
-    
-    response = requests.get(url, headers=headers, params = params, timeout=15)
-    # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+# def get_one(token, url_base, route, topiaid):
+#     """ Fonction qui interroge la base de données pour récupérer toutes les données relatives à un topiaid et une route 
 
-    if response.status_code == 200 :
-        with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
-            outfile.write(response.text)
-        return response.content
-    
-    else:
-        return None
-    
-def get_trip(token, url_base, topiaid):
-    
-    headers = {
-        'authenticationToken': token, 
-    }
-    
-    params = {
-        'config.recursive' : 'true', 
-    }
-    
-    url = url_base + '/data/ll/common/Trip/' + topiaid
-    
-    response = requests.get(url, headers=headers, params = params, timeout=15)
-    # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+#     Args:
+#         token (str): token
+#         url_base: chemin d'accès à la connexion ('https://observe.ob7.ird.fr/observeweb/api/public')
+#         route: chemin d'accès plus précis (par ex : '/data/ll/common/Trip/')
+#         topiaid: topiaid avec des '-' à la place des '#'
 
-    if response.status_code == 200 :
-        # print("response status == 200 so tempfile created")
-        # with open(file = "previoustrip.json", mode = "w") as outfile:
-        #     outfile.write(response.text)
-        return response.content
+#     Returns:
+#         file.json: informations relatives au topiaid fourni
+#     """
     
-    else:
-        return None
+#     headers = {
+#         'authenticationToken': token, 
+#     }
+    
+#     params = {
+#         'config.recursive' : 'true', 
+#     }
+    
+#     url = url_base + route + topiaid
+    
+#     response = requests.get(url, headers=headers, params = params, timeout=15)
+#     # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+
+#     if response.status_code == 200 :
+#         with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
+#             outfile.write(response.text)
+#         return response.content
+    
+#     else:
+#         return None
+    
+# def get_trip(token, url_base, topiaid):
+    
+#     headers = {
+#         'authenticationToken': token, 
+#     }
+    
+#     params = {
+#         'config.recursive' : 'true', 
+#     }
+    
+#     url = url_base + '/data/ll/common/Trip/' + topiaid
+    
+#     response = requests.get(url, headers=headers, params = params, timeout=15)
+#     # response.raise_for_status()  # Lève une exception en cas d'erreur HTTP
+
+#     if response.status_code == 200 :
+#         # print("response status == 200 so tempfile created")
+#         # with open(file = "previoustrip.json", mode = "w") as outfile:
+#         #     outfile.write(response.text)
+#         return response.content
+    
+#     else:
+#         return None
     
 
 def update_trip(token, data, url_base, topiaid):
-    """_summary_
+    """Fonction qui met à jour un trip dans la base de données, donc supprime le trip existant pour insérer le nouveau data_json sous le même topiaid
 
     Args:
-        token (str): token valide
-        data (json): json file
+        token (str): token
+        data (json): json file qu'on envoie dans la base
         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
-        topiaid du trip 
+        topiaid du trip que l'on veut update (l'ancienne version sera supprimée)
     Returns:
     """
 
@@ -202,52 +213,52 @@ def update_trip(token, data, url_base, topiaid):
     url = url_base + '/data/ll/common/Trip/' + topiaid
 
     print("PUT for updating the data")
-    pretty_print(data)
-    res = requests.put(url, data=data_json, headers=headers, timeout=15)
+    # pretty_print(data)
+    response = requests.put(url, data=data_json, headers=headers, timeout=15)
     
-    print("Code resultat de la requete", res.status_code)
+    print("Code resultat de la requete", response.status_code)
     print("url envoyé : ", url)
 
-    if res.status_code == 200:
+    if response.status_code == 200:
         return ("Logbook inséré avec success", 1)
     else:
         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
-            outfile.write(res.text)
+            outfile.write(response.text)
 
 
-def send_trip(token, data, url_base):
-    """_summary_
+# def send_trip(token, data, url_base):
+#     """_summary_
 
-    Args:
-        token (str): token valide
-        data (json): json file
-        url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+#     Args:
+#         token (str): token valide
+#         data (json): json file
+#         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
 
-    Returns:
-        text message: logbook bien inséré, ou bien un json d'erreur
-    """
+#     Returns:
+#         text message: logbook bien inséré, ou bien un json d'erreur
+#     """
 
-    data_json = json.dumps(data, default=serialize)
+#     data_json = json.dumps(data, default=serialize)
 
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
 
-    url = url_base + '/data/ll/common/Trip'
+#     url = url_base + '/data/ll/common/Trip'
 
-    print("Post")
-    pretty_print(data)
-    res = requests.post(url, data=data_json, headers=headers, timeout=30)
+#     print("Post")
+#     # pretty_print(data)
+#     res = requests.post(url, data=data_json, headers=headers, timeout=30)
 
-    print("Code resultat de la requete", res.status_code)
-    print("url envoyé : ", url)
+#     print("Code resultat de la requete", res.status_code)
+#     print("url envoyé : ", url)
 
-    if res.status_code == 200:
-        return ("Logbook inséré avec success", 1)
-    else:
-        with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
-            outfile.write(res.text)
+#     if res.status_code == 200:
+#         return ("Logbook inséré avec success", 1)
+#     else:
+#         with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
+#             outfile.write(res.text)
 
 
 def trip_for_prog_vessel(token, url_base, vessel_id, programme_topiaid):
@@ -274,98 +285,41 @@ def trip_for_prog_vessel(token, url_base, vessel_id, programme_topiaid):
     response = requests.get(api_trip_request, timeout=15)
     return response.content
 
-def table_trip(token, url_base, vessel_id, programme_topiaid):
-    """
-    Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
+# def table_trip(token, url_base, vessel_id, programme_topiaid):
+#     """
+#     Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
 
-    Args:
-        token
-        url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
-        vessel_id: topiaid du navire (avec les '-')
-        programme_topiaid: topiaid du programme choisi (avec les '-')
+#     Args:
+#         token
+#         url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+#         vessel_id: topiaid du navire (avec les '-')
+#         programme_topiaid: topiaid du programme choisi (avec les '-')
 
-    Returns:
-        trip topiaid
-    """
-    # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
-    api_trip = '/data/ll/common/Trip?authenticationToken='
+#     Returns:
+#         trip topiaid
+#     """
+#     # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
+#     api_trip = '/data/ll/common/Trip?authenticationToken='
 
-    api_vessel_filter = '&filters.vessel_id='
-    api_programme_filter = '&filters.logbookProgram_id='
-    api_ordeer_filter = '&orders.endDate=DESC'
+#     api_vessel_filter = '&filters.vessel_id='
+#     api_programme_filter = '&filters.logbookProgram_id='
+#     api_ordeer_filter = '&orders.endDate=DESC'
 
-    api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
-    response = requests.get(api_trip_request, timeout=15)
-    return response.content
+#     api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
+#     response = requests.get(api_trip_request, timeout=15)
+#     return response.content
 
 
-def load_json_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            # a voir s'il faut ajouter '.decode('utf8')'    
-            data = json.load(file)
-            return data
-    except FileNotFoundError:
-        print(f"File '{file_path}' not found.")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON file '{file_path}': {e}")
-        return None
+# def load_json_file(file_path):
+#     try:
+#         with open(file_path, 'r') as file:
+#             # a voir s'il faut ajouter '.decode('utf8')'    
+#             data = json.load(file)
+#             return data
+#     except FileNotFoundError:
+#         print(f"File '{file_path}' not found.")
+#         return None
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON file '{file_path}': {e}")
+#         return None
     
-    
-def errorFilter(response):
-    """
-    Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
-    """
-    error = json.loads(response)
-    # print(error)
-    lati_long_date_ref = []
-    msg = []
-    comp = 0
-    comp2 = 0
-    for val in error['exception']['result']['data']:
-        for i in range(len(val['messages'])):
-
-            if (val['messages'][i]['fieldName'] == 'latitude') or (val['messages'][i]['fieldName'] == 'longitude') or (
-                    val['messages'][i]['fieldName'] == 'quadrant'):
-                temp = ""
-                try:
-                    temp = val['reference']['content']['date'].replace("T00:00:00.000Z", ""), \
-                        val['reference']['content']['time'].replace(":00.000Z", "").replace('1970-01-01T', '')
-
-                except:
-                    temp2 = " *** champs erreur: " + str(
-                        val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                        val['messages'][i]['message'])
-                    if temp2 not in msg:
-                        comp += 1
-                        msg.append(temp2)
-
-                if temp != "":
-                    if temp not in lati_long_date_ref:
-                        lati_long_date_ref.append(temp)
-            else:
-                temp2 = " *** champs erreur: " + str(
-                    val['messages'][i]['fieldName']) + " \n ****** Message Erreur: " + str(
-                    val['messages'][i]['message'])
-                if temp2 not in msg:
-                    msg.append(temp2)
-
-            if temp2 in msg:
-                comp2 += 1
-
-    all_message = []
-    for val_m in msg:
-        all_message.append(val_m)
-
-    if comp != 0:
-        all_message.append(" *** nombre d'occurence sur longitude et latitude: " + str(comp))
-
-    if comp2 != 0:
-        all_message.append(" *** Nombre total d'erreurs tout types confondus: " + str(comp2))
-
-    for vals in lati_long_date_ref:
-        all_message.append(" *** Erreur sur la longitude et la latitude le " + str(vals[0]) + " à " + str(vals[1]))
-
-    return all_message
-

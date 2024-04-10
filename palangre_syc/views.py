@@ -15,7 +15,7 @@ from django.shortcuts import render
 from django.contrib import messages
 from django.utils.translation import gettext as _
 from django.utils import translation
-from django.http import HttpResponseRedirect, JsonResponse
+# from django.http import HttpResponseRedirect, JsonResponse
 # from django.utils.translation import activate
 # from django.template import RequestContext
 # from django.urls import reverse
@@ -24,7 +24,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 from palangre_syc import api
 from palangre_syc import json_construction
 from api_traitement import apiFunctions
-from webapps.models import User
+# from webapps.models import User
 
 
 def del_empty_col(dataframe):
@@ -200,7 +200,7 @@ def extract_vessel_info(df_donnees):
     # On sépare en deux colonnes selon ce qu'il y a avant et après les ':'
     df_vessel_clean = df_vessel.str.split(':', expand=True)
     # S'assurer que toutes les valeurs sont des chaînes de caractères
-    df_vessel_clean = df_vessel_clean.applymap(lambda x: str(x).strip() if x is not None else '')
+    df_vessel_clean = df_vessel_clean.map(lambda x: str(x).strip() if x is not None else '')
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
@@ -622,7 +622,7 @@ def extract_fish_p1(df_donnees):
                 'No RET XXX', 'Kg RET XXX']
     
     df_fishes.columns = colnames
-    df_fishes = df_fishes.applymap(zero_if_empty)
+    df_fishes = df_fishes.map(zero_if_empty)
     df_fishes.reset_index(drop=True, inplace=True)
     
     return df_fishes
@@ -660,7 +660,7 @@ def extract_bycatch_p2(df_donnees):
                 'No ESC TTX', 'No DIS TTX']
     
     df_bycatch.columns = colnames
-    df_bycatch = df_bycatch.applymap(zero_if_empty)
+    df_bycatch = df_bycatch.map(zero_if_empty)
     df_bycatch.reset_index(drop=True, inplace=True)
     
     return df_bycatch
@@ -731,8 +731,8 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
 
     print("="*20, vessel_topiaid_ws, "="*20)
     print("="*20, programme_topiaid_ws, "="*20)
-
-    previous_trip = api.trip_for_prog_vessel(token, url_base, vessel_topiaid_ws, programme_topiaid_ws)
+    route = '/data/ll/common/Trip'
+    previous_trip = apiFunctions.trip_for_prog_vessel(token, url_base, route, vessel_topiaid_ws, programme_topiaid_ws)
 
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
@@ -744,10 +744,11 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
 
 
         for num_trip in range(len(parsed_previous_trip['content'])):
-            # print("boucle for, essai : ", num_trip)
             trip_topiaid = parsed_previous_trip['content'][num_trip]['topiaId'].replace("#", "-")
             # print("="*20, trip_topiaid, "="*20)
-            trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
+            route = '/data/ll/common/Trip/'
+            # trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
+            trip_info = json.loads(apiFunctions.get_one_from_ws(token, url_base, route, trip_topiaid).decode('utf-8'))
             # print(trip_info)
             # parsed_trip_info = json.loads(trip_info.decode('utf-8'))
             if 'departureHarbour' in trip_info['content'][0]:
@@ -880,7 +881,7 @@ def presenting_previous_trip(request):
             username = request.session.get('username')
             password = request.session.get('password')
             print(username, password)
-            token  = apiFunctions.reloadToken(request, username, password)
+            token  = apiFunctions.reload_token(request, username, password)
             request.session['token'] = token
 
         try :
@@ -933,7 +934,7 @@ def checking_logbook(request):
     if not apiFunctions.is_valid(token):
         username = request.session.get('username')
         password = request.session.get('password')
-        token  = apiFunctions.reloadToken(request, username, password)
+        token  = apiFunctions.reload_token(request, username, password)
         request.session['token'] = token
     
     # token = api.get_token()
@@ -1196,9 +1197,10 @@ def checking_logbook(request):
             print("="*20, trip_topiaid_ws, "="*20)
 
             # on récupère les infos du trip enregistré dans un fichier json
-            api.get_one(token, url_base, trip_topiaid_ws)
+            route = '/data/ll/common/Trip/'
+            apiFunctions.get_one_from_ws(token, url_base, route, trip_topiaid_ws)
             
-            json_previoustrip = api.load_json_file("media/temporary_files/previoustrip.json")
+            json_previoustrip = apiFunctions.load_json_file("media/temporary_files/previoustrip.json")
             
             # On récupère les infos qu'on veut afficher
             trip_info = json_previoustrip['content'][0]
@@ -1305,7 +1307,7 @@ def send_logbook2observe(request):
         if not apiFunctions.is_valid(token):
             username = request.session.get('username')
             password = request.session.get('password')
-            token  = apiFunctions.reloadToken(request, username, password)
+            token  = apiFunctions.reload_token(request, username, password)
             request.session['token'] = token
     
 
@@ -1356,7 +1358,8 @@ def send_logbook2observe(request):
             trip = json_construction.create_trip(df_donnees_p1, MultipleActivity, allData, context)
 
             print("Creation of a new trip")
-            resultat = api.send_trip(token, trip, url_base)
+            route = '/data/ll/common/Trip'
+            resultat = apiFunctions.send_trip(token, trip, url_base, route)
             print("resultats : ", resultat)
 
         else:   
@@ -1395,7 +1398,7 @@ def send_logbook2observe(request):
             # with open(file="media/temporary_files/updated_json_file.json", mode="w") as outfile:
             #     outfile.write(json_formatted_str)
 
-            resultat = api.update_trip(token=token,
+            resultat = apiFunctions.update_trip(token=token,
                             data=trip,
                             url_base=url_base,
                             topiaid=context['df_previous']['triptopiaid'].replace("#", "-"))
