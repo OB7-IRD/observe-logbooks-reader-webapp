@@ -2,6 +2,7 @@ import json
 import pandas as pd
 import palangre_syc.api
 import palangre_syc.views
+from api_traitement import apiFunctions
 
 def get_captain_topiaid(df_donnees_p1, allData):
     """
@@ -62,7 +63,6 @@ def get_vessel_topiaid(df_donnees_p1, allData):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    print("%"*15, "get vessel topiaid", "%"*15)
     vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     #vessel_logbook = vessel_logbook.strip()
     for vessel in allData["Vessel"]:
@@ -705,7 +705,7 @@ def pretty_print(json_data, file="media/temporary_files/created_json_file.json",
     """
     
     json_formatted_str = json.dumps(
-        json_data, indent=2, default=palangre_syc.api.serialize)
+        json_data, indent=2, default=apiFunctions.serialize)
     # print("¤"*20, "pretty print function" ,"¤"*20)
     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
     with open(file, mode) as outfile:
