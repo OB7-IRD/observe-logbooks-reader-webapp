@@ -167,3 +167,4 @@ cython_debug/
 *.xlsx
 *.xlsm
 token.yml
+db.sqlite3
