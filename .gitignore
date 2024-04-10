@@ -165,5 +165,5 @@ cython_debug/
 **/*.json
 
 *.xlsx
-*.xlsx
+*.xlsm
 token.yml
