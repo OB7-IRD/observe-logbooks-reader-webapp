@@ -14,7 +14,7 @@ import openpyxl
 from django.shortcuts import render
 from django.contrib import messages
 from django.utils.translation import gettext as _
-from django.utils import translation
+# from django.utils import translation
 # from django.http import HttpResponseRedirect, JsonResponse
 # from django.utils.translation import activate
 # from django.template import RequestContext
@@ -23,29 +23,29 @@ from django.utils import translation
 
 from palangre_syc import api
 from palangre_syc import json_construction
-from api_traitement import api_functions, apiFunctions
+from api_traitement import api_functions, common_functions
 # from webapps.models import User
 
 
-def del_empty_col(dataframe):
-    """ Fonction qui supprime la colonne si elle ne contient pas d'information
+# def del_empty_col(dataframe):
+#     """ Fonction qui supprime la colonne si elle ne contient pas d'information
 
-    Args:
-        dataframe: avec des potentielles colonnes vides (cellules mergées)
+#     Args:
+#         dataframe: avec des potentielles colonnes vides (cellules mergées)
 
-    Returns:
-        dataframe: uniquement avec des éléments
-    """
-    colonnes_a_supprimer = [
-        colonne for colonne in dataframe.columns if all(dataframe[colonne].isna())]
-    dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
-    return dataframe
+#     Returns:
+#         dataframe: uniquement avec des éléments
+#     """
+#     colonnes_a_supprimer = [
+#         colonne for colonne in dataframe.columns if all(dataframe[colonne].isna())]
+#     dataframe.drop(columns=colonnes_a_supprimer, inplace=True)
+#     return dataframe
 
-def strip_if_string(element):
-    """
-    Fonction qui applique la fonction python strip() si l'élement est bien de type texte
-    """
-    return element.strip() if isinstance(element, str) else element
+# def strip_if_string(element):
+#     """
+#     Fonction qui applique la fonction python strip() si l'élement est bien de type texte
+#     """
+#     return element.strip() if isinstance(element, str) else element
 
 def remove_spec_char(char):
     """
@@ -162,22 +162,18 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=No
 
 
 
-
-# FILE_PATH = './palangre_syc/media/Aout2022-FV GOLDEN FULL NO.168.xlsx'
-
-
-def read_excel(file_path, num_page):
+def read_excel(logbook_file_path, num_page):
     """ 
     Fonction qui extrait les informations d'un fichier excel en dataframe
 
     Args:
-        file_path: lien vers le fichier contenant le logbook
+        logbook_file_path: lien vers le fichier contenant le logbook
         num_page (int): numéro de page à extraire (1, 2 etc ...)
 
     Returns:
         (dataframe): du fichier excel
     """
-    classeur = openpyxl.load_workbook(filename=file_path, data_only=True)
+    classeur = openpyxl.load_workbook(filename=logbook_file_path, data_only=True)
     noms_feuilles = classeur.sheetnames
     feuille = classeur[noms_feuilles[num_page - 1]]
     df_donnees = pd.DataFrame(feuille.values)
@@ -203,7 +199,7 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean = df_vessel_clean.map(lambda x: str(x).strip() if x is not None else '')
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
-    df_vessel_clean['Logbook_name'] = remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
+    df_vessel_clean['Logbook_name'] = common_functions.remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
 
     df_vessel_clean['Logbook_name'] = df_vessel_clean['Logbook_name'].apply(lambda x: str(x).strip() if x is not None else '')
     # Afficher le DataFrame résultant
@@ -226,8 +222,8 @@ def extract_cruise_info(df_donnees):
     df_cruise2 = df_donnees.iloc[9:10, 20:29]
 
     # On supprimes les colonnes qui sont vides
-    df_cruise1 = del_empty_col(df_cruise1)
-    df_cruise2 = del_empty_col(df_cruise2)
+    df_cruise1 = common_functions.del_empty_col(df_cruise1)
+    df_cruise2 = common_functions.del_empty_col(df_cruise2)
 
     np_cruise = np.append(np.array(df_cruise1), np.array(df_cruise2), axis=0)
 
@@ -236,7 +232,7 @@ def extract_cruise_info(df_donnees):
 
     # On applique la fonction strip sur les cellules de la colonnes Valeur,
     # si l'élément correspond à une zone de texte
-    vect = np.vectorize(strip_if_string)
+    vect = np.vectorize(common_functions.strip_if_string)
     np_cruise[:, 1] = vect(np_cruise[:, 1])
 
     df_cruise = pd.DataFrame(np_cruise, columns=['Logbook_name', 'Value'])
@@ -248,7 +244,7 @@ def extract_cruise_info(df_donnees):
     df_cruise['Value'] = df_cruise.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
 
     # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
-    df_cruise['Logbook_name'] = remove_spec_char_from_list(df_cruise['Logbook_name'])
+    df_cruise['Logbook_name'] = common_functions.remove_spec_char_from_list(df_cruise['Logbook_name'])
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_cruise['Logbook_name'] = df_cruise['Logbook_name'].str.strip()
@@ -281,7 +277,7 @@ def extract_report_info(df_donnees):
     df_report.columns = ['Logbook_name', 'Value']
 
     # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
-    df_report['Logbook_name'] = remove_spec_char_from_list(df_report['Logbook_name'])
+    df_report['Logbook_name'] = common_functions.remove_spec_char_from_list(df_report['Logbook_name'])
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_report['Logbook_name'] = df_report['Logbook_name'].str.strip()
@@ -302,7 +298,7 @@ def extract_gear_info(df_donnees):
     df_gear = df_donnees.iloc[12:16, 11:21]
 
     # On supprimes les colonnes qui sont vides
-    df_gear = del_empty_col(df_gear)
+    df_gear = common_functions.del_empty_col(df_gear)
 
     # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
     df_gear.iloc[:, 0] = df_gear.iloc[:, 0].str.replace(':', '').str.strip()
@@ -314,7 +310,7 @@ def extract_gear_info(df_donnees):
     df_gear.columns = ['Logbook_name', 'Value']
 
     # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
-    df_gear['Logbook_name'] = remove_spec_char_from_list(df_gear['Logbook_name'])
+    df_gear['Logbook_name'] = common_functions.remove_spec_char_from_list(df_gear['Logbook_name'])
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_gear['Logbook_name'] = df_gear['Logbook_name'].str.strip()
@@ -323,7 +319,7 @@ def extract_gear_info(df_donnees):
     toutes_int = df_gear['Value'].apply(lambda cellule: isinstance(cellule, int)).all()
     if toutes_int:
         # Applique la fonction vect si toutes les cellules sont des entiers
-        df_gear['Value'] = np.vectorize(strip_if_string)(df_gear['Value'])
+        df_gear['Value'] = np.vectorize(common_functions.strip_if_string)(df_gear['Value'])
 
     if not df_gear['Value'].apply(lambda x: isinstance(x, int)).all():
         message = _("Les données remplies dans le fichier soumis ne correspondent pas au type de données attendues. Ici on attend seulement des entiers.")
@@ -345,7 +341,7 @@ def extract_line_material(df_donnees):
     df_line = df_donnees.iloc[12:16, 21:29]
 
     # On supprimes les colonnes qui sont vides
-    df_line = del_empty_col(df_line)
+    df_line = common_functions.del_empty_col(df_line)
 
     # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
     df_line.iloc[:, 0] = df_line.iloc[:, 0].str.replace(':', '').str.strip()
@@ -357,7 +353,7 @@ def extract_line_material(df_donnees):
     df_line.columns = ['Logbook_name', 'Value']
 
     # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
-    df_line['Logbook_name'] = remove_spec_char_from_list(df_line['Logbook_name'])
+    df_line['Logbook_name'] = common_functions.remove_spec_char_from_list(df_line['Logbook_name'])
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_line['Logbook_name'] = df_line['Logbook_name'].str.strip()
@@ -393,7 +389,7 @@ def extract_target_species(df_donnees):
     df_target = df_donnees.iloc[12:16, 29:34]
 
     # On supprimes les colonnes qui sont vides
-    df_target = del_empty_col(df_target)
+    df_target = common_functions.del_empty_col(df_target)
 
     # Nettoyer la colonne 'Logbook_name' en enlevant les espaces et les ':'
     df_target.iloc[:, 0] = df_target.iloc[:, 0].str.replace(':', '').str.strip()
@@ -405,7 +401,7 @@ def extract_target_species(df_donnees):
     df_target.columns = ['Logbook_name', 'Value']
 
     # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
-    df_target['Logbook_name'] = remove_spec_char_from_list(df_target['Logbook_name'])
+    df_target['Logbook_name'] = common_functions.remove_spec_char_from_list(df_target['Logbook_name'])
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_target['Logbook_name'] = df_target['Logbook_name'].str.strip()
@@ -436,7 +432,7 @@ def extract_logbook_date(df_donnees):
             'Value': [int(df_month), int(df_year)]}
     df_date = pd.DataFrame(date)
     
-    df_date['Logbook_name'] = remove_spec_char_from_list(df_date['Logbook_name'])
+    df_date['Logbook_name'] = common_functions.remove_spec_char_from_list(df_date['Logbook_name'])
 
     return df_date
 
@@ -818,7 +814,10 @@ def presenting_previous_trip(request):
         html page with a table of the existings trips in observe
     """
     # est ce qu'on ne peut pas la mettre en variable globale ?
-    allData = apiFunctions.load_allData_file()
+    # allData = common_functions.load_allData_file()
+    allData_file_path = "media/data/" + os.listdir("media/data")[0]
+    request.session['allData_file_path'] = allData_file_path
+    allData = common_functions.load_json_file(allData_file_path)
 
     if 'context' in request.session:
         del request.session['context']
@@ -863,14 +862,14 @@ def presenting_previous_trip(request):
     if selected_file is not None and apply_conf is not None:
 
         file_name = selected_file.strip("['']")
-        file_path = DIR + "/" + file_name
+        logbook_file_path = DIR + "/" + file_name
 
-        request.session['file_path'] = file_path
+        request.session['logbook_file_path'] = logbook_file_path
 
         print("="*20, "presenting_previous_trip selected_file", "="*20)
-        print(file_path)
+        print(logbook_file_path)
 
-        df_donnees_p1 = read_excel(file_path, 1)
+        df_donnees_p1 = read_excel(logbook_file_path, 1)
 
         # with open('./data_common.json', 'r', encoding='utf-8') as f:
         #     data_common = json.load(f)
@@ -921,30 +920,24 @@ def checking_logbook(request):
     
     print("="*20, "checking_logbook", "="*20)
     
-    allData = api_functions.load_allData_file()
+    # allData = api_functions.load_allData_file()
+    # file_path = "media/data/" + os.listdir("media/data")[0]
+    allData_file_path = request.session.get('allData_file_path')
+    allData = common_functions.load_json_file(allData_file_path)
 
-
-    # with open('./data_common.json', 'r', encoding='utf-8') as f:
-    #     data_common = json.load(f)
-        
-    # with open('./data_ll.json', 'r', encoding='utf-8') as f:
-        # data_ll = json.load(f)
-        
     token = request.session['token']
     if not api_functions.is_valid(token):
         username = request.session.get('username')
         password = request.session.get('password')
         token  = api_functions.reload_token(request, username, password)
         request.session['token'] = token
-    
-    # token = api.get_token()
-    # print(token)
+
     url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     if request.method == 'POST':
             
         apply_conf = request.session.get('dico_config')
-        print("apply_conf : ", apply_conf)
+        # print("apply_conf : ", apply_conf)
         continuetrip = request.POST.get('continuetrip')
         newtrip = request.POST.get('newtrip')
         context = request.session.get('context')
@@ -954,10 +947,10 @@ def checking_logbook(request):
         
         
         #_______________________________EXTRACTION DES DONNEES__________________________________
-        file_path = request.session.get('file_path')
+        logbook_file_path = request.session.get('logbook_file_path')
                 
-        df_donnees_p1 = read_excel(file_path, 1)
-        df_donnees_p2 = read_excel(file_path, 2)
+        df_donnees_p1 = read_excel(logbook_file_path, 1)
+        df_donnees_p2 = read_excel(logbook_file_path, 2)
         
         df_vessel = extract_vessel_info(df_donnees_p1)
         df_cruise = extract_cruise_info(df_donnees_p1)
@@ -1200,7 +1193,7 @@ def checking_logbook(request):
             route = '/data/ll/common/Trip/'
             api_functions.get_one_from_ws(token, url_base, route, trip_topiaid_ws)
             
-            json_previoustrip = apiFunctions.load_json_file("media/temporary_files/previoustrip.json")
+            json_previoustrip = common_functions.load_json_file("media/temporary_files/previoustrip.json")
             
             # On récupère les infos qu'on veut afficher
             trip_info = json_previoustrip['content'][0]
@@ -1278,15 +1271,17 @@ def send_logbook2observe(request):
     1) le trip si on créé un nouveau trip 
     2) supprime et envoie le nouveau trip updated si on ajoute des informations de marée à un trip existant
     """
-    
-    allData = apiFunctions.load_allData_file()
+    # allData_file_path = "media/data/" + os.listdir("media/data")[0]
+    allData_file_path = request.session.get('allData_file_path')
+    allData = common_functions.load_json_file(allData_file_path)
+    # allData = common_functions.load_allData_file()
     
     warnings.simplefilter(action='ignore', category=FutureWarning)
 
     if request.method == 'POST':
         print("°"*20, "POST", "°"*20)
 
-        file_path = request.session.get('file_path')
+        logbook_file_path = request.session.get('logbook_file_path')
         context = request.session.get('context')
                 
         resultat = None
@@ -1315,10 +1310,10 @@ def send_logbook2observe(request):
 
         print("="*80)
         print("Read excel file")
-        print(file_path)
+        print(logbook_file_path)
 
-        df_donnees_p1 = read_excel(file_path, 1)
-        df_donnees_p2 = read_excel(file_path, 2)
+        df_donnees_p1 = read_excel(logbook_file_path, 1)
+        df_donnees_p2 = read_excel(logbook_file_path, 2)
 
         # On transforme pour que les données soient comparables
         logbook_month = str(extract_logbook_date(df_donnees_p1).loc[extract_logbook_date(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0])

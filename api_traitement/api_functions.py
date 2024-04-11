@@ -11,7 +11,8 @@ from time import gmtime, strftime, strptime
 import requests
 
 # from api_traitement.json_fonctions import *
-from api_traitement.apiFunctions import pretty_print, serialize, errorFilter
+from api_traitement.apiFunctions import errorFilter
+from api_traitement.common_functions import serialize, pretty_print
 
 from webapps.models import User
 from django.contrib.auth import authenticate
@@ -71,7 +72,7 @@ def reload_token(req, username, password):
         "referentialLocale": data_user.ref_language,
     }
 
-    return getToken(baseUrl, data_user_connect)
+    return get_token(baseUrl, data_user_connect)
 
 
 def get_all_referential_data(token, module, baseUrl):

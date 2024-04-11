@@ -513,7 +513,7 @@
                 <div class="flex justify-center items-center inline-flex">
                     {% comment %} faire un truc mieux pour le bouton -->
                     <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
-                    <a href="../logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
+                    <a href="{% url 'logbook' %}" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
                         {% translate "Annuler"%}
                     </a>
                     <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>

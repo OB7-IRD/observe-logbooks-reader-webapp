@@ -1,10 +1,10 @@
 import datetime
-from time import gmtime, strftime, strptime
+# from time import gmtime, strftime, strptime
 import os
 import pandas as pd
 import openpyxl as op
 import numpy as np
-import requests
+# import requests
 import json
 
 from api_traitement.json_fonctions import *
@@ -194,55 +194,55 @@ from django.contrib.auth import authenticate
 #                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
-def load_allData_file():
-    files = os.listdir("media/data")
+# def load_allData_file():
+#     files = os.listdir("media/data")
 
-    file_name = "media/data/" + files[0]
-    # Opening JSON file
-    f = open(file_name,  encoding='utf-8')
-    # returns JSON object as  a dictionary
-    allData = json.load(f)
+#     file_name = "media/data/" + files[0]
+#     # Opening JSON file
+#     f = open(file_name,  encoding='utf-8')
+#     # returns JSON object as  a dictionary
+#     allData = json.load(f)
 
-    return allData
+#     return allData
 
-def load_json_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            return data
-    except FileNotFoundError:
-        print(f"File '{file_path}' not found.")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON file '{file_path}': {e}")
-        return None
+# def load_json_file(file_path):
+#     try:
+#         with open(file_path, 'r') as file:
+#             data = json.load(file)
+#             return data
+#     except FileNotFoundError:
+#         print(f"File '{file_path}' not found.")
+#         return None
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON file '{file_path}': {e}")
+#         return None
     
-def serialize(obj): 
-    """ 
-    Serialize obj dans un format json de type date, int ou str.
-    """
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    if isinstance(obj, np.int64):
-        return int(obj)
-    return str(obj)
-    # raise TypeError("Type not serializable")
+# def serialize(obj): 
+#     """ 
+#     Serialize obj dans un format json de type date, int ou str.
+#     """
+#     if isinstance(obj, datetime.datetime):
+#         return obj.isoformat()
+#     if isinstance(obj, np.int64):
+#         return int(obj)
+#     return str(obj)
+#     # raise TypeError("Type not serializable")
 
-def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
-    """ Fonction qui affiche le fichier json avec les bonnes indentations un fichier json
+# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
+#     """ Fonction qui affiche le fichier json avec les bonnes indentations un fichier json
 
-    Args:
-        json_data (json): Données json en entrée
-        file (str, optional): Nom de fichier json de sortie "created_json_file.json".
-        mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
-    """
+#     Args:
+#         json_data (json): Données json en entrée
+#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
+#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
+#     """
     
-    json_formatted_str = json.dumps(
-        json_data, indent=2, default=serialize)
-    # print("¤"*20, "pretty print function" ,"¤"*20)
-    # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
-    with open(file, mode) as outfile:
-        outfile.write(json_formatted_str)
+#     json_formatted_str = json.dumps(
+#         json_data, indent=2, default=serialize)
+#     # print("¤"*20, "pretty print function" ,"¤"*20)
+#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
+#     with open(file, mode) as outfile:
+#         outfile.write(json_formatted_str)
 
 
 

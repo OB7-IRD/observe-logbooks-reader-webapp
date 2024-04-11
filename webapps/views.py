@@ -196,7 +196,7 @@ def logbook(request):
                 "alert_message": "Merci de téléverser un fichier excel",
                 "ocean_data": datat_0c_Pr["ocean"],
             })
-
+        print(apply_conf)
         # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
         if apply_conf["domaine"] == "palangre":
             logbooks = os.listdir("media/logbooks")
@@ -305,25 +305,26 @@ def logbook(request):
 def getProgram(request, domaine):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    if datat_0c_Pr is not None:
+    print(datat_0c_Pr)
+    # if datat_0c_Pr is not None:
+    if domaine == "senne" or domaine == "palangre": 
         if domaine == "senne" :
             looking_for = "seine"
         elif domaine == "palangre":
             looking_for = "longline"
-            
+        
         datat_0c_Pr = search_in(datat_0c_Pr['program'], looking_for)
         print("="*20, "datat_0c_Pr search in", "="*20)
+        
         # print(datat_0c_Pr)
         dataPro = {
             "id":[],
             "value":[]
         }
         for key, value in datat_0c_Pr.items():
-            # print(key, value)
             dataPro["id"].append(key)
             dataPro["value"].append(value)
-            # print("="*20, "dataPro", "="*20)
-            # print(datat_0c_Pr)
+            
         # print(dataPro)
         return JsonResponse({"dataPro": dataPro})
     else:
@@ -340,9 +341,8 @@ def postProg_info(request):
             'programme': request.POST["programme"],
             'ty_doc': request.POST["ty_doc"]
         }
-        # print(request.session.get('dico_config'))
         return JsonResponse({"message": "success", 
-                             "domaine": request.session.get('dico_config')['domaine']})
+                            "domaine": request.session.get('dico_config')['domaine']})
     return JsonResponse({"message": "Veuillez ressayer svp."})
 
 def logbook_del_files(request):
