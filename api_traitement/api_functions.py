@@ -6,6 +6,8 @@
 #######################################################
 
 import json
+import os
+from time import gmtime, strftime, strptime
 import requests
 
 # from api_traitement.json_fonctions import *
@@ -18,7 +20,7 @@ from django.contrib.auth import authenticate
 
 ########### Token ###########
 
-def getToken(baseUrl, data):
+def get_token(baseUrl, data):
     """
     Adelphe
     data = {
@@ -38,10 +40,9 @@ def getToken(baseUrl, data):
 
 def is_valid(token):
     """ 
-    Clem
     Fonction booléenne qui test si le token est encore valide
     Args:
-        token (str): _description_
+        token (str)
     """
     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
     # Constitution du lien url pour accéder à l'API et fermer la connexion
@@ -90,50 +91,106 @@ def get_all_referential_data(token, module, baseUrl):
     else:
         return "Problème de connexion pour recuperer les données"
 
-########### Fonctions faisant appel au le web service ###########
-def getId_Data(token, url, moduleName, argment, route):
-    """
-    Permet de retourner un id en fonction du module et de la route envoyé
-    """
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
 
-    urls = url + route + moduleName + "?filters." + argment
-    rep = requests.get(urls, headers=headers)
-
-    # print(rep.url)
-
-    if rep.status_code == 200:
-        return json.loads(rep.text)["content"][0]["topiaId"]
-    else:
-        return json.loads(rep.text)["message"]
-
-
-def check_trip(token, content, url_base):
-    """
-    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
-    """
-    start = content["startDate"].replace("T00:00:00.000Z", "")
-    end = content["endDate"].replace("T00:00:00.000Z", "")
-
-    vessel_id = content["vessel"].replace("#", "-")
-
-    # print(start, end, vessel_id)
-
-    id_ = ""
-    ms_ = True
-
-    try:
-        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
-                        argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
-    except:
-        ms_ = False
-
-    return id_, ms_
-
+# Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
+# En utilisant notre fuiseau horaire
+def load_data(token, baseUrl, forceUpdate=False):
+    print("_"*20, "load_data function starting", "_"*20)
+    day = strftime("%Y-%m-%d", gmtime())
     
+    # Si les dossiers ne sont pas existant, on les créés
+    if not os.path.exists("media/data"):
+        os.makedirs("media/data")
+
+    if not os.path.exists("media/temporary_files"):
+        os.makedirs("media/temporary_files")
+
+    files = os.listdir("media/data")
+
+    def subFunction(token, day, url):
+        ref_common = get_all_referential_data(token, "common", url)
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)
+
+        program = {
+            'Program': {
+                'seine' :ps_common["Program"],
+                'longline':ll_common["Program"]
+            }
+        }
+        vesselActivity = {
+            'VesselActivity': {
+                'seine' :ps_common["VesselActivity"],
+                'longline':ll_common["VesselActivity"]
+            }
+        }
+
+        # Suppression des éléments suivant
+        del ps_common["Program"]
+        del ll_common["Program"]
+        del ps_common["VesselActivity"]
+        del ll_common["VesselActivity"]
+
+        allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
+        # allData = {**ref_common, **ps_logbook, **ps_common}
+
+        ref_common = get_all_referential_data(token, "common", url)
+        # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
+        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+        ps_common = get_all_referential_data(token, "ps/common", url)
+        ll_common = get_all_referential_data(token, "ll/common", url)    
+        
+        print("="*20, "load_data SubFunction", "="*20)
+        # print(ref_common[5:])
+        # with open('allData_load.json', 'w', encoding='utf-8') as f:
+        #     json.dump(allData, f, ensure_ascii=False, indent=4)
+        
+        file_name = "media/data/data_" + str(day) + ".json"
+
+        with open(file_name, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(allData, ensure_ascii=False, indent=4))
+
+        return allData
+
+    if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
+        
+        last_date = files[0].split("_")[1].split(".")[0]
+        last_file = files[0]
+
+        formatted_date1 = strptime(day, "%Y-%m-%d")
+        formatted_date2 = strptime(last_date, "%Y-%m-%d")
+
+        # Verifier si le jour actuel est superieur au jour precedent
+        if (formatted_date1 > formatted_date2):
+            allData = subFunction(token, day, baseUrl)
+
+            # Suprimer l'ancienne
+            os.remove("media/data/" + last_file)
+            
+            print("="*20, "allData updated", "="*20)
+            # print(allData[5:])
+
+        else:
+            file_name = "media/data/" + files[0]
+            # Opening JSON file
+            f = open(file_name , encoding='utf-8')
+            # returns JSON object as  a dictionary
+            allData = json.load(f)
+            
+            print("="*20, "allData already existing", "="*20)
+            # print(allData)
+    else:
+        list_file = os.listdir("media/data")
+        for file_name in list_file:
+            os.remove("media/data/" + str(file_name))
+
+        allData = subFunction(token, day, baseUrl)
+        print("="*20, "subFunction getting allData", "="*20)
+        # print(allData[5:])
+
+    return allData
+
 def get_one_from_ws(token, url_base, route, topiaid):
     """ Fonction qui interroge le web service (ws) pour récupérer toutes les données relatives à une route et un topiaid
 
@@ -191,9 +248,9 @@ def trip_for_prog_vessel(token, url_base, route, vessel_id, programme_topiaid):
     response = requests.get(api_trip_request, timeout=15)
     return response.content
 
-
 def send_trip(token, data, url_base, route):
-    """ Fonction qui ajoute un trip (marée) dans la base
+    """ 
+    Fonction qui ajoute un trip (marée) dans la base
 
     Args:
         token (str): token
@@ -214,12 +271,12 @@ def send_trip(token, data, url_base, route):
 
     url = url_base + route
 
-    print("Post")
+    print("Post - send data")
     pretty_print(data)
     
     response = requests.post(url, data=data_json, headers=headers)
 
-    print(response.status_code, "\n")
+    # print(response.status_code, "\n")
 
     if response.status_code == 200:
         # return json.loads(res.text)
@@ -235,7 +292,6 @@ def send_trip(token, data, url_base, route):
             # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
             print("Message d'erreur: ", json.loads(response.text)) # A faire
             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
-
 
 def update_trip(token, data, url_base, topiaid):
     """
@@ -268,3 +324,82 @@ def update_trip(token, data, url_base, topiaid):
         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
             outfile.write(response.text)
 
+
+
+def getId_Data(token, url, moduleName, argment, route):
+    """
+    Permet de retourner un id en fonction du module et de la route envoyé
+    """
+    headers = {
+        "Content-Type": "application/json",
+        'authenticationToken': token
+    }
+
+    urls = url + route + moduleName + "?filters." + argment
+    rep = requests.get(urls, headers=headers)
+
+    # print(rep.url)
+
+    if rep.status_code == 200:
+        return json.loads(rep.text)["content"][0]["topiaId"]
+    else:
+        return json.loads(rep.text)["message"]
+
+def check_trip(token, content, url_base):
+    """
+    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
+    """
+    start = content["startDate"].replace("T00:00:00.000Z", "")
+    end = content["endDate"].replace("T00:00:00.000Z", "")
+
+    vessel_id = content["vessel"].replace("#", "-")
+
+    # print(start, end, vessel_id)
+
+    id_ = ""
+    ms_ = True
+
+    try:
+        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
+                        argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
+    except:
+        ms_ = False
+
+    return id_, ms_
+
+# Supprimer un trip
+def del_trip(token, content):
+    dict = content
+    dicts = json.dumps(dict)
+
+    headers = {
+        "Content-Type": "application/json",
+        'authenticationToken': token
+    }
+
+    id_, ms_ = check_trip(token, content)
+
+    if ms_ == True:
+
+        id_ = id_.replace("#", "-")
+
+        url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
+
+        print(id_)
+
+        print("Supprimer")
+
+        res = requests.delete(url, data=dicts, headers=headers)
+
+        print(res.status_code, "\n")
+
+        if res.status_code == 200:
+            print("Supprimer avec succes")
+            return json.loads(res.text)
+        else:
+            try:
+                return errorFilter(res.text)
+            except KeyError:
+                print("Message d'erreur: ", json.loads(res.text))
+
+    

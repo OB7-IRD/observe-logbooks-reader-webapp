@@ -23,7 +23,7 @@ from django.utils import translation
 
 from palangre_syc import api
 from palangre_syc import json_construction
-from api_traitement import apiFunctions
+from api_traitement import api_functions, apiFunctions
 # from webapps.models import User
 
 
@@ -732,7 +732,7 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     print("="*20, vessel_topiaid_ws, "="*20)
     print("="*20, programme_topiaid_ws, "="*20)
     route = '/data/ll/common/Trip'
-    previous_trip = apiFunctions.trip_for_prog_vessel(token, url_base, route, vessel_topiaid_ws, programme_topiaid_ws)
+    previous_trip = api_functions.trip_for_prog_vessel(token, url_base, route, vessel_topiaid_ws, programme_topiaid_ws)
 
     # on récupères les informations uniquement pour le trip avec la endDate la plus récente
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
@@ -748,7 +748,7 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
             # print("="*20, trip_topiaid, "="*20)
             route = '/data/ll/common/Trip/'
             # trip_info = json.loads(api.get_trip(token, url_base, trip_topiaid).decode('utf-8'))
-            trip_info = json.loads(apiFunctions.get_one_from_ws(token, url_base, route, trip_topiaid).decode('utf-8'))
+            trip_info = json.loads(api_functions.get_one_from_ws(token, url_base, route, trip_topiaid).decode('utf-8'))
             # print(trip_info)
             # parsed_trip_info = json.loads(trip_info.decode('utf-8'))
             if 'departureHarbour' in trip_info['content'][0]:
@@ -877,11 +877,11 @@ def presenting_previous_trip(request):
 
         # on test le token, s'il est non valide, on le met à jour
         token = request.session['token']
-        if not apiFunctions.is_valid(token):
+        if not api_functions.is_valid(token):
             username = request.session.get('username')
             password = request.session.get('password')
             print(username, password)
-            token  = apiFunctions.reload_token(request, username, password)
+            token  = api_functions.reload_token(request, username, password)
             request.session['token'] = token
 
         try :
@@ -921,7 +921,7 @@ def checking_logbook(request):
     
     print("="*20, "checking_logbook", "="*20)
     
-    allData = apiFunctions.load_allData_file()
+    allData = api_functions.load_allData_file()
 
 
     # with open('./data_common.json', 'r', encoding='utf-8') as f:
@@ -931,10 +931,10 @@ def checking_logbook(request):
         # data_ll = json.load(f)
         
     token = request.session['token']
-    if not apiFunctions.is_valid(token):
+    if not api_functions.is_valid(token):
         username = request.session.get('username')
         password = request.session.get('password')
-        token  = apiFunctions.reload_token(request, username, password)
+        token  = api_functions.reload_token(request, username, password)
         request.session['token'] = token
     
     # token = api.get_token()
@@ -1198,7 +1198,7 @@ def checking_logbook(request):
 
             # on récupère les infos du trip enregistré dans un fichier json
             route = '/data/ll/common/Trip/'
-            apiFunctions.get_one_from_ws(token, url_base, route, trip_topiaid_ws)
+            api_functions.get_one_from_ws(token, url_base, route, trip_topiaid_ws)
             
             json_previoustrip = apiFunctions.load_json_file("media/temporary_files/previoustrip.json")
             
@@ -1304,10 +1304,10 @@ def send_logbook2observe(request):
         # print("token :", token)
 
         token = request.session['token']
-        if not apiFunctions.is_valid(token):
+        if not api_functions.is_valid(token):
             username = request.session.get('username')
             password = request.session.get('password')
-            token  = apiFunctions.reload_token(request, username, password)
+            token  = api_functions.reload_token(request, username, password)
             request.session['token'] = token
     
 
@@ -1359,7 +1359,7 @@ def send_logbook2observe(request):
 
             print("Creation of a new trip")
             route = '/data/ll/common/Trip'
-            resultat = apiFunctions.send_trip(token, trip, url_base, route)
+            resultat = api_functions.send_trip(token, trip, url_base, route)
             print("resultats : ", resultat)
 
         else:   
@@ -1398,7 +1398,7 @@ def send_logbook2observe(request):
             # with open(file="media/temporary_files/updated_json_file.json", mode="w") as outfile:
             #     outfile.write(json_formatted_str)
 
-            resultat = apiFunctions.update_trip(token=token,
+            resultat = api_functions.update_trip(token=token,
                             data=trip,
                             url_base=url_base,
                             topiaid=context['df_previous']['triptopiaid'].replace("#", "-"))

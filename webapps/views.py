@@ -5,7 +5,9 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
+from api_traitement import api_functions
 from api_traitement.apiFunctions import *
+from api_traitement.api_functions import *
 # from palangre_syc import api
 from .form import UserForm
 from django.contrib import messages
@@ -89,7 +91,7 @@ def auth_login(request):
 
                 try:
                     # token = "ok"
-                    token = getToken(baseUrl, data_user_connect)
+                    token = api_functions.get_token(baseUrl, data_user_connect)
                     print("Token: ", token)
                     print('baseURL: ', baseUrl)
                     allData = load_data(token=token, baseUrl=baseUrl)
@@ -130,7 +132,7 @@ def auth_login(request):
 def update_data(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = reload_token(request, username, password)
+    token  = api_functions.reload_token(request, username, password)
     baseUrl = request.session.get('baseUrl')
 
     allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
@@ -374,7 +376,7 @@ def domaineSelect(request):
 def sendData(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = reload_token(request, username, password)
+    token  = api_functions.reload_token(request, username, password)
     baseUrl = request.session.get('baseUrl')
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -384,7 +386,7 @@ def sendData(request):
         # returns JSON object as  a dictionary
         content_json = json.load(f)
         route = '/data/ps/common/Trip'
-        message, code = send_trip(token, content_json, baseUrl, route)
+        message, code = api_functions.send_trip(token, content_json, baseUrl, route)
 
         if code == 1:
             messages.success(request, message)
