@@ -331,6 +331,7 @@ def getId_Data(token, url, moduleName, argment, route):
     """
     Permet de retourner un id en fonction du module et de la route envoyé
     """
+    
     headers = {
         "Content-Type": "application/json",
         'authenticationToken': token
@@ -403,4 +404,3 @@ def del_trip(token, content):
             except KeyError:
                 print("Message d'erreur: ", json.loads(res.text))
 
-    

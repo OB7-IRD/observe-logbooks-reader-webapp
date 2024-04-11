@@ -303,6 +303,15 @@ def logbook(request):
 
 @login_required
 def getProgram(request, domaine):
+    """_summary_
+
+    Args:
+        request (_type_): _description_
+        domaine (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
     print(datat_0c_Pr)

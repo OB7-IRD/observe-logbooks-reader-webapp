@@ -183,7 +183,7 @@ msgid ""
 "données attendues. Ici on attend seulement des entiers."
 msgstr ""
 "The data in the submitted file does not correspond to the expected data "
-"type. Only integers are expected here."
+"type. We exepct only integers."
 
 #: palangre_syc/views.py:436
 msgid "Ici on n'attend qu'un seul matériau. Veuillez vérifier les données."

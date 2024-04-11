@@ -50,8 +50,6 @@ def pretty_print(json_data, file="media/temporary_files/created_json_file.json",
     
     json_formatted_str = json.dumps(
         json_data, indent=2, default=serialize)
-    # print("¤"*20, "pretty print function" ,"¤"*20)
-    # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
     with open(file, mode) as outfile:
         outfile.write(json_formatted_str)
 
