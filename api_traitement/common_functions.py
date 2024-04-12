@@ -39,7 +39,7 @@ def serialize(obj):
     """
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()
-    if isinstance(obj, np.int64):
+    if isinstance(obj, np.int64) or isinstance(obj, np.int32):
         return int(obj)
     return str(obj)
     # raise TypeError("Type not serializable")

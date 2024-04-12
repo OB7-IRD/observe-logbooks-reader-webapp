@@ -282,7 +282,7 @@ def send_trip(token, data, base_url, route):
         text message: logbook bien inséré, ou bien un json d'erreur
     """
 
-    data_json = json.dumps(data)
+    data_json = json.dumps(data, default=serialize)
 
     headers = {
         "Content-Type": "application/json",

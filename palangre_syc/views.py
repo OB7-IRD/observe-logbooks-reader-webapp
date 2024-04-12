@@ -866,8 +866,7 @@ def presenting_previous_trip(request):
         print(logbook_file_path)
 
         df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
-
-        request.session['df_donnees_p1'] = df_donnees_p1
+        # request.session['df_donnees_p1'] = df_donnees_p1
 
         # on test le token, s'il est non valide, on le met à jour
         token = request.session['token']
@@ -890,7 +889,7 @@ def presenting_previous_trip(request):
                 # Conversion car ne veut pas passer un dataframe en context
                 df_previous_trip = df_previous_trip.to_dict("index")
                 context.update({'df_previous': df_previous_trip,})
-                print(context)
+                # print(context)
         
         except :
             context.update({'df_previous': None})
@@ -945,10 +944,10 @@ def checking_logbook(request):
         #_______________________________EXTRACTION DES DONNEES__________________________________
         logbook_file_path = request.session.get('logbook_file_path')
                 
-        # df_donnees_p1 = read_excel(logbook_file_path, 1)
-        df_donnees_p1 = request.session.get('df_donnees_p1')
+        df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
+        # df_donnees_p1 = request.session.get('df_donnees_p1')
         df_donnees_p2 = common_functions.read_excel(logbook_file_path, 2)
-        request.session['df_donnees_p2'] = df_donnees_p2
+        # request.session['df_donnees_p2'] = df_donnees_p2
         
         df_vessel = excel_extractions.extract_vessel_info(df_donnees_p1)
         df_cruise = excel_extractions.extract_cruise_info(df_donnees_p1)
@@ -1309,10 +1308,10 @@ def send_logbook2observe(request):
         print("Read excel file")
         print(logbook_file_path)
 
-        # df_donnees_p1 = read_excel(logbook_file_path, 1)
-        df_donnees_p1 = request.session.get('df_donnees_p1')
-        df_donnees_p2 = request.session.get('df_donnees_p2')
-        # df_donnees_p2 = read_excel(logbook_file_path, 2)
+        df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
+        # df_donnees_p1 = request.session.get('df_donnees_p1')
+        # df_donnees_p2 = request.session.get('df_donnees_p2')
+        df_donnees_p2 = common_functions.read_excel(logbook_file_path, 2)
 
         # On transforme pour que les données soient comparables
         logbook_month = str(excel_extractions.extract_logbook_date(df_donnees_p1).loc[excel_extractions.extract_logbook_date(df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0])
