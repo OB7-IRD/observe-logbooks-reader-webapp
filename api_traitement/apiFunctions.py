@@ -1,10 +1,10 @@
 import datetime
-from time import gmtime, strftime, strptime
+# from time import gmtime, strftime, strptime
 import os
 import pandas as pd
 import openpyxl as op
 import numpy as np
-import requests
+# import requests
 import json
 
 from api_traitement.json_fonctions import *
@@ -16,415 +16,415 @@ from django.contrib.auth import authenticate
 
 ########### Token ###########
 
-def getToken(baseUrl, data):
-    """
-    Adelphe
-    data = {
-            "config.login": "username",
-            "config.password": "password",
-            "config.databaseName": "database",
-            "referentialLocale": "FR",
-        }
-    """
+# def getToken(baseUrl, data):
+#     """
+#     Adelphe
+#     data = {
+#             "config.login": "username",
+#             "config.password": "password",
+#             "config.databaseName": "database",
+#             "referentialLocale": "FR",
+#         }
+#     """
 
-    url = baseUrl + "/init/open"
-    response = requests.get(url, params=data)
-    print(response.url)
-    token = response.json()['authenticationToken']
+#     url = baseUrl + "/init/open"
+#     response = requests.get(url, params=data)
+#     print(response.url)
+#     token = response.json()['authenticationToken']
 
-    return token
-
-
-def is_valid(token):
-    """ 
-    Clem
-    Fonction booléenne qui test si le token est encore valide
-    Args:
-        token (str): _description_
-    """
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
-    # Constitution du lien url pour accéder à l'API et fermer la connexion
-    api_url = api_base + 'authenticationToken=' + token
-    response = requests.get(api_url)
-    print("reponse of is valid function ", response.status_code)
-    return response.status_code == 200
+#     return token
 
 
-def reload_token(req, username, password):
+# def is_valid(token):
+#     """ 
+#     Clem
+#     Fonction booléenne qui test si le token est encore valide
+#     Args:
+#         token (str): _description_
+#     """
+#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
+#     # Constitution du lien url pour accéder à l'API et fermer la connexion
+#     api_url = api_base + 'authenticationToken=' + token
+#     response = requests.get(api_url)
+#     print("reponse of is valid function ", response.status_code)
+#     return response.status_code == 200
 
-    user = authenticate(req, username=username,  password=password)
-    data_user = User.objects.get(username=user)
 
-    baseUrl = data_user.url
+# def reload_token(req, username, password):
+
+#     user = authenticate(req, username=username,  password=password)
+#     data_user = User.objects.get(username=user)
+
+#     baseUrl = data_user.url
     
-    print("data_user.database",data_user.database)
-    if data_user.database == 'test' :
-        data_user.username = 'technicienweb'
+#     print("data_user.database",data_user.database)
+#     if data_user.database == 'test' :
+#         data_user.username = 'technicienweb'
                 
-    data_user_connect = {
-        "config.login": data_user.username,
-        "config.login": data_user.username,
-        "config.password": password,
-        "config.databaseName": data_user.database,
-        "referentialLocale": data_user.ref_language,
-    }
+#     data_user_connect = {
+#         "config.login": data_user.username,
+#         "config.login": data_user.username,
+#         "config.password": password,
+#         "config.databaseName": data_user.database,
+#         "referentialLocale": data_user.ref_language,
+#     }
 
-    return getToken(baseUrl, data_user_connect)
-
-
-def get_all_referential_data(token, module, baseUrl):
-    url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
-    ac_cap = requests.get(url)
-    if ac_cap.status_code == 200:
-        dicoModule = {}
-        for val in json.loads(ac_cap.text)["content"]:
-            vals = val.rsplit('.', 1)[1]
-            dicoModule[vals] = []
-
-            for valin in json.loads(ac_cap.text)["content"][val]:
-                dicoModule[vals].append(valin)
-        print("="*20, "get_all_referential_data", "="*20)
-        # print(dicoModule)
-        return dicoModule
-    else:
-        return "Problème de connexion pour recuperer les données"
+#     return getToken(baseUrl, data_user_connect)
 
 
-# Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
-# En utilisant notre fuiseau horaire
-def load_data(token, baseUrl, forceUpdate=False):
-    print("_"*20, "load_data function starting", "_"*20)
-    day = strftime("%Y-%m-%d", gmtime())
+# def get_all_referential_data(token, module, baseUrl):
+#     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
+#     ac_cap = requests.get(url)
+#     if ac_cap.status_code == 200:
+#         dicoModule = {}
+#         for val in json.loads(ac_cap.text)["content"]:
+#             vals = val.rsplit('.', 1)[1]
+#             dicoModule[vals] = []
+
+#             for valin in json.loads(ac_cap.text)["content"][val]:
+#                 dicoModule[vals].append(valin)
+#         print("="*20, "get_all_referential_data", "="*20)
+#         # print(dicoModule)
+#         return dicoModule
+#     else:
+#         return "Problème de connexion pour recuperer les données"
+
+
+# # Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
+# # En utilisant notre fuiseau horaire
+# def load_data(token, baseUrl, forceUpdate=False):
+#     print("_"*20, "load_data function starting", "_"*20)
+#     day = strftime("%Y-%m-%d", gmtime())
     
-    # Si les dossiers ne sont pas existant, on les créés
-    if not os.path.exists("media/data"):
-        os.makedirs("media/data")
+#     # Si les dossiers ne sont pas existant, on les créés
+#     if not os.path.exists("media/data"):
+#         os.makedirs("media/data")
 
-    if not os.path.exists("media/temporary_files"):
-        os.makedirs("media/temporary_files")
+#     if not os.path.exists("media/temporary_files"):
+#         os.makedirs("media/temporary_files")
 
-    files = os.listdir("media/data")
+#     files = os.listdir("media/data")
 
-    def subFunction(token, day, url):
-        ref_common = get_all_referential_data(token, "common", url)
-        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
-        ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)
+#     def subFunction(token, day, url):
+#         ref_common = get_all_referential_data(token, "common", url)
+#         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+#         ps_common = get_all_referential_data(token, "ps/common", url)
+#         ll_common = get_all_referential_data(token, "ll/common", url)
 
-        program = {
-            'Program': {
-                'seine' :ps_common["Program"],
-                'longline':ll_common["Program"]
-            }
-        }
-        vesselActivity = {
-            'VesselActivity': {
-                'seine' :ps_common["VesselActivity"],
-                'longline':ll_common["VesselActivity"]
-            }
-        }
+#         program = {
+#             'Program': {
+#                 'seine' :ps_common["Program"],
+#                 'longline':ll_common["Program"]
+#             }
+#         }
+#         vesselActivity = {
+#             'VesselActivity': {
+#                 'seine' :ps_common["VesselActivity"],
+#                 'longline':ll_common["VesselActivity"]
+#             }
+#         }
 
-        # Suppression des éléments suivant
-        del ps_common["Program"]
-        del ll_common["Program"]
-        del ps_common["VesselActivity"]
-        del ll_common["VesselActivity"]
+#         # Suppression des éléments suivant
+#         del ps_common["Program"]
+#         del ll_common["Program"]
+#         del ps_common["VesselActivity"]
+#         del ll_common["VesselActivity"]
 
-        allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
-        # allData = {**ref_common, **ps_logbook, **ps_common}
+#         allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
+#         # allData = {**ref_common, **ps_logbook, **ps_common}
 
-        ref_common = get_all_referential_data(token, "common", url)
-        # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
-        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
-        ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)    
+#         ref_common = get_all_referential_data(token, "common", url)
+#         # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
+#         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+#         ps_common = get_all_referential_data(token, "ps/common", url)
+#         ll_common = get_all_referential_data(token, "ll/common", url)    
         
-        print("="*20, "load_data SubFunction", "="*20)
-        # print(ref_common[5:])
-        # with open('allData_load.json', 'w', encoding='utf-8') as f:
-        #     json.dump(allData, f, ensure_ascii=False, indent=4)
+#         print("="*20, "load_data SubFunction", "="*20)
+#         # print(ref_common[5:])
+#         # with open('allData_load.json', 'w', encoding='utf-8') as f:
+#         #     json.dump(allData, f, ensure_ascii=False, indent=4)
         
-        file_name = "media/data/data_" + str(day) + ".json"
+#         file_name = "media/data/data_" + str(day) + ".json"
 
-        with open(file_name, 'w', encoding='utf-8') as f:
-            f.write(json.dumps(allData, ensure_ascii=False, indent=4))
+#         with open(file_name, 'w', encoding='utf-8') as f:
+#             f.write(json.dumps(allData, ensure_ascii=False, indent=4))
 
-        return allData
+#         return allData
 
-    if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
+#     if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
         
-        last_date = files[0].split("_")[1].split(".")[0]
-        last_file = files[0]
+#         last_date = files[0].split("_")[1].split(".")[0]
+#         last_file = files[0]
 
-        formatted_date1 = strptime(day, "%Y-%m-%d")
-        formatted_date2 = strptime(last_date, "%Y-%m-%d")
+#         formatted_date1 = strptime(day, "%Y-%m-%d")
+#         formatted_date2 = strptime(last_date, "%Y-%m-%d")
 
-        # Verifier si le jour actuel est superieur au jour precedent
-        if (formatted_date1 > formatted_date2):
-            allData = subFunction(token, day, baseUrl)
+#         # Verifier si le jour actuel est superieur au jour precedent
+#         if (formatted_date1 > formatted_date2):
+#             allData = subFunction(token, day, baseUrl)
 
-            # Suprimer l'ancienne
-            os.remove("media/data/" + last_file)
+#             # Suprimer l'ancienne
+#             os.remove("media/data/" + last_file)
             
-            print("="*20, "allData updated", "="*20)
-            # print(allData[5:])
+#             print("="*20, "allData updated", "="*20)
+#             # print(allData[5:])
 
-        else:
-            file_name = "media/data/" + files[0]
-            # Opening JSON file
-            f = open(file_name , encoding='utf-8')
-            # returns JSON object as  a dictionary
-            allData = json.load(f)
+#         else:
+#             file_name = "media/data/" + files[0]
+#             # Opening JSON file
+#             f = open(file_name , encoding='utf-8')
+#             # returns JSON object as  a dictionary
+#             allData = json.load(f)
             
-            print("="*20, "allData already existing", "="*20)
-            # print(allData)
-    else:
-        list_file = os.listdir("media/data")
-        for file_name in list_file:
-            os.remove("media/data/" + str(file_name))
+#             print("="*20, "allData already existing", "="*20)
+#             # print(allData)
+#     else:
+#         list_file = os.listdir("media/data")
+#         for file_name in list_file:
+#             os.remove("media/data/" + str(file_name))
 
-        allData = subFunction(token, day, baseUrl)
-        print("="*20, "subFunction getting allData", "="*20)
-        # print(allData[5:])
+#         allData = subFunction(token, day, baseUrl)
+#         print("="*20, "subFunction getting allData", "="*20)
+#         # print(allData[5:])
 
-    return allData
+#     return allData
 
 
 # print(load_data(token = '9f49725e-2402-46fd-ab52-c03a6ba2c529',
 #                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
-def load_allData_file():
-    files = os.listdir("media/data")
+# def load_allData_file():
+#     files = os.listdir("media/data")
 
-    file_name = "media/data/" + files[0]
-    # Opening JSON file
-    f = open(file_name,  encoding='utf-8')
-    # returns JSON object as  a dictionary
-    allData = json.load(f)
+#     file_name = "media/data/" + files[0]
+#     # Opening JSON file
+#     f = open(file_name,  encoding='utf-8')
+#     # returns JSON object as  a dictionary
+#     allData = json.load(f)
 
-    return allData
+#     return allData
 
-def load_json_file(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            data = json.load(file)
-            return data
-    except FileNotFoundError:
-        print(f"File '{file_path}' not found.")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON file '{file_path}': {e}")
-        return None
+# def load_json_file(file_path):
+#     try:
+#         with open(file_path, 'r') as file:
+#             data = json.load(file)
+#             return data
+#     except FileNotFoundError:
+#         print(f"File '{file_path}' not found.")
+#         return None
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON file '{file_path}': {e}")
+#         return None
     
-def serialize(obj): 
-    """ 
-    Serialize obj dans un format json de type date, int ou str.
-    """
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    if isinstance(obj, np.int64):
-        return int(obj)
-    return str(obj)
-    # raise TypeError("Type not serializable")
+# def serialize(obj): 
+#     """ 
+#     Serialize obj dans un format json de type date, int ou str.
+#     """
+#     if isinstance(obj, datetime.datetime):
+#         return obj.isoformat()
+#     if isinstance(obj, np.int64):
+#         return int(obj)
+#     return str(obj)
+#     # raise TypeError("Type not serializable")
 
-def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
-    """ Fonction qui affiche le fichier json avec les bonnes indentations un fichier json
+# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
+#     """ Fonction qui affiche le fichier json avec les bonnes indentations un fichier json
 
-    Args:
-        json_data (json): Données json en entrée
-        file (str, optional): Nom de fichier json de sortie "created_json_file.json".
-        mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
-    """
+#     Args:
+#         json_data (json): Données json en entrée
+#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
+#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
+#     """
     
-    json_formatted_str = json.dumps(
-        json_data, indent=2, default=serialize)
-    # print("¤"*20, "pretty print function" ,"¤"*20)
-    # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
-    with open(file, mode) as outfile:
-        outfile.write(json_formatted_str)
+#     json_formatted_str = json.dumps(
+#         json_data, indent=2, default=serialize)
+#     # print("¤"*20, "pretty print function" ,"¤"*20)
+#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
+#     with open(file, mode) as outfile:
+#         outfile.write(json_formatted_str)
 
 
 
 ########### Fonctions faisant appel au le web service ###########
-def getId_Data(token, url, moduleName, argment, route):
-    """
-    Permet de retourner un id en fonction du module et de la route envoyé
-    """
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+# def getId_Data(token, url, moduleName, argment, route):
+#     """
+#     Permet de retourner un id en fonction du module et de la route envoyé
+#     """
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
 
-    urls = url + route + moduleName + "?filters." + argment
-    rep = requests.get(urls, headers=headers)
+#     urls = url + route + moduleName + "?filters." + argment
+#     rep = requests.get(urls, headers=headers)
 
-    # print(rep.url)
+#     # print(rep.url)
 
-    if rep.status_code == 200:
-        return json.loads(rep.text)["content"][0]["topiaId"]
-    else:
-        return json.loads(rep.text)["message"]
+#     if rep.status_code == 200:
+#         return json.loads(rep.text)["content"][0]["topiaId"]
+#     else:
+#         return json.loads(rep.text)["message"]
 
 
-def check_trip(token, content, url_base):
-    """
-    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
-    """
-    start = content["startDate"].replace("T00:00:00.000Z", "")
-    end = content["endDate"].replace("T00:00:00.000Z", "")
+# def check_trip(token, content, url_base):
+#     """
+#     Permet de verifier si la marée a inserer existe déjà dans la base de donnée
+#     """
+#     start = content["startDate"].replace("T00:00:00.000Z", "")
+#     end = content["endDate"].replace("T00:00:00.000Z", "")
 
-    vessel_id = content["vessel"].replace("#", "-")
+#     vessel_id = content["vessel"].replace("#", "-")
 
-    # print(start, end, vessel_id)
+#     # print(start, end, vessel_id)
 
-    id_ = ""
-    ms_ = True
+#     id_ = ""
+#     ms_ = True
 
-    try:
-        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
-                        argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
-    except:
-        ms_ = False
+#     try:
+#         id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
+#                         argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
+#     except:
+#         ms_ = False
 
-    return id_, ms_
+#     return id_, ms_
 
     
-def get_one_from_ws(token, url_base, route, topiaid):
-    """ Fonction qui interroge le web service (ws) pour récupérer toutes les données relatives à une route et un topiaid
+# def get_one_from_ws(token, url_base, route, topiaid):
+#     """ Fonction qui interroge le web service (ws) pour récupérer toutes les données relatives à une route et un topiaid
 
-    Args:
-        token (str): token
-        url_base: chemin d'accès à la connexion ('https://observe.ob7.ird.fr/observeweb/api/public')
-        route: chemin d'accès plus précis (par ex : '/data/ll/common/Trip/')
-        topiaid: topiaid avec des '-' à la place des '#'
+#     Args:
+#         token (str): token
+#         url_base: chemin d'accès à la connexion ('https://observe.ob7.ird.fr/observeweb/api/public')
+#         route: chemin d'accès plus précis (par ex : '/data/ll/common/Trip/')
+#         topiaid: topiaid avec des '-' à la place des '#'
 
-    Returns:
-        file.json: informations relatives au topiaid fourni
-    """
+#     Returns:
+#         file.json: informations relatives au topiaid fourni
+#     """
     
-    headers = {
-        'authenticationToken': token, 
-    }
+#     headers = {
+#         'authenticationToken': token, 
+#     }
     
-    params = {
-        'config.recursive' : 'true', 
-    }
+#     params = {
+#         'config.recursive' : 'true', 
+#     }
     
-    url = url_base + route + topiaid
+#     url = url_base + route + topiaid
     
-    response = requests.get(url, headers=headers, params = params, timeout=15)
+#     response = requests.get(url, headers=headers, params = params, timeout=15)
 
-    if response.status_code == 200 :
-        # with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
-        #     outfile.write(response.text)
-        return response.content
+#     if response.status_code == 200 :
+#         # with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
+#         #     outfile.write(response.text)
+#         return response.content
     
-    else:
-        return None
+#     else:
+#         return None
     
 
-def send_trip(token, data, url_base, route):
-    """ Fonction qui ajoute un trip (marée) dans la base
+# def send_trip(token, data, url_base, route):
+#     """ Fonction qui ajoute un trip (marée) dans la base
 
-    Args:
-        token (str): token
-        data (json): json file (trip) que l'on envoie dans la base
-        url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
-        route (str):  '/data/ps/common/Trip' ou '/data/ll/common/Trip'
-    Returns:
-        le json inséré dans le temporary_files 
-        text message: logbook bien inséré, ou bien un json d'erreur
-    """
+#     Args:
+#         token (str): token
+#         data (json): json file (trip) que l'on envoie dans la base
+#         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+#         route (str):  '/data/ps/common/Trip' ou '/data/ll/common/Trip'
+#     Returns:
+#         le json inséré dans le temporary_files 
+#         text message: logbook bien inséré, ou bien un json d'erreur
+#     """
 
-    data_json = json.dumps(data)
+#     data_json = json.dumps(data)
 
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
 
-    url = url_base + route
+#     url = url_base + route
 
-    print("Post")
-    pretty_print(data)
+#     print("Post")
+#     pretty_print(data)
     
-    response = requests.post(url, data=data_json, headers=headers)
+#     response = requests.post(url, data=data_json, headers=headers)
 
-    print(response.status_code, "\n")
+#     print(response.status_code, "\n")
 
-    if response.status_code == 200:
-        # return json.loads(res.text)
-        return ("Logbook inséré avec success", 1)
-    else:
-        with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
-            outfile.write(response.text)
-        try:
-            return (errorFilter(response.text), 2)
-            # return json.loads(res.text), 2
-        except KeyError:
-            # Faire une fonction pour mieux traiter ce type d'erreur
-            # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
-            print("Message d'erreur: ", json.loads(response.text)) # A faire
-            return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
+#     if response.status_code == 200:
+#         # return json.loads(res.text)
+#         return ("Logbook inséré avec success", 1)
+#     else:
+#         with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
+#             outfile.write(response.text)
+#         try:
+#             return (errorFilter(response.text), 2)
+#             # return json.loads(res.text), 2
+#         except KeyError:
+#             # Faire une fonction pour mieux traiter ce type d'erreur
+#             # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
+#             print("Message d'erreur: ", json.loads(response.text)) # A faire
+#             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
 
 
-def update_trip(token, data, url_base, topiaid):
-    """Fonction qui met à jour un trip dans la base de données, donc supprime le trip existant pour insérer le nouveau data_json sous le même topiaid
+# def update_trip(token, data, url_base, topiaid):
+#     """Fonction qui met à jour un trip dans la base de données, donc supprime le trip existant pour insérer le nouveau data_json sous le même topiaid
 
-    Args:
-        token (str): token
-        data (json): json file qu'on envoie dans la base
-        url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
-        topiaid du trip que l'on veut update (l'ancienne version sera supprimée)
-    Returns:
-    """
+#     Args:
+#         token (str): token
+#         data (json): json file qu'on envoie dans la base
+#         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+#         topiaid du trip que l'on veut update (l'ancienne version sera supprimée)
+#     Returns:
+#     """
 
-    data_json = json.dumps(data, default=serialize)
+#     data_json = json.dumps(data, default=serialize)
 
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token,}
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token,}
 
-    url = url_base + '/data/ll/common/Trip/' + topiaid
+#     url = url_base + '/data/ll/common/Trip/' + topiaid
 
-    pretty_print(data)
-    response = requests.put(url, data=data_json, headers=headers, timeout=15)
+#     pretty_print(data)
+#     response = requests.put(url, data=data_json, headers=headers, timeout=15)
     
-    print("Code resultat de la requete", response.status_code)
+#     print("Code resultat de la requete", response.status_code)
     
-    if response.status_code == 200:
-        return ("Logbook inséré avec success", 1)
-    else:
-        with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
-            outfile.write(response.text)
+#     if response.status_code == 200:
+#         return ("Logbook inséré avec success", 1)
+#     else:
+#         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
+#             outfile.write(response.text)
 
 
-def trip_for_prog_vessel(token, url_base, route, vessel_id, programme_topiaid):
-    """
-    Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
+# def trip_for_prog_vessel(token, url_base, route, vessel_id, programme_topiaid):
+#     """
+#     Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
 
-    Args:
-        token
-        url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
-        vessel_id: topiaid du navire (avec les '-')
-        programme_topiaid: topiaid du programme choisi (avec les '-')
+#     Args:
+#         token
+#         url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+#         vessel_id: topiaid du navire (avec les '-')
+#         programme_topiaid: topiaid du programme choisi (avec les '-')
 
-    Returns:
-        trip topiaid
-    """
-    # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
-    api_trip = '?authenticationToken='
+#     Returns:
+#         trip topiaid
+#     """
+#     # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
+#     api_trip = '?authenticationToken='
 
-    api_vessel_filter = '&filters.vessel_id='
-    api_programme_filter = '&filters.logbookProgram_id='
-    api_ordeer_filter = '&orders.endDate=DESC'
+#     api_vessel_filter = '&filters.vessel_id='
+#     api_programme_filter = '&filters.logbookProgram_id='
+#     api_ordeer_filter = '&orders.endDate=DESC'
 
-    api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
-    response = requests.get(api_trip_request, timeout=15)
-    return response.content
+#     api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
+#     response = requests.get(api_trip_request, timeout=15)
+#     return response.content
 
-########### Fonctions de recherche dans allData --> à déplacer dans json_functions ###########
+# ########### Fonctions de recherche dans allData --> à déplacer dans json_functions ###########
 
 # Retourne ID d'un module en fonction des arguments donnés
 def getId(allData, module, argment, nbArg=False, domaine=None):
@@ -1099,40 +1099,40 @@ def errorFilter(response):
     return all_message
 
 
-# Supprimer un trip
-def del_trip(token, content):
-    dict = content
-    dicts = json.dumps(dict)
+# # Supprimer un trip
+# def del_trip(token, content):
+#     dict = content
+#     dicts = json.dumps(dict)
 
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
 
-    id_, ms_ = check_trip(token, content)
+#     id_, ms_ = check_trip(token, content)
 
-    if ms_ == True:
+#     if ms_ == True:
 
-        id_ = id_.replace("#", "-")
+#         id_ = id_.replace("#", "-")
 
-        url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
+#         url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
 
-        print(id_)
+#         print(id_)
 
-        print("Supprimer")
+#         print("Supprimer")
 
-        res = requests.delete(url, data=dicts, headers=headers)
+#         res = requests.delete(url, data=dicts, headers=headers)
 
-        print(res.status_code, "\n")
+#         print(res.status_code, "\n")
 
-        if res.status_code == 200:
-            print("Supprimer avec succes")
-            return json.loads(res.text)
-        else:
-            try:
-                return errorFilter(res.text)
-            except KeyError:
-                print("Message d'erreur: ", json.loads(res.text))
+#         if res.status_code == 200:
+#             print("Supprimer avec succes")
+#             return json.loads(res.text)
+#         else:
+#             try:
+#                 return errorFilter(res.text)
+#             except KeyError:
+#                 print("Message d'erreur: ", json.loads(res.text))
 
 
 # Constitution de contents

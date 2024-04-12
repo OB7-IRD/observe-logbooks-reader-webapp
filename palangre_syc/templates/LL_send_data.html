@@ -34,7 +34,7 @@
       
         <div class="ml-8 mr-12 mb-5 font-sans text-center text-xl font-semibold font-semibold leading-snug tracking-normal text-black antialiased">
           <ul class="messages">     
-            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
           </ul>      
         </div>
       </div>
@@ -44,7 +44,8 @@
 
   <!-- Div buttons -->
   <div class="flex justify-center items-center inline-flex m-8">
-    <a href="../logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">          {% translate "Retour à la zone de dépôt"%}
+    {% comment %} <a href="./logbook" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">          {% translate "Retour à la zone de dépôt"%} {% endcomment %}
+      <a href="{% url 'logbook' %}" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900">          {% translate "Retour à la zone de dépôt"%}
     </a>
   </div>
 <!-- End Div buttons -->
