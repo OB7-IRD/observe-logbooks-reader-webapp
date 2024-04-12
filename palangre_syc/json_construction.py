@@ -1,7 +1,16 @@
+""" 
+#######################################################
+#
+# Module de fonctions qui permettent la construction du json 
+# palangre, tel qu'il est envoyé à Observe
+#######################################################
+"""
+
 import json
 import pandas as pd
 import palangre_syc.api
 import palangre_syc.views
+import palangre_syc.excel_extractions
 from api_traitement import common_functions
 
 def get_captain_topiaid(df_donnees_p1, allData):
@@ -18,7 +27,7 @@ def get_captain_topiaid(df_donnees_p1, allData):
     """
     for captain in allData['Person']:
 
-        captain_logbook = palangre_syc.views.extract_cruise_info(df_donnees_p1).loc[palangre_syc.views.extract_cruise_info(df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
+        captain_logbook = palangre_syc.excel_extractions.extract_cruise_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_cruise_info(df_donnees_p1)['Logbook_name'] == 'Captain', 'Value'].values[0]
         captain_json = captain['firstName'] + ' ' + captain['lastName']
         if captain_logbook == captain_json:
             return captain['topiaId']
@@ -41,7 +50,7 @@ def get_operator_topiaid(df_donnees_p1, allData):
     """
     for person in allData['Person']:
 
-        reported_logbook = palangre_syc.views.extract_report_info(df_donnees_p1).loc[palangre_syc.views.extract_report_info(
+        reported_logbook = palangre_syc.excel_extractions.extract_report_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_report_info(
             df_donnees_p1)['Logbook_name'] == 'Person reported', 'Value'].values[0]
         reported_json = person['firstName'] + ' ' + person['lastName']
         if reported_logbook == reported_json:
@@ -63,7 +72,7 @@ def get_vessel_topiaid(df_donnees_p1, allData):
     Returns:
         _type_: topiaID du navire (vessel)
     """
-    vessel_logbook = palangre_syc.views.extract_vessel_info(df_donnees_p1).loc[palangre_syc.views.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
+    vessel_logbook = palangre_syc.excel_extractions.extract_vessel_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_vessel_info(df_donnees_p1)['Logbook_name'] == 'Official Number', 'Value'].values[0]
     #vessel_logbook = vessel_logbook.strip()
     for vessel in allData["Vessel"]:
         if 'nationalId' in vessel:
@@ -151,7 +160,6 @@ def get_processing_topiaid(fao_code, allData):
     Returns:
         topiaid: OnBoardProcess
     """
-    ''' on associe pour chaque espèce un processing et on lui ajoute en onBoardProcessing '''
     if fao_code == 'SBF' or fao_code == 'BET' or fao_code == 'YFT':
         processing_code = "GG"
     elif fao_code == 'SWO' or fao_code == 'MLS' or fao_code == 'BUM' or fao_code == 'BLM' or fao_code == 'SFA' or fao_code == 'SSP':
@@ -181,7 +189,7 @@ def get_target_species_topiaid(df_donnees_p1, allData):
     Returns:
         list de topiaid
     """
-    data = palangre_syc.views.extract_target_species(df_donnees_p1)
+    data = palangre_syc.excel_extractions.extract_target_species(df_donnees_p1)
     list_target_topiaid = []
     for target in data['Logbook_name']:
         if 'Tropical Tuna' in target: 
@@ -272,8 +280,8 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
     Returns:
         dataframe: avec les prises réalisées pour une journée de pêche (code FAO, catchFate, nombre de prise et Poids tot)
     """
-    liste_fct_extraction = [palangre_syc.views.extract_fish_p1(df_donnees_p1),
-                            palangre_syc.views.extract_bycatch_p2(df_donnees_p2)
+    liste_fct_extraction = [palangre_syc.excel_extractions.extract_fish_p1(df_donnees_p1),
+                            palangre_syc.excel_extractions.extract_bycatch_p2(df_donnees_p2)
                             #palangre_syc.views.extract_tunas(df_donnees_p1),
                             #palangre_syc.views.extract_billfishes(df_donnees_p1),
                             #palangre_syc.views.extract_otherfish(df_donnees_p1),
@@ -323,7 +331,7 @@ def create_branchelines_composition(df_donnees_p1):
     """
     branchlines_composition = [{
         'homeId': None,
-        'length': palangre_syc.views.extract_gear_info(df_donnees_p1).loc[palangre_syc.views.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        'length': palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
         'proportion': None,
         'tracelineLength': None,
         'topType': "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
@@ -372,7 +380,7 @@ def create_floatline_composition(df_gear):
     """
     floatlines_composition = [{
         "homeId": None,
-        # "length": palangre_syc.views.extract_gear_info(df_donnees_p1).loc[palangre_syc.views.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
+        # "length": palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
         "length": df_gear.loc[df_gear['Logbook_name'] == 'Floatline length m', 'Value'].values[0],
         "proportion": 100,
         "lineType": "fr.ird.referential.ll.common.LineType#1239832686157#0.9"
@@ -436,16 +444,16 @@ def create_starttimestamp(df_donnees_p1, allData, index_day, need_hour=bool):
         _type_: la datetime au format qui permet l'insersion dans la bdd
     """
     if need_hour is True:
-        time_ = palangre_syc.views.extract_time(df_donnees_p1, allData).loc[index_day, 'Time']
+        time_ = palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[index_day, 'Time']
     else:
         time_ = '00:00:00'
 
     date_formated = '{}-{:02}-{:02}T{}.000Z'.format(
-        palangre_syc.views.extract_logbook_date(df_donnees_p1).loc[palangre_syc.views.extract_logbook_date(
+        palangre_syc.excel_extractions.extract_logbook_date(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_logbook_date(
             df_donnees_p1)['Logbook_name'] == 'Year', 'Value'].values[0],
-        palangre_syc.views.extract_logbook_date(df_donnees_p1).loc[palangre_syc.views.extract_logbook_date(
+        palangre_syc.excel_extractions.extract_logbook_date(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_logbook_date(
             df_donnees_p1)['Logbook_name'] == 'Month', 'Value'].values[0],
-        palangre_syc.views.extract_time(df_donnees_p1, allData).loc[index_day, 'Day'], time_)
+        palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[index_day, 'Day'], time_)
     return date_formated
 
 def create_starttimestamp_from_field_date(date):
@@ -497,16 +505,16 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
     
     #############################
     # messages d'erreurs
-    if isinstance(palangre_syc.views.extract_gear_info(df_donnees_p1), tuple):
-        df_gear, _ = palangre_syc.views.extract_gear_info(df_donnees_p1)
+    if isinstance(palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1), tuple):
+        df_gear, _ = palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)
     else:
-        df_gear = palangre_syc.views.extract_gear_info(df_donnees_p1)
+        df_gear = palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)
         
     # mais pour l'instant on ne traite pas cette info anyways 
-    if isinstance(palangre_syc.views.extract_line_material(df_donnees_p1), tuple):
-        df_line, _ = palangre_syc.views.extract_line_material(df_donnees_p1)
+    if isinstance(palangre_syc.excel_extractions.extract_line_material(df_donnees_p1), tuple):
+        df_line, _ = palangre_syc.excel_extractions.extract_line_material(df_donnees_p1)
     else:
-        df_line = palangre_syc.views.extract_line_material(df_donnees_p1)  
+        df_line = palangre_syc.excel_extractions.extract_line_material(df_donnees_p1)  
     #############################
 
     
@@ -519,9 +527,9 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
             'basketsPerSectionCount': None,
             'branchlinesPerBasketCount': None,
             'totalSectionsCount': None,
-            'totalBasketsCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'],
-            'totalHooksCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks'],
-            'totalLightsticksCount': palangre_syc.views.extract_fishing_effort(df_donnees_p1).loc[i, 'Total lightsticks'],
+            'totalBasketsCount': palangre_syc.excel_extractions.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks / Hooks per basket'],
+            'totalHooksCount': palangre_syc.excel_extractions.extract_fishing_effort(df_donnees_p1).loc[i, 'Total hooks'],
+            'totalLightsticksCount': palangre_syc.excel_extractions.extract_fishing_effort(df_donnees_p1).loc[i, 'Total lightsticks'],
             'weightedSnap': False,
             'snapWeight': None,
             'weightedSwivel': False,
@@ -533,8 +541,8 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
 
         set.update({'settingStartTimeStamp': create_starttimestamp(df_donnees_p1, allData, index_day=i, need_hour=True)})
 
-        set.update({'settingStartLatitude': palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-                    'settingStartLongitude': palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
+        set.update({'settingStartLatitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+                    'settingStartLongitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
                     'settingEndTimeStamp': None,
                     'settingEndLatitude': None,
                     'settingEndLongitude': None,
@@ -555,7 +563,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
                     'lengthBetweenBranchlines': df_gear.loc[df_gear['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
                     })
 
-        bait_datatable = palangre_syc.views.extract_bait(df_donnees_p1)
+        bait_datatable = palangre_syc.excel_extractions.extract_bait(df_donnees_p1)
         set.update({'baitsComposition': create_bait_composition(bait_datatable, allData),})
 
         set.update({'floatlinesComposition': create_floatline_composition(df_gear),
@@ -577,7 +585,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
         activity = {
             'homeId': None,
             'comment': None, }
-        if palangre_syc.views.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1':
+        if palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'] == 'fr.ird.referential.ll.common.VesselActivity#1239832686138#0.1':
             activity.update({'startTimeStamp': create_starttimestamp(
                 df_donnees_p1, allData, index_day=i, need_hour=True)})
         else:
@@ -585,14 +593,14 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
                             , })
 
         activity.update({'endTimeStamp': None,
-                        'latitude': palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
-                        'longitude': palangre_syc.views.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
-                        'seaSurfaceTemperature': palangre_syc.views.extract_temperature(df_donnees_p1).loc[i, 'Température'],
+                        'latitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
+                        'longitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
+                        'seaSurfaceTemperature': palangre_syc.excel_extractions.extract_temperature(df_donnees_p1).loc[i, 'Température'],
                         'wind': None,
                         'windDirection': None,
                         'currentSpeed': None,
                         'currentDirection': None,
-                        'vesselActivity': palangre_syc.views.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
+                        'vesselActivity': palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
                         'dataQuality': None,
                         'fpaZone': None,
                         'relatedObservedActivity': None,
@@ -635,7 +643,7 @@ def create_trip(df_donnees_p1, MultipleActivity, allData, context):
         'homeId': None,
         'startDate': context['startDate'],
         'endDate': context['endDate'],
-        'noOfCrewMembers': palangre_syc.views.extract_cruise_info(df_donnees_p1).loc[palangre_syc.views.extract_cruise_info(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
+        'noOfCrewMembers': palangre_syc.excel_extractions.extract_cruise_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_cruise_info(df_donnees_p1)['Logbook_name'] == 'No Of Crew', 'Value'].values[0],
         'ersId': None,
         'gearUseFeatures': None,
         'activityObs': None,
@@ -712,7 +720,7 @@ def pretty_print(json_data, file="media/temporary_files/created_json_file.json",
         outfile.write(json_formatted_str)
 
 
-DIR = "./palangre_syc/media"
+# DIR = "./palangre_syc/media"
 
 
 
