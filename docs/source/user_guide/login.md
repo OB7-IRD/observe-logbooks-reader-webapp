@@ -2,7 +2,7 @@
 
 You can log in form the header using this button : 
 
-![image](../img/header.png)
+![image](../img/connexion.png)
 
  
 You'll be taken to a login page where you'll need to :

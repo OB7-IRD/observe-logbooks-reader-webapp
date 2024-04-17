@@ -1309,8 +1309,6 @@ def send_logbook2observe(request):
         print(logbook_file_path)
 
         df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
-        # df_donnees_p1 = request.session.get('df_donnees_p1')
-        # df_donnees_p2 = request.session.get('df_donnees_p2')
         df_donnees_p2 = common_functions.read_excel(logbook_file_path, 2)
 
         # On transforme pour que les données soient comparables
@@ -1353,8 +1351,12 @@ def send_logbook2observe(request):
             print("Creation of a new trip")
             route = '/data/ll/common/Trip'
             resultat = api_functions.send_trip(token, trip, base_url, route)
+            
+            # if len(resultat[0]) > 1:
+            #     resultat = resultat[0][0]
+            
             print("resultats : ", resultat)
-
+            
         else:   
             # CONTINUE THE TRIP 
             
@@ -1401,7 +1403,8 @@ def send_logbook2observe(request):
             messages.success(request, _("Le logbook a bien été envoyé dans la base"))
         
         else: 
-            messages.error(request, _("Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"))
+            # messages.error(request, _("Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"))
+            messages.error(request, _(resultat))
 
         return render(request, 'LL_send_data.html')
 

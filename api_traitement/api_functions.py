@@ -305,7 +305,7 @@ def send_trip(token, data, base_url, route):
         with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
             outfile.write(response.text)
         try:
-            return (errorFilter(response.text), 2)
+            return (error_filter(response.text), 2)
             # return json.loads(res.text), 2
         except KeyError:
             # Faire une fonction pour mieux traiter ce type d'erreur
@@ -421,3 +421,34 @@ def del_trip(token, content):
                 return errorFilter(res.text)
             except KeyError:
                 print("Message d'erreur: ", json.loads(res.text))
+
+
+def error_filter(response):
+    """
+    Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
+    """
+    error = json.loads(response)
+    # print(error) ['exception']['result']['nodes']
+
+    def error_message(nodes):
+        if ('children' in nodes.keys()):
+            return error_message(nodes['children'][0])
+
+        if ('messages' in nodes.keys()):
+            temp = nodes['messages']
+            text = nodes['datum']['text']
+
+            # return "<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
+            return str(text + " - Champs : " + temp[0]['fieldName'] + " - Erreur : "  + temp[0]['message'])
+
+    all_message = []
+
+    if 'messages' in error['exception']['result']['nodes'][0].keys():
+        all_message.append(error_message(error['exception']['result']['nodes'][0]))
+    try:
+        for val in error['exception']['result']['nodes'][0]['children']:
+            all_message.append(error_message(val))
+    except:
+        pass
+
+    return all_message
