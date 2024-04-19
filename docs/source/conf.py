@@ -131,7 +131,7 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "logo": {
         "image_light": "logo.png",
-        "image_dark": "logo_dark.png",
+        # "image_dark": "logo_dark.png",
     },
     # https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/header-links.html#fontawesome-icons
     "icon_links": [

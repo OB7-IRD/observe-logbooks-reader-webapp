@@ -11,7 +11,7 @@ Submodules
 ----------
 
 palangre\_syc.excel\_extractions module
-------------------------
+----------------------------------------
 
 .. automodule:: palangre_syc.excel_extractions
    :members:
