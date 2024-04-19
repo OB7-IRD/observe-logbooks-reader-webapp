@@ -1,10 +1,8 @@
 """ 
-#######################################################
-#
-# Module de fonctions qui permettent l'extraction des données de logbook palangre 
-# selon le format utilisé par les Seychelles
-#
-#######################################################
+
+Module de fonctions qui permettent l'extraction des données de logbook palangre 
+selon le format utilisé par les Seychelles
+
 """
 import pandas as pd
 import numpy as np

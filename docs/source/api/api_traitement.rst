@@ -4,7 +4,7 @@ api\_traitement package
 Submodules
 ----------
 api\_traitement.common\_functions module
------------------------------------
+------------------------------------------
 
 .. automodule:: api_traitement.common_functions
    :members:
@@ -12,7 +12,7 @@ api\_traitement.common\_functions module
    :show-inheritance:
 
 api\_traitement.api\_functions module
------------------------------------
+--------------------------------------
 
 .. automodule:: api_traitement.api_functions
    :members:
@@ -20,7 +20,7 @@ api\_traitement.api\_functions module
    :show-inheritance:
 
 api\_traitement.json\_fonctions module
---------------------------------------
+---------------------------------------
 
 .. automodule:: api_traitement.json_fonctions
    :members:

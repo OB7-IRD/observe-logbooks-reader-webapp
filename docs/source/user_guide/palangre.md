@@ -21,3 +21,7 @@ You will see an overview of the logbook you are submitting. You have the chance 
 
 
 ![image](../img/overview_ll.png)
+
+## Send to Observe
+
+Once you have correctly filled the form and checked the data, you can send the file to observe. If it is correctly filled, the file will be add as you ask. If some issues are noted, the webapp will tell you the error it has encountered and you will have to correct it for add the file to the database.

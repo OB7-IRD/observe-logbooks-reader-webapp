@@ -3,7 +3,7 @@
 # User Guide
 
 ```{toctree}
-:maxdepth: 2
+:maxdepth: 4
 
 login
 home
