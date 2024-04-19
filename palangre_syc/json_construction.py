@@ -703,21 +703,21 @@ def replace_null_false_true(obj):
         return obj
 
 
-def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
-    """ Fonction qui affiche avec les bonnes indentations un fichier json
+# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
+#     """ Fonction qui affiche avec les bonnes indentations un fichier json
 
-    Args:
-        json_data (json): Données json en entrée
-        file (str, optional): Nom de fichier json de sortie "created_json_file.json".
-        mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
-    """
+#     Args:
+#         json_data (json): Données json en entrée
+#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
+#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
+#     """
     
-    json_formatted_str = json.dumps(
-        json_data, indent = 2, default = common_functions.serialize)
-    # print("¤"*20, "pretty print function" ,"¤"*20)
-    # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
-    with open(file, mode) as outfile:
-        outfile.write(json_formatted_str)
+#     json_formatted_str = json.dumps(
+#         json_data, indent = 2, default = common_functions.serialize)
+#     # print("¤"*20, "pretty print function" ,"¤"*20)
+#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
+#     with open(file, mode) as outfile:
+#         outfile.write(json_formatted_str)
 
 
 # DIR = "./palangre_syc/media"
