@@ -16,19 +16,27 @@ from django.contrib.auth import authenticate
 from api_traitement.apiFunctions import errorFilter
 from api_traitement.common_functions import serialize, pretty_print
 from webapps.models import User
+from django.utils.translation import gettext as _
 
 
 
 ########### Token ###########
 
 def get_token(base_url, data):
-    """
-    Adelphe
-    data = {
-            "config.login": "username",
-            "config.password": "password",
-            "config.databaseName": "database",
-            "referentialLocale": "FR"}
+    """ Fonction qui permet d'avoir un token
+
+    Args:
+        base_url (str) : url de base de l'API
+        data (json): format de données json exemple ci-dessous
+            exemple:
+                    data = {
+                            "config.login": "username",
+                            "config.password": "password",
+                            "config.databaseName": "database",
+                            "referentialLocale": "FR"
+                    }
+    Returns:
+        token (str)
     """
 
     url = base_url + "/init/open"
@@ -109,12 +117,23 @@ def get_all_referential_data(token, module, base_url):
         print(dicoModule)
         return dicoModule
     else:
-        return "Problème de connexion pour recuperer les données"
+        return _("Problème de connexion pour recuperer les données")
 
 
-# Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
-# En utilisant notre fuiseau horaire
 def load_data(token, base_url, forceUpdate=False):
+    """ Fonction qui recupere toutes les données de refences au format JSON de la base de données et stocke ces données
+        dans un fichier en local.
+        Elle recupere les données de references une fois par jour et elle est utilisé pour faire
+        mise à jour des données de references sur le site
+
+    Args:
+        token (str): token recuperé
+        base_url (str): url de base de l'API
+        forceUpdate (bool): True ou False => utilisée dans le cas de la mise à jour des données de references forcées par l'utilisateur
+
+    Returns:
+        allData (json)
+    """
     print("_"*20, "load_data function starting", "_"*20)
     day = strftime("%Y-%m-%d", gmtime())
     
@@ -300,7 +319,7 @@ def send_trip(token, data, base_url, route):
 
     if response.status_code == 200:
         # return json.loads(res.text)
-        return ("Logbook inséré avec success", 1)
+        return (_("Logbook inséré avec success"), 1)
     else:
         with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
             outfile.write(response.text)
@@ -311,7 +330,7 @@ def send_trip(token, data, base_url, route):
             # Faire une fonction pour mieux traiter ce type d'erreur
             # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
             print("Message d'erreur: ", json.loads(response.text)) # A faire
-            return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
+            return (_("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre"), 3)
 
 def update_trip(token, data, base_url, topiaid):
     """
@@ -339,16 +358,32 @@ def update_trip(token, data, base_url, topiaid):
     print("Code resultat de la requete", response.status_code)
     
     if response.status_code == 200:
-        return ("Logbook inséré avec success", 1)
+        return (_("Logbook inséré avec success"), 1)
     else:
         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
             outfile.write(response.text)
 
 
 
-def getId_Data(token, url, moduleName, argment, route):
-    """
-    Permet de retourner un id en fonction du module et de la route envoyé
+def getId_Data(token, base_url, moduleName, argment, route):
+    """ Fonction qui permet de retourner un id en fonction du module et de la route envoyé
+
+    Args:
+        token (str):token
+        base_url (str): url de base de l'API
+        moduleName (str): le module de la base de donnée
+        argment (str): les arguments de la requete sur le module
+        route (str):  chemin de l'API de la requete en fonction de la structure de la base de données.
+
+        exemple:
+            moduleName = "Trip"
+            route = "/data/ps/common/"
+            argment = "startDate=" + ... + "&filters.endDate=" + ... + "&filters.vessel_id=" + ...
+            OU
+            argment = "startDate=" + ...
+
+    Returns:
+        id (str):
     """
     
     headers = {
@@ -356,7 +391,7 @@ def getId_Data(token, url, moduleName, argment, route):
         'authenticationToken': token
     }
 
-    urls = url + route + moduleName + "?filters." + argment
+    urls = base_url + route + moduleName + "?filters." + argment
     rep = requests.get(urls, headers=headers, timeout=45)
 
     # print(rep.url)
@@ -367,9 +402,19 @@ def getId_Data(token, url, moduleName, argment, route):
         return json.loads(rep.text)["message"]
 
 def check_trip(token, content, base_url):
+    """ Fonction qui permet de verifier si la marée a inserer existe déjà dans la base de donnée
+
+    Args:
+        token (str): token
+        base_url (str): url de base de l'API
+        content (json): fragment json de la donnée logbook
+
+    Returns:
+        id_ (str): topid de la marée si elle existe
+        ms_ (bool): Utilisée pour verifier le statut de la fonction (True == id trouvé)
     """
-    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
-    """
+
+
     start = content["startDate"].replace("T00:00:00.000Z", "")
     end = content["endDate"].replace("T00:00:00.000Z", "")
 
@@ -390,6 +435,14 @@ def check_trip(token, content, base_url):
 
 # Supprimer un trip
 def del_trip(token, content):
+    """ Fonction qui permet de verifier si la marée a inserer existe déjà dans la base de donnée
+
+    Args:
+        token (str): token
+        content (json): fragment json de la donnée logbook
+
+    Returns: (json)
+    """
     dicts = json.dumps(content)
 
     headers = {
