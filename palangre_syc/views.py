@@ -1370,7 +1370,7 @@ def send_logbook2observe(request):
 
             print("Creation of a new trip")
             route = '/data/ll/common/Trip'
-            resultat = api_functions.send_trip(token, trip, base_url, route)
+            resultat, code = api_functions.send_trip(token, trip, base_url, route)
             
             # if len(resultat[0]) > 1:
             #     resultat = resultat[0][0]
@@ -1419,12 +1419,16 @@ def send_logbook2observe(request):
                             topiaid=context['df_previous']['triptopiaid'].replace("#", "-"))
     
         
-        if resultat == ("Logbook inséré avec success", 1) :
+        if code == 1 :
             messages.success(request, _("Le logbook a bien été envoyé dans la base"))
         
-        else: 
+        elif code == 2: 
             # messages.error(request, _("Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"))
-            messages.error(request, str(resultat[0][0]))
+            for error_message in resultat:
+                messages.error(request, error_message)
+        
+        else : 
+            messages.warning(request, resultat)
 
         return render(request, 'LL_send_data.html')
 
