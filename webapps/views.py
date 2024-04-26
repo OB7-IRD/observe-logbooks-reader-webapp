@@ -15,6 +15,7 @@ from .models import User
 import json
 from zipfile import ZipFile
 import os
+from django.utils.translation import gettext as _
 
 # Create your views here.
 def register(request):
@@ -119,11 +120,11 @@ def auth_login(request):
                     # print("DATA n n n : ", allData)
                     return redirect("home")
                 else:
-                    message = "Impossible de se connecter au serveur verifier la connexion"
+                    message = _("Impossible de se connecter au serveur verifier la connexion")
             else:
-                message = "serveur incorrect"
+                message = _("serveur incorrect")
         else:
-            message = "username ou mot de passe incorrect"
+            message = _("username ou mot de passe incorrect")
 
     return render(request, "login.html", {"message": message})
 
@@ -144,7 +145,7 @@ def update_data(request):
     datat_0c_Pr = {
         "ocean": search_in(allData),
         # "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
-        "program": allData['program']
+        "program": allData['Program']
     }
     request.session['data_Oc_Pr'] = datat_0c_Pr
 
@@ -188,13 +189,13 @@ def logbook(request):
         #Si validé sans fichier excel televersé
         if logbooks == []:
             print("="*10, "Validé sans fichier excel", "="*10)
-            msg = "Merci de déposer un fichier excel avant de lancer l'extraction de données !"
+            msg = _("Merci de déposer un fichier excel avant de lancer l'extraction de données !")
             messages.error(request, msg)
             tags = "error2"
 
             return render(request, "logbook.html",{
                 "tags": tags,
-                "alert_message": "Merci de téléverser un fichier excel",
+                "alert_message": _("Merci de téléverser un fichier excel"),
                 "ocean_data": datat_0c_Pr["ocean"],
             })
         print(apply_conf)
@@ -232,22 +233,22 @@ def logbook(request):
 
                  #print(content_json,'\n')
 
-                 if os.path.exists("media/content_json/content_json.json"):
-                     os.remove("media/content_json/content_json.json")
+                 if os.path.exists("media/temporary_files/content_json.json"):
+                     os.remove("media/temporary_files/content_json.json")
                      # creer le nouveau 
-                     file_name = "media/content_json/content_json.json"
+                     file_name = "media/temporary_files/content_json.json"
 
                      with open(file_name, 'w', encoding='utf-8') as f:
                          f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
                  else:
                      # creer le nouveau content
-                     file_name = "media/content_json/content_json.json"
+                     file_name = "media/temporary_files/content_json.json"
 
                      with open(file_name, 'w', encoding='utf-8') as f:
                          f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
 
                  if allMessages == []:
-                     messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
+                     messages.info(request, _("Extration des données avec succès vous pouvez les soumettre maintenant."))
                  else:
                      for msg in allMessages:
                          messages.error(request, msg)
@@ -260,7 +261,7 @@ def logbook(request):
                          log_mess = "\r\r".join(allMessages)
                          f_log.write(log_mess)
              except UnboundLocalError:
-                 messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
+                 messages.error(request, _("Veuillez recharger la page et reprendre votre opération SVP."))
                  tags = "error2"
 
                  logbooks = os.listdir("media/logbooks")
@@ -353,7 +354,7 @@ def postProg_info(request):
         }
         return JsonResponse({"message": "success", 
                             "domaine": request.session.get('dico_config')['domaine']})
-    return JsonResponse({"message": "Veuillez ressayer svp."})
+    return JsonResponse({"message": _("Veuillez ressayer svp.")})
 
 def logbook_del_files(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -390,7 +391,7 @@ def sendData(request):
     base_url = request.session.get('base_url')
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        file_name = "media/content_json/content_json.json"
+        file_name = "media/temporary_files/content_json.json"
         # Opening JSON file
         f = open(file_name, encoding="utf8")
         # returns JSON object as  a dictionary
@@ -410,7 +411,7 @@ def sendData(request):
             print(3, message)
 
         return JsonResponse({"message": "Success", "code": code, "msg": message})
-    return JsonResponse({"message": "Veuillez ressayer svp."})
+    return JsonResponse({"message": _("Veuillez ressayer svp.")})
 
 def extract_data(my_file):
     with ZipFile(my_file, 'r') as zip:

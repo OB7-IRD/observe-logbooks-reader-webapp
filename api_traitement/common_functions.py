@@ -221,4 +221,129 @@ def from_topiaid_to_value(topiaid, lookingfor, label_output, allData, domaine=No
             print("please do check the orthographe of looking for element")
             return None
 
+def getId(allData, moduleName, argment, nbArg=False, domaine=None):
+    """Fonction qui retourne l'ID d'un module en fonction des arguments donnés
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        argment (str): les arguments de la requete sur le module
+        domaine (str): "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
+        nbArg (bool): permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
+               par defaut quand c'est False nous avons 1 argument en paramentre
+               si c'est True, nous avons 2 arguments en parametre
+
+    Returns:
+         topiad (str)
+    """
+    message = ""
+    Id = ""
+    dataKey = [k for (k, v) in allData.items()]
+
+    if moduleName in dataKey:
+        if domaine != None:
+            tempDic = allData[moduleName][domaine]
+        else:
+            tempDic = allData[moduleName]
+
+        if nbArg:
+            # 2 arguments
+            argTab = argment.split("&filters.")
+            argments = [argTab[0].split("="), argTab[1].split("=")]
+            for val in tempDic:
+                if (val[argments[0][0]] == argments[0][1]) and (val[argments[1][0]] == argments[1][1]):
+                    Id = val['topiaId']
+        else:
+            # 1 argument
+            argments = argment.split("=")
+            for val in tempDic:
+                if val[argments[0]] == argments[1]:
+                    Id = val['topiaId']
+
+        if Id == "":
+            # message = "Aucun topiad"
+            Id = None
+    else:
+        # message = "Le module: "+ module + " n'existe pas"
+        Id = None
+
+    return Id
+
+def search_in(allData, search="Ocean"):
+    """Fonction permet d'avoir à partir des données de references les oceans ou les programmes
+
+    Args:
+        allData (json): données de references
+        search (str): "Ocean" ou "Program"
+
+    Returns:
+        prog_dic (json)
+    """
+    if allData == []: return {}
+
+    if search == "Ocean":
+        return { val["topiaId"] : val["label2"] for val in allData[search]}
+    prog_dic = {}
+    if allData == [] :
+        return prog_dic
+
+    # print(allData)
+
+    for val in allData[search]:
+        prog_dic[val["topiaId"]] = val["label2"]
+    # print("search_in", prog_dic)
+    return prog_dic
+
+def getSome(allData, moduleName, argment):
+    """Permet de retouner un dictionnaire de donnée du module dans une liste (tableau)
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        argment (str): les arguments de la requete sur le module
+
+    Returns:
+        (list)
+    """
+    tempDic = {}
+    dico = {}
+    dataKey = [k for (k, v) in allData.items()]
+
+    if moduleName in dataKey:
+        tempDic = allData[moduleName]
+        # print(tempDic)
+        argments = argment.split("=")
+        for val in tempDic:
+            if val[argments[0]].lower() == argments[1].lower():
+                dico = val
+
+    return [dico]
+
+def getAll(allData, moduleName, type_data="dictionnaire"):
+    """Permet de retourner un dictionnaire ou un tableau
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        type_data (str): "dictionnaire" ou "tableau"
+
+    Returns:
+        tab (list)
+        dico (dict)
+    """
+    if type_data == "tableau":
+        tab = []
+        for val in allData[moduleName]:
+            tab.append((val["topiaId"], val["label1"]))
+
+        return tab
+    else:
+        dico = {}
+        for val in allData[moduleName]:
+            dico[val["code"]] = val["topiaId"]
+
+        return dico
+
+
+
 
