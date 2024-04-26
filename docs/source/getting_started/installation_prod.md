@@ -17,6 +17,9 @@ To install the webapp you need to :
         
         python manage.py tailwind start
 
+5) Run Django server 
+
+        python manage.py runserver
         
 
 

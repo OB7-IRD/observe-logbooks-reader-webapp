@@ -1,12 +1,11 @@
 """ 
-#######################################################
-#
-# Module de fonctions qui permettent la construction du json 
-# palangre, tel qu'il est envoyé à Observe
-#######################################################
+
+Module de fonctions qui permettent la construction du json 
+palangre, tel qu'il est envoyé à Observe
+
 """
 
-import json
+# import json
 import pandas as pd
 import palangre_syc.api
 import palangre_syc.views

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """ 
-#######################################################
-#
-# Module de fonctions communes et générales à l'application indépendamment de la pêcherie. 
-#
-#######################################################
+
+Module de fonctions communes et générales à l'application indépendamment de la pêcherie. 
+
 """
 import json
 import datetime

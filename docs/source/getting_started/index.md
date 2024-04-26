@@ -9,6 +9,6 @@ introduction
 senne
 palangre
 
-installation
+installation_prod
 
 ```
