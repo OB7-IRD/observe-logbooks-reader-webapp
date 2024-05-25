@@ -270,6 +270,10 @@ msgid ""
 "l'analyse des données de la pêche thonière tropicale française dans les "
 "océans indien et atlantique."
 msgstr ""
+"The main purpose of the IRD Observatory of Exploited Tropical Pelagic Ecosystems is"
+"is to collect, validate, archive and analyze data from "
+"French tropical tuna fishing in the"
+"Indian and Atlantic Oceans."
 
 #: webapps/templates/home.html:162
 msgid "Commencer l'importation"
@@ -277,51 +281,51 @@ msgstr "Begin the import."
 
 #: webapps/templates/logbook.html:70
 msgid "Mise à jour des données de réferences"
-msgstr ""
+msgstr "Updating reference data"
 
 #: webapps/templates/logbook.html:88
 msgid "Domaine..."
-msgstr ""
+msgstr "Domain..."
 
 #: webapps/templates/logbook.html:89
 msgid "Senne"
-msgstr ""
+msgstr "Seine"
 
 #: webapps/templates/logbook.html:90
 msgid "Palangre"
-msgstr ""
+msgstr "Longline"
 
 #: webapps/templates/logbook.html:94
 msgid "Programmes du domaine..."
-msgstr ""
+msgstr "Programs in the field..."
 
 #: webapps/templates/logbook.html:98
 msgid "Ocean..."
-msgstr ""
+msgstr "Ocean..."
 
 #: webapps/templates/logbook.html:104
 msgid "Types de document..."
-msgstr ""
+msgstr "Document types..."
 
 #: webapps/templates/logbook.html:108
 msgid "Appliquer"
-msgstr ""
+msgstr "Apply"
 
 #: webapps/templates/logbook.html:141
 msgid "Les documents doivent être de type: .xlsx, .xlsm, .zip."
-msgstr ""
+msgstr "The documents must be of type: .xlsx, .xlsm, .zip."
 
 #: webapps/templates/logbook.html:146
 msgid "<< Pour les fichiers Zip: soit exemple.zip ==> dossier("
-msgstr ""
+msgstr "<< For Zip files: either example.zip ==> folder("
 
 #: webapps/templates/logbook.html:191
 msgid "Attention signal faible"
-msgstr ""
+msgstr "Warning weak signal"
 
 #: webapps/templates/logbook.html:198
 msgid "Info"
-msgstr ""
+msgstr "Info"
 
 #: webapps/templates/logbook.html:212
 #, fuzzy
@@ -331,15 +335,15 @@ msgstr "Send to the database"
 
 #: webapps/templates/logbook.html:215
 msgid "Annuler et charger un nouveau logbook"
-msgstr ""
+msgstr "Cancel and load a new logbook"
 
 #: webapps/templates/logbook.html:223
 msgid "Effectué"
-msgstr ""
+msgstr "Done"
 
 #: webapps/templates/logbook.html:231 webapps/templates/logbook.html:289
 msgid "Charger un nouveau logbook"
-msgstr ""
+msgstr "Load a new logbook"
 
 #: webapps/templates/logbook.html:247
 #, fuzzy
@@ -349,11 +353,11 @@ msgstr "Send to the database"
 
 #: webapps/templates/logbook.html:250
 msgid "Corriger et envoyer à nouveau"
-msgstr ""
+msgstr "Correct and resubmit"
 
 #: webapps/templates/logbook.html:258
 msgid "NB:"
-msgstr ""
+msgstr "NB:"
 
 #: webapps/templates/logbook.html:258
 msgid ""
@@ -361,43 +365,47 @@ msgid ""
 "l'opération objet incorrectement saisie et/ou le code espèce rejeté à trois "
 "(3) caractères."
 msgstr ""
+"It is possible to force sending if the errors only concern the incorrectly entered"
+"object operation and/or the rejected "
+"three (3) character species code."
 
 #: webapps/templates/logbook.html:294 webapps/templates/logbook.html:299
 msgid "Charger un logbook"
-msgstr ""
+msgstr "Load a logbook"
 
 #: webapps/views.py:123
 msgid "Impossible de se connecter au serveur verifier la connexion"
-msgstr ""
+msgstr "Unable to connect to server check connection"
 
 #: webapps/views.py:125
 msgid "serveur incorrect"
-msgstr ""
+msgstr "wong server"
 
 #: webapps/views.py:127
 msgid "username ou mot de passe incorrect"
-msgstr ""
+msgstr "Username or password incorrect"
 
 #: webapps/views.py:192
 msgid ""
 "Merci de déposer un fichier excel avant de lancer l'extraction de données !"
 msgstr ""
+"Please submit an excel file before starting the data extraction!"
 
 #: webapps/views.py:198
 msgid "Merci de téléverser un fichier excel"
-msgstr ""
+msgstr "Please upload an excel file"
 
 #: webapps/views.py:251
 msgid "Extration des données avec succès vous pouvez les soumettre maintenant."
-msgstr ""
+msgstr "Data extraction successful you can submit now."
 
 #: webapps/views.py:264
 msgid "Veuillez recharger la page et reprendre votre opération SVP."
-msgstr ""
+msgstr "Please reload the page and resume your operation."
 
 #: webapps/views.py:357 webapps/views.py:414
 msgid "Veuillez ressayer svp."
-msgstr ""
+msgstr "Please try again."
 
 #: website/settings.py:128
 msgid "English"

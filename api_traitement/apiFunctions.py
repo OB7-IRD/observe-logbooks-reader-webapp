@@ -553,32 +553,20 @@ def getAll(allData, moduleName, type_data="dictionnaire"):
 
         return dico
 
-############################################## ok
-
-
-########### Traitement du logbook SENNE --> mettre dans un autre fichier de contruction########### 
-def traiLogbook2(logB):
-    # Chargement du fichier
-    # wb = Workbook()
-
-    try:
-        wb = op.load_workbook(logB)
-    except Exception as e:
-        return '', '', '', "Error : Fichier illisible" + str(e)
-
-    if logB.name.split('.')[1] == "xlsm":
-        # Recuperer le non du bateau et autres information utils
-        #   st.text(wb.get_sheet_names())
-        maree_log = wb["1.Marée"]
-
-        # Recuperer la feuille active
-        act_sheet = wb["2.Logbook"]
-    else:
-        return {
-            }
-
 # Traitement du logbook
 def traiLogbook(logB):
+    """Fonction qui permet d'extraire les informations d'un logbook SENNE dans ces variables
+        --> info_bat : contient les informations sur le navire, le port (D/A) et heure (D/A)
+        --> observ : contient les informations sur le capitaine et le mar_homeid
+        --> df_data : contient les données du logbook
+
+    Args:
+        logB (str): fichier logbook à traiter
+
+    Returns:
+         info_bat (json), df_data (dataframe), observ (json), (str)
+    """
+
     # Chargement du fichier
     # wb = Workbook()
 
@@ -672,45 +660,28 @@ def traiLogbook(logB):
     return info_bat, df_data, observ, ''
 
 def read_data(file):
+    """Fonction qui permet de faire appel à la fonction de traitement du logbook
+
+    Args:
+        file (str): fichier logbook à traiter
+
+    Returns:
+         info_bat (json), data_bat (dataframe), obs (json), message (str)
+    """
+
     info_bat, data_bat, obs, message = traiLogbook(file)
 
     return info_bat, data_bat, obs, message
 
-def read_data2(file):
-    try:
-        print(file)
-        if file.content_type.split("/")[1] == "vnd.ms-excel.sheet.macroenabled.12":
-            # print(up)
-            info_bat, data_bat, obs, message = traiLogbook(file)
-            data_bats = data_bat.copy()
-
-            data_bats['date'] = data_bats['date'].astype(str)
-            data_bats['heure'] = data_bats['heure'].astype(str)
-
-            # request.session['data_log'] = data_bats.to_dict()
-            # request.session['data_log_info'] = info_bat
-            # request.session['obs'] = obs
-
-            return info_bat, data_bats, obs, message
-
-    except KeyError:
-        message = " 'Content' Selection du programme et l'ocean mise a jour du OBS"
-        return '', '', '', message
-
-def get_lat_long2(allData, harbour):
-    for val in allData["Harbour"]:
-        # print("Label 2: ",val["label2"], " ==> Recherche: ", harbour)
-
-        if (harbour.lower() in val["label1"].lower()) or (harbour.lower() in val["label2"].lower()) or (
-                harbour.lower() in val["label3"].lower()):
-            return float(val["latitude"]), float(val["longitude"])
-
-    # return "Le port de départ << "+ harbour + " >> n'a pas été trouvé dans le service."
-    return None, None
-
 def get_lat_long(allData, harbour):
-    """
-    Permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
+    """Fonction qui permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
+
+    Args:
+        allData (json): données de references
+        harbour (str): nom du port
+
+    Returns:
+         (float), (float)
     """
     print(harbour)
     if harbour != None:
@@ -730,8 +701,13 @@ def get_lat_long(allData, harbour):
 
 
 def lat_long(lat1, lat2, lat3, long1, long2, long3):
-    """
-    Permet de calculer la longitude et la latitude pour l'inserer facilement dans la BD
+    """Fonction qui permet de calculer la longitude et la latitude pour l'inserer facilement dans la BD
+
+    Args:
+        lat1, lat2, lat3, long1, long2, long3 (str): position geographique
+
+    Returns:
+         (float), (float), (bool)
     """
     try:
         lat_1 = int(float(str(lat1).replace("°", "")))
@@ -788,13 +764,20 @@ def lat_long(lat1, lat2, lat3, long1, long2, long3):
 # wind:"fr.ird.referential.common.Wind#1239832686605#0.561188597983181" Ecris le scrit pour le vent pour verifier si la vitesse du vent correspond a l'interval dans la base
 
 
-def get_wind_id_interval(allData, module, windSpeed):
-    """
-        Permet de retourner .......
+def get_wind_id_interval(allData, moduleName, windSpeed):
+    """Fonction qui permet de retourner le topiaId de l'interval de vitesse du vent
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        windSpeed (str): vitesse du vent
+
+    Returns:
+         id (str)
     """
 
     tab = []
-    for val in allData[module]:
+    for val in allData[moduleName]:
         if val['code'] == '0':
             pass
         else:
@@ -804,11 +787,18 @@ def get_wind_id_interval(allData, module, windSpeed):
                 return None
     return None
 
-
 def fpaZone_id(chaine, tableau, allData):
+    """Fonction qui permet de retourner le topiaId et un commentaire lorsqu'on ne retrouve pas la zone fpa passée en paramettre
+
+    Args:
+        allData (json): données de references
+        tableau (list): liste de données fpa zone
+        chaine (str): zone à rechercher
+
+    Returns:
+         id (str), '' (str) ou chaine (str)
     """
-    return: id et un commentaire
-    """
+
     status = False
     for val in tableau:
         # print("FPA : ", chaine)
@@ -819,7 +809,16 @@ def fpaZone_id(chaine, tableau, allData):
         return getId(allData, "FpaZone", argment="code=XXX*"), chaine
 
 
-def transmittingBType(chaine, dico, allData):
+def transmittingBType(chaine, dico):
+    """Fonction qui permet de retourner le topiaId du type de balise et un commentaire lorsqu'on ne retrouve pas la balise passée en paramettre
+
+    Args:
+        dico (json): dictionnaire de données pour les balises
+        chaine (str): balise à rechercher
+
+    Returns:
+         id (str), '' (str) ou commentaire (str)
+    """
     if ("m3i+" in str(chaine).lower()): return dico['26'], ""
     if ("m3igo" in str(chaine).lower()): return dico['29'], ""
     if ("m3i" in str(chaine).lower()): return dico['25'], ""
@@ -852,6 +851,19 @@ def transmittingBType(chaine, dico, allData):
 
 
 def floatingObjectPart(chaine, data, dico, index, perte_act=False):
+    """Fonction qui permet de retourner un ou deux topiaId en fonction du type d'objet flottant
+
+    Args:
+        data (dataFrame): les données du logbook en cours d'insertion
+        index (str): nom de la colonne du dataFrame faisant reference aux objets flottants
+        dico (json): dictionnaire de données pour les objets flottants
+        perte_act (bool): gestion des pertes
+        chaine (str): objet flottant à rechercher
+
+    Returns:
+         id (str), id (str)
+    """
+
     # Types objets flottants
     if index == 'obj_flot_typ_obj':
         if ("dcp ancré" in str(chaine).lower()): return dico['1-2']
@@ -903,6 +915,15 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
 
 
 def cap_obs_sea(allData, ob):
+    """Fonction qui permet d'appliquer des traitement sur le nom et prenoms du capitaine pour retrouver son topiaId
+
+    Args:
+        allData (json): données de references
+        ob (str): les informations sur le capitaine et le mar_homeid
+
+    Returns:
+         id (str)
+    """
     cap = []
     logbookDataEntryOperator = []
 
@@ -961,19 +982,38 @@ def cap_obs_sea(allData, ob):
 
 
 class TransmitException(Exception):
+    """Classe qui permet de gerer les exceptions sur les activités sur objet
+
+    Args:
+
+    Returns:
+
+    """
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
 
-
 def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner, allData, operation):
+    """Fonction qui permet de construire les operations sur les objets et retourne l'ensemble des operations sur balise pour une route
+
+    Args:
+        dico_trams (json): dictionnaire de données pour les balises
+        dico_trams_oper (json): dictionnaire de données pour les operations sur balises
+        dico_trams_owner (json): dictionnaire de données pour les  sur balises
+        allData (json): données de references
+        js_Transmitts (json): structure json pour un enregistrement sur les balises
+        data (dataFrame): les données du logbook en cours d'insertion
+        operation (str) : permet de connaitre le type d'operation (visite, transfert, mise à l'eau...)
+
+    Returns:
+         tab2_Transmitt (liste) : liste de structure de données Json
+    """
     tab2_Transmitt = []
 
     def sub_func(data, tab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper, dico_trams,
-                 dico_trams_owner, allData, js_Transmitts):
+                 dico_trams_owner, js_Transmitts):
         js_Transmitts['transmittingBuoyOperation'] = dico_trams_oper[code_trams_oper]
-        js_Transmitts['transmittingBuoyType'], comment = transmittingBType(data[tab_dcp_type_and_id[0]], dico_trams,
-                                                                           allData)
+        js_Transmitts['transmittingBuoyType'], comment = transmittingBType(data[tab_dcp_type_and_id[0]], dico_trams)
         if comment != "":
             js_Transmitts['comment'] = comment
 
@@ -1003,7 +1043,7 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
         if (data[Basetab_dcp_type_and_id[0]] != None) and (
                 "pas de" not in str(data[Basetab_dcp_type_and_id[0]]).lower()):
             js_transmi = sub_func(data, Basetab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
-                                  dico_trams, dico_trams_owner, allData, js_Transmitts)
+                                  dico_trams, dico_trams_owner, js_Transmitts)
 
             if (data[Othtab_dcp_type_and_id[0]] != None) and (
                     "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()) and (makeException == True):
@@ -1017,7 +1057,7 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
         elif (data[Othtab_dcp_type_and_id[0]] != None) and (
                 "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()):
             return sub_func(data, Othtab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
-                            dico_trams, dico_trams_owner, allData, js_Transmitts)
+                            dico_trams, dico_trams_owner, js_Transmitts)
 
     js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut
     if ("mise" in str(data['bouee_inst_act_bou']).lower()):
@@ -1067,6 +1107,15 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
 
 
 def obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple=("false", "false")):
+    """Fonction qui permet de traiter les materiels
+
+    Args:
+        tab1_Float (list): liste de données pour les materiels
+        js_Floats (json): structure json pour un enregistrement sur les materiels
+
+    Returns:
+
+    """
     js_Floats = js_Float()
     if temp_float == None:
         pass
@@ -1163,14 +1212,18 @@ def errorFilter(response):
 # Si la premiere activité n'a pas de possition prendre la possition du port d'arriver
 
 def build_trip(allData, info_bat, data_log, oce, prg, ob):
-    """
-        allData:
-        info_bat: info sur le bateau date de depart/arrivée du port de depart/arrivé
-        data_log: info du logbook
-        oce: ocean
-        prg: programme
-        ob: info sur le capitaine et homeid
-    :return: allMessages, content_json
+    """Fonction qui permet de contruire le gros fragment json de la marée et retourner des messages par rapport à la construction
+
+    Args:
+        allData (json): données de references
+        info_bat (json): info sur le bateau date de depart/arrivée du port de depart/arrivé
+        data_log (dataFrame):  les données du logbook
+        oce (list): la liste des océans
+        prg (list): pour la liste des programmes
+        ob (json) : info sur le capitaine et homeid du bateau
+
+    Returns:
+        allMessages, js_contents
     """
 
     group = data_log.groupby(['date'])
