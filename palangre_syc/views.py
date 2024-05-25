@@ -973,19 +973,25 @@ def checking_logbook(request):
             df_fishes_month = df_fishes[0:len(df_position)]
             df_bycatch_month = df_bycatch[0:len(df_position)]
 
+        else :
+            df_time_month = df_time
+            df_temperature_month = df_temperature
+            df_fishing_effort_month = df_fishing_effort
+            df_fishes_month = df_fishes
+            df_bycatch_month = df_bycatch
         
-        df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
-                                df_temperature_month,
-                                df_fishing_effort_month.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
-                                df_fishes_month,
-                                df_bycatch_month],
-                                axis=1)
+            df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
+                                    df_temperature_month,
+                                    df_fishing_effort_month.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
+                                    df_fishes_month,
+                                    df_bycatch_month],
+                                    axis=1)
         
-        # df_activity = pd.concat([df_fishing_effort.loc[:,'Day'], df_position, df_time.loc[:, 'Time'], df_temperature,
-        #                         df_fishing_effort.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
-        #                         df_fishes,
-        #                         df_bycatch],
-        #                         axis=1)
+            # df_activity = pd.concat([df_fishing_effort.loc[:,'Day'], df_position, df_time.loc[:, 'Time'], df_temperature,
+            #                         df_fishing_effort.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
+            #                         df_fishes,
+            #                         df_bycatch],
+            #                         axis=1)
 
         list_ports = common_functions.get_list_harbours(allData)
         
@@ -1014,7 +1020,7 @@ def checking_logbook(request):
             
         #############################
         # messages d'erreurs
-        if df_time_month['Day'][0] != 1 :
+        if df_time_month['Day'][0] != 1:
             messages.error(request, _("L'extraction des données ne semble pas correcte car ne commence pas au jour 1. Veuillez vérifier que le tableau commence ligne 22 sur votre logbook."))
             probleme = True
         #############################
@@ -1364,7 +1370,7 @@ def send_logbook2observe(request):
 
             print("Creation of a new trip")
             route = '/data/ll/common/Trip'
-            resultat = api_functions.send_trip(token, trip, base_url, route)
+            resultat, code = api_functions.send_trip(token, trip, base_url, route)
             
             # if len(resultat[0]) > 1:
             #     resultat = resultat[0][0]
@@ -1413,12 +1419,16 @@ def send_logbook2observe(request):
                             topiaid=context['df_previous']['triptopiaid'].replace("#", "-"))
     
         
-        if resultat == ("Logbook inséré avec success", 1) :
+        if code == 1 :
             messages.success(request, _("Le logbook a bien été envoyé dans la base"))
         
-        else: 
+        elif code == 2: 
             # messages.error(request, _("Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"))
-            messages.error(request, _(resultat))
+            for error_message in resultat:
+                messages.error(request, error_message)
+        
+        else : 
+            messages.warning(request, resultat)
 
         return render(request, 'LL_send_data.html')
 

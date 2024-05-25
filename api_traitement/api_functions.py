@@ -12,6 +12,7 @@ from time import gmtime, strftime, strptime
 import requests
 
 from django.contrib.auth import authenticate
+from django.utils.html import format_html
 
 from api_traitement.apiFunctions import errorFilter
 from api_traitement.common_functions import serialize, pretty_print
@@ -481,7 +482,7 @@ def error_filter(response):
     Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
     """
     error = json.loads(response)
-    # print(error) ['exception']['result']['nodes']
+    # print(error['exception']['result']['nodes'])
 
     def error_message(nodes):
         if ('children' in nodes.keys()):
@@ -491,8 +492,8 @@ def error_filter(response):
             temp = nodes['messages']
             text = nodes['datum']['text']
 
-            # return "<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
-            return str(text + " - Champs : " + temp[0]['fieldName'] + " - Erreur : "  + temp[0]['message'])
+            return format_html("<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message']))
+            # return str(text + " - Champs : " + temp[0]['fieldName'] + " - Erreur : "  + temp[0]['message'])
 
     all_message = []
 
