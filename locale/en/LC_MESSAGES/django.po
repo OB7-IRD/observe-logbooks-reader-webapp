@@ -328,8 +328,6 @@ msgid "Info"
 msgstr "Info"
 
 #: webapps/templates/logbook.html:212
-#, fuzzy
-#| msgid "Envoie des données dans la base"
 msgid "Envoyer les donnée"
 msgstr "Send to the database"
 
@@ -346,8 +344,6 @@ msgid "Charger un nouveau logbook"
 msgstr "Load a new logbook"
 
 #: webapps/templates/logbook.html:247
-#, fuzzy
-#| msgid "Envoie des données dans la base"
 msgid "Forcer l'envoie des données"
 msgstr "Send to the database"
 

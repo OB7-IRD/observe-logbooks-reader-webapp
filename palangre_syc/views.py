@@ -972,7 +972,7 @@ def checking_logbook(request):
             df_fishing_effort_month = df_fishing_effort[0:len(df_position)]
             df_fishes_month = df_fishes[0:len(df_position)]
             df_bycatch_month = df_bycatch[0:len(df_position)]
-
+            
         else :
             df_time_month = df_time
             df_temperature_month = df_temperature
@@ -980,7 +980,7 @@ def checking_logbook(request):
             df_fishes_month = df_fishes
             df_bycatch_month = df_bycatch
         
-            df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
+        df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
                                     df_temperature_month,
                                     df_fishing_effort_month.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
                                     df_fishes_month,
@@ -1370,6 +1370,8 @@ def send_logbook2observe(request):
 
             print("Creation of a new trip")
             route = '/data/ll/common/Trip'
+            print("base url ::: ", base_url)
+            print("token ::: ", token)
             resultat, code = api_functions.send_trip(token, trip, base_url, route)
             
             # if len(resultat[0]) > 1:
