@@ -128,6 +128,12 @@ def dms_to_decimal(degrees, minutes, direction):
     """
     if degrees is None:
         return None
+    
+    degrees = degrees.fillna(0)
+    minutes = minutes.fillna(0)
+    
+    degrees = degrees.astype(int)
+    minutes = minutes.astype(int)
 
     decimal_degrees = degrees + minutes / 60.0
     decimal_degrees = np.where(direction.isin(['S', 'W']), -decimal_degrees, decimal_degrees)
@@ -146,6 +152,15 @@ def zero_if_empty(value):
     else:
         return int(value)
 
+def remove_if_nul(df, column):
+    """ Function that remove the last rows if the value is null in a specific column
+    Args:
+        df (dataframe)
+        column: column you want to check
+    """
+    while df[column].iloc[-1] == 0:
+        df = df[:-1]
+    return df
 
 def read_excel(logbook_file_path, num_page):
     """ 
