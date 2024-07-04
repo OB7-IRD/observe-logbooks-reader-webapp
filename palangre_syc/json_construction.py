@@ -10,7 +10,7 @@ import pandas as pd
 import palangre_syc.api
 import palangre_syc.views
 import palangre_syc.excel_extractions
-from api_traitement import common_functions
+from datetime import timedelta
 
 def get_captain_topiaid(df_donnees_p1, allData):
     """
@@ -479,7 +479,7 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
     Returns:
         bool: True si la date est dans le json, False sinon
     """
- 
+
     for content in json_previoustrip:
         for activity in content['activityLogbook'] :
             start_time = activity.get('startTimeStamp')
@@ -518,7 +518,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
 
     
     MultipleActivity = []
-    for i in range(start_extraction, end_extraction):
+    for i in range(start_extraction +1, end_extraction):
         set = {
             'homeId': None,
             'comment': None,

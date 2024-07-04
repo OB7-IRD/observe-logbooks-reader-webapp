@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-20 08:01+0400\n"
+"POT-Creation-Date: 2024-07-04 13:50+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,10 +65,17 @@ msgid "Tableau de bord"
 msgstr "Dashboard"
 
 #: .\palangre_syc\templates\LL_homepage.html:149
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "La dernière marée enregistrée sur Observe pour le navire "
+#| "%(previous_trip.vessel)s est la suivante :"
 msgid ""
-"La dernière marée enregistrée sur Observe pour le navire "
-"%(previous_trip.vessel)s est la suivante :"
+"\n"
+"                            La dernière marée enregistrée sur Observe pour "
+"le navire \n"
+"                                %(previous_trip.vessel)s \n"
+"                            est la suivante : \n"
+"                            "
 msgstr ""
 "The last trip recorded on Observe for the vessel %(previous_trip.vessel)s is "
 "as follow: "
@@ -210,13 +217,13 @@ msgstr "In development"
 msgid "Retour à la zone de dépôt"
 msgstr "Back to the drop-off zone"
 
-#: .\palangre_syc\views.py:1024
+#: .\palangre_syc\views.py:370
 msgid ""
 "L'extraction des données ne semble pas correcte car ne commence pas au jour "
 "1. Veuillez vérifier que le tableau commence ligne 22 sur votre logbook."
 msgstr ""
 
-#: .\palangre_syc\views.py:1047
+#: .\palangre_syc\views.py:392
 msgid ""
 "La date de fin de trip doit être dans le mois. Saisir le dernier jour du "
 "mois dans le cas où le trip n'est pas réellement fini."
@@ -224,21 +231,13 @@ msgstr ""
 "The trip end date must be within the month. Enter the last day of the month "
 "if the trip is not actually finished."
 
-#: .\palangre_syc\views.py:1054
+#: .\palangre_syc\views.py:399
 msgid ""
 "Les informations concernant la longueur du matériel de pêche doivent être "
 "des entiers."
 msgstr "information about the gear configuration must be integers"
 
-#: .\palangre_syc\views.py:1088
-msgid ""
-"La date de début de marée que vous avez saisie ne semble pas correspondre à "
-"une activité 'departure' du logbook. Vérifiez les données."
-msgstr ""
-"The trip start date you have entered does not seem to correspond to a "
-"'departure' activity in the logbook. Please check the data."
-
-#: .\palangre_syc\views.py:1114
+#: .\palangre_syc\views.py:459
 msgid ""
 "Le logbook soumis n'a pas pu être saisi dans la base de données car il a "
 "déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"
@@ -246,7 +245,7 @@ msgstr ""
 "The logbook submitted could not be entered in the database because it had "
 "already been sent on a previous trip. Please check on the application."
 
-#: .\palangre_syc\views.py:1120
+#: .\palangre_syc\views.py:465
 msgid ""
 "Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est "
 "pas consécutif à la marée précédente"
@@ -254,7 +253,7 @@ msgstr ""
 "The logbook submitted could not be entered in the database because it did "
 "not follow the previous trip."
 
-#: .\palangre_syc\views.py:1425
+#: .\palangre_syc\views.py:770
 msgid "Le logbook a bien été envoyé dans la base"
 msgstr "The logbook has been sent to the database."
 
@@ -1926,7 +1925,8 @@ msgid ""
 "(3) caractères."
 msgstr ""
 "It is possible to force sending if the errors only concern the incorrectly "
-"entered object operation and/or the rejected three (3) character species code."
+"entered object operation and/or the rejected three (3) character species "
+"code."
 
 #: .\webapps\templates\logbook.html:294 .\webapps\templates\logbook.html:299
 msgid "Charger un logbook"
@@ -1972,6 +1972,13 @@ msgstr ""
 #: .\website\settings.py:129
 msgid "Français"
 msgstr ""
+
+#~ msgid ""
+#~ "La date de début de marée que vous avez saisie ne semble pas correspondre "
+#~ "à une activité 'departure' du logbook. Vérifiez les données."
+#~ msgstr ""
+#~ "The trip start date you have entered does not seem to correspond to a "
+#~ "'departure' activity in the logbook. Please check the data."
 
 #~ msgid "Il doit y avoir une erreur dedans car le logbook n'a pas été envoyé"
 #~ msgstr "There must be an error because the logbook couldn't have been sent"

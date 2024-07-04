@@ -145,9 +145,9 @@
                 {% if continuetrip == 'Continuer cette marée' or continuetrip == 'Continue the trip' %}
                     <div class = "rounded-md p-4 flex justify-center items-center">
                         <div class = "text-center text-2xl font-semibold mb-6">
-                            {% blocktranslate trimmed %}
+                            {% blocktranslate with previous_trip_vessel=previous_trip.vessel trimmed %}
                             La dernière marée enregistrée sur Observe pour le navire 
-                                {{ previous_trip.vessel }} 
+                                {{ previous_trip_vessel }} 
                             est la suivante : 
                             {% endblocktranslate %}
                         </div>  
@@ -167,12 +167,6 @@
                             <div class="text-center mb-1 text-2xl">
                                 {% blocktranslate with endDate=previous_trip.endDate|slice:':10' trimmed %}
                                 Actuellement cloturée le {{ endDate }}
-                                {% endblocktranslate %}
-                            </div>
-            
-                            <div class="text-center mb-1 text-2xl">
-                                {% blocktranslate with captain=previous_trip.captain trimmed %}
-                                Menée par {{ captain }}
                                 {% endblocktranslate %}
                             </div>
                         </div>

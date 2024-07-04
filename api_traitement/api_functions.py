@@ -363,6 +363,8 @@ def update_trip(token, data, base_url, topiaid):
     else:
         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
             outfile.write(response.text)
+            return (_("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre"), 3)
+
 
 
 

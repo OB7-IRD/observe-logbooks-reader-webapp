@@ -220,7 +220,7 @@ def presenting_previous_trip(request):
         if not api_functions.is_valid(token):
             username = request.session.get('username')
             password = request.session.get('password')
-            print(username, password)
+            # print(username, password)
             token  = api_functions.reload_token(request, username, password)
             request.session['token'] = token
 
@@ -236,11 +236,15 @@ def presenting_previous_trip(request):
                 # Conversion car ne veut pas passer un dataframe en context
                 df_previous_trip = df_previous_trip.to_dict("index")
                 context.update({'df_previous': df_previous_trip,})
-        
+                
+                
+                        
         except :
             context.update({'df_previous': None})
             
     request.session['context'] = context
+    print("---"*50, "context saved")
+    print(context)
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -332,12 +336,6 @@ def checking_logbook(request):
                                     df_fishes_month,
                                     df_bycatch_month],
                                     axis=1)
-        
-            # df_activity = pd.concat([df_fishing_effort.loc[:,'Day'], df_position, df_time.loc[:, 'Time'], df_temperature,
-            #                         df_fishing_effort.loc[:,['Hooks per basket', 'Total hooks', 'Total lightsticks']],
-            #                         df_fishes,
-            #                         df_bycatch],
-            #                         axis=1)
 
         list_ports = common_functions.get_list_harbours(allData)
         
@@ -438,10 +436,8 @@ def checking_logbook(request):
                 # CONTINUE TRIP
                 # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
                 # context.update({'df_previous' : context['df_previous'], orient = 'index')})
-
-                print(context)
                 
-                with open ('media/temporary_files/previoustrip.json', 'r', encoding='utf-8') as f:
+                with open ('media/temporary_files/previous_trip.json', 'r', encoding='utf-8') as f:
                     json_previoustrip = json.load(f)
                 
                 # On récupère la date du jour 1 au bon format
@@ -451,8 +447,8 @@ def checking_logbook(request):
                 else:
                     date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
 
-                print("%"*15, "context start et end Date ", "%"*15)
-                print(context['df_previous']['endDate'])
+                # print("%"*15, "context start et end Date ", "%"*15)
+                # print(context['df_previous']['endDate'])
                 #############################
                 # messages d'erreurs
                 if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
@@ -474,24 +470,6 @@ def checking_logbook(request):
                 print(context)
                 print("- 0 -"*30)
                 # voir si faut ajouter un truc qui ré enregistre à la session ? 
-        
-            # except KeyError :
-            #     # NOUVELLE MAREE
-            #     print("%"*15, startDate, type(startDate), "%"*15)
-            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate), 
-            #                     'depPort': depPort,
-            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-            #                     'endPort': endPort if endPort != '' else None,
-            #                     'continuetrip': None, 
-            #                     'df_previous': None})
-                
-            #     #############################
-            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
-            #     print(is_dep_match)
-            #     if is_dep_match is False:
-            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
-            #         probleme = True
-            #     #############################
 
             if probleme is True:
                 # on doit ajouter les infos quand meme 
@@ -510,7 +488,7 @@ def checking_logbook(request):
                 return send_logbook2observe(request)
                 
             
-        print("continue the trip : ", continuetrip)
+        # print("continue the trip : ", continuetrip)
         
         if request.LANGUAGE_CODE == 'fr':
             programme = common_functions.from_topiaid_to_value(topiaid=apply_conf['programme'],
@@ -552,36 +530,41 @@ def checking_logbook(request):
             triptopiaid = request.POST.get('radio_previoustrip')      
             trip_topiaid_ws = triptopiaid.replace("#", "-")
             print("="*20, trip_topiaid_ws, "="*20)
-
+            
             # on récupère les infos du trip enregistré dans un fichier json
             route = '/data/ll/common/Trip/'
-            api_functions.get_one_from_ws(token, base_url, route, trip_topiaid_ws)
+            previous_trip_info = api_functions.get_one_from_ws(token, base_url, route, trip_topiaid_ws)
+            json_previoustrip = json.loads(previous_trip_info)
             
-            json_previoustrip = common_functions.load_json_file("media/temporary_files/previoustrip.json")
-            
-            # On récupère les infos qu'on veut afficher
-            trip_info = json_previoustrip['content'][0]
+            # on enregistre dans le dossier les informations relatives au précédent trip qu'on veut continuer
+            if os.path.exists("media/temporary_files/previous_trip.json"):
+                os.remove("media/temporary_files/previous_trip.json")
 
-            captain_name = common_functions.from_topiaid_to_value(topiaid=trip_info['captain'],
+            file_name = "media/temporary_files/previous_trip.json"
+            with open(file_name, 'w', encoding='utf-8') as f:
+                f.write(json.dumps(json_previoustrip, ensure_ascii=False, indent=4))
+            
+            json_previoustrip = json_previoustrip["content"][0]
+            # On récupère les infos qu'on veut afficher
+            captain_name = common_functions.from_topiaid_to_value(topiaid=json_previoustrip['captain'],
                                                 lookingfor='Person',
                                                 label_output='lastName',
                                                 allData=allData,
                                                 domaine=None)
 
-            vessel_name = common_functions.from_topiaid_to_value(topiaid=trip_info['vessel'],
+            vessel_name = common_functions.from_topiaid_to_value(topiaid=json_previoustrip['vessel'],
                                                 lookingfor='Vessel',
                                                 label_output='label2',
                                                 allData=allData,
                                                 domaine=None)
-
-            dico_trip_infos = {'startDate': trip_info['startDate'],
-                                'endDate': trip_info['endDate'],
+            dico_trip_infos = {'startDate': json_previoustrip['startDate'],
+                                'endDate': json_previoustrip['endDate'],
                                 'captain': captain_name,
                                 'vessel': vessel_name,
                                 'triptopiaid': triptopiaid}
 
             try:
-                departure_harbour = common_functions.from_topiaid_to_value(topiaid=trip_info['departureHarbour'],
+                departure_harbour = common_functions.from_topiaid_to_value(topiaid=json_previoustrip['departureHarbour'],
                                                         lookingfor='Harbour',
                                                         label_output='label2',
                                                         allData=allData,
@@ -589,7 +572,7 @@ def checking_logbook(request):
 
                 dico_trip_infos.update({
                     'depPort': departure_harbour,
-                    'depPort_topiaid': trip_info['departureHarbour'],
+                    'depPort_topiaid': json_previoustrip['departureHarbour'],
                 })
 
             except KeyError:
@@ -611,7 +594,6 @@ def checking_logbook(request):
         print(context)
         print("+"*50, "END A la fin de la fonction", "+"*50)
         request.session['context'] = context
-        print(context)
 
         data_to_homepage.update({
             'programme': context['program'],
@@ -648,7 +630,7 @@ def send_logbook2observe(request):
                 
         resultat = None
 
-        print("°"*40, context)
+        # print("°"*40, context)
         
 
         if os.path.exists("media/temporary_files/created_json_file.json"):
@@ -656,9 +638,6 @@ def send_logbook2observe(request):
 
         print("="*80)
         print("Load JSON data file")
-
-        # token = api.get_token()
-        # print("token :", token)
 
         token = request.session['token']
         if not api_functions.is_valid(token):
@@ -727,7 +706,7 @@ def send_logbook2observe(request):
         else:   
             # CONTINUE THE TRIP 
             
-            with open ('media/temporary_files/previoustrip.json', 'r', encoding='utf-8') as f:
+            with open ('media/temporary_files/previous_trip.json', 'r', encoding='utf-8') as f:
                 json_previoustrip = json.load(f)
 
             MultipleActivity = json_construction.create_activity_and_set(
@@ -760,13 +739,13 @@ def send_logbook2observe(request):
             # with open(file="media/temporary_files/updated_json_file.json", mode="w") as outfile:
             #     outfile.write(json_formatted_str)
 
-            resultat = api_functions.update_trip(token=token,
+            resultat, code = api_functions.update_trip(token=token,
                             data=trip,
                             base_url=base_url,
                             topiaid=context['df_previous']['triptopiaid'].replace("#", "-"))
     
         
-        if code == 1 :
+        if code == 1:
             messages.success(request, _("Le logbook a bien été envoyé dans la base"))
         
         elif code == 2: 
