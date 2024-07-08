@@ -169,6 +169,12 @@
                                 Actuellement cloturée le {{ endDate }}
                                 {% endblocktranslate %}
                             </div>
+            
+                            <div class="text-center mb-1 text-2xl">
+                                {% blocktranslate with captain=previous_trip.captain trimmed %}
+                                Menée par {{ captain }}
+                                {% endblocktranslate %}
+                            </div>
                         </div>
                     </div>
                 {% endif %}
