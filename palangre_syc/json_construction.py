@@ -281,20 +281,6 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
     """
     liste_fct_extraction = [palangre_syc.excel_extractions.extract_fish_p1(df_donnees_p1),
                             palangre_syc.excel_extractions.extract_bycatch_p2(df_donnees_p2)
-                            #palangre_syc.views.extract_tunas(df_donnees_p1),
-                            #palangre_syc.views.extract_billfishes(df_donnees_p1),
-                            #palangre_syc.views.extract_otherfish(df_donnees_p1),
-                            #palangre_syc.views.extract_sharksFAL(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksBSH(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksMAK(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksSPN(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksTIG(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksPSK( df_donnees_p2),
-                            #palangre_syc.views.extract_sharksTHR(df_donnees_p2),
-                            #palangre_syc.views.extract_sharksOCS(df_donnees_p2),
-                            #palangre_syc.views.extract_mammals(df_donnees_p2),
-                            #palangre_syc.views.extract_seabird(df_donnees_p2),
-                            #palangre_syc.views.extract_turtles(df_donnees_p2)
                             ]
 
     df_catches = pd.DataFrame(
@@ -518,7 +504,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
 
     
     MultipleActivity = []
-    for i in range(start_extraction +1, end_extraction):
+    for i in range(start_extraction, end_extraction):
         set = {
             'homeId': None,
             'comment': None,

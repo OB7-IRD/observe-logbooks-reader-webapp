@@ -98,9 +98,17 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
             # parsed_trip_info = json.loads(trip_info.decode('utf-8'))
             if 'departureHarbour' in trip_info['content'][0]:
                 depPort = trip_info['content'][0]['departureHarbour']
-                depPort_name = common_functions.from_topiaid_to_value(topiaid=depPort,
+                
+                if request.LANGUAGE_CODE == 'fr':
+                    depPort_name = common_functions.from_topiaid_to_value(topiaid=depPort,
                                 lookingfor='Harbour',
                                 label_output='label2',
+                                allData=allData,
+                                domaine=None)
+                elif request.LANGUAGE_CODE == 'en':
+                    depPort_name = common_functions.from_topiaid_to_value(topiaid=depPort,
+                                lookingfor='Harbour',
+                                label_output='label1',
                                 allData=allData,
                                 domaine=None)
             else : 
@@ -109,11 +117,19 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
             
             if 'landingHarbour' in trip_info['content'][0]:
                 endPort = trip_info['content'][0]['landingHarbour']
-                endPort_name = common_functions.from_topiaid_to_value(topiaid=endPort,
+                if request.LANGUAGE_CODE == 'fr':
+                    endPort_name = common_functions.from_topiaid_to_value(topiaid=endPort,
                                 lookingfor='Harbour',
                                 label_output='label2',
                                 allData=allData,
                                 domaine=None)
+                elif request.LANGUAGE_CODE == 'en':
+                    endPort_name = common_functions.from_topiaid_to_value(topiaid=endPort,
+                                lookingfor='Harbour',
+                                label_output='label1',
+                                allData=allData,
+                                domaine=None)
+                    
             else : 
                 endPort = None
                 endPort_name = None

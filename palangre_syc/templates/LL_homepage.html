@@ -58,7 +58,9 @@
 
 <main class = "main items-center">
 
-    
+    <!-- Fix the top of the page -->
+    <div id="top"></div>
+
     <!-- Content -->
     <div id = "extracted_logbook" class="bg-grey-200 grid place-items-center w-full min-h-screen transition-all p-12">
         
@@ -294,7 +296,7 @@
                                                 <select id="depPort" name="depPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl" required>
                                                     <option value="" selected> {% translate "Non concerné" %} </option>
                                                     {% for port in list_ports %}
-                                                      <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
+                                                        <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
                                                     {% endfor %}
                                                 </select>                                            
                                             </td>
@@ -318,7 +320,7 @@
                                                 <select id="endPort" name="endPort" class="w-full px-4 py-3 ring-1 ring-grey-700 rounded-xl">
                                                     <option value="" selected> {% translate 'Non concerné' %} </option>
                                                     {% for port in list_ports %}
-                                                      <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
+                                                        <option value="{{ port.topiaId }}">{{ port.label2 }}</option>
                                                     {% endfor %}
                                                 </select>                                            
                                             </td>
@@ -546,13 +548,13 @@
                 <!-- End Div if error in the logbook -->
 
                 <!-- Div buttons -->
-                <div class="flex justify-center items-center inline-flex">
+                <div class="flex justify-center items-center text-center inline-flex">
                     {% comment %} faire un truc mieux pour le bouton -->
                     <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
-                    <a href="{% url 'logbook' %}" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
+                    <a href="{% url 'logbook' %}" class="py-4 px-5 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
                         {% translate "Annuler"%}
                     </a>
-                    <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-4 py-3 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                    <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-5 py-4 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
                 </div>
                 <!-- End Div buttons -->
                 {% csrf_token %}
@@ -589,19 +591,7 @@
 
                         <tbody>
                             {% for index, row in df_activity.iterrows %}
-                                
                                 <tr>
-
-                                    {% comment %} {% for cell in row %}
-                                        {% if not starts_with(cell, 'fr.referentiel') %}
-                                            <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm">
-                                                {{ cell }}
-                                            </td>
-                                        {% endif %}
-                                    {% endfor %} {% endcomment %}
-
-                                
-
                                 {% for cell in row %}
                                     <td class="px-5 py-2 border-b border-gray-200 bg-white text-sm"> 
                                         {{ cell }} 
@@ -617,7 +607,15 @@
 
                 </div>
             </div>
+
+            <div class="fixed bottom-4 right-4">
+                <a href="#top" class="bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg hover:bg-blue-700 transition duration-300">
+                    {% translate "Accéder au haut de la page" %}
+                </a>
+            </div>
         </div>
+
+        
     </div>
     
 </main>

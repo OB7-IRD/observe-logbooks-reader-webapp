@@ -346,7 +346,7 @@ def postProg_info(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         request.session['dico_config'] = {
-            'langue': request.POST["langue"],
+            # 'langue': request.POST["langue"],
             'domaine': request.POST["domaine"],
             'ocean': request.POST["ocean"],
             'programme': request.POST["programme"],
