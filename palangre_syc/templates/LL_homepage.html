@@ -551,10 +551,10 @@
                 <div class="flex justify-center items-center text-center inline-flex">
                     {% comment %} faire un truc mieux pour le bouton -->
                     <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
-                    <a href="{% url 'logbook' %}" class="py-4 px-5 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
+                    <a href="{% url 'logbook' %}" class="py-5 px-6 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
                         {% translate "Annuler"%}
                     </a>
-                    <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-5 py-4 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
+                    <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-6 py-5 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
                 </div>
                 <!-- End Div buttons -->
                 {% csrf_token %}
@@ -568,7 +568,7 @@
 
         <div class="container mx-auto px-4 sm:px-4 py-8">
             <div>
-                <h2 class="text-2xl font-semibold leading-tight">Données jour par jour</h2>
+                <h2 class="text-2xl font-semibold leading-tight"> {% translate "Données jour par jour" %}</h2>
             </div>
 
     

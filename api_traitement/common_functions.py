@@ -83,6 +83,28 @@ def remove_spec_char_from_list(char_list):
     """
     return [re.sub("[^A-Z ]", "", str(item), 0, re.IGNORECASE) for item in char_list]
 
+def convert_to_int(value):
+    """
+    Vérifie si la valeur est numérique ou peut être transformée en numérique (integer).
+
+    Args:
+    value: L'élément à vérifier.
+
+    Returns:
+    bool: la valeur si elle est de type numérique et un message sinon.
+    """
+    if isinstance(value, (int, float)):
+        return int(value)
+    if isinstance(value, str):
+        if value.isdigit():
+            return int(value)
+        try:
+            int(value)
+            return int(value)
+        except ValueError:
+            return value
+    return value
+
 def convert_to_time_or_text(value):
     """
     Fonction qui converti la cellule en time si elle est au format type time ou date dans le excel

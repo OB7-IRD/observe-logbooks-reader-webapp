@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-09 13:49+0400\n"
+"POT-Creation-Date: 2024-07-09 14:26+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -65,12 +65,13 @@ msgid "Tableau de bord"
 msgstr "Dashboard"
 
 #: .\palangre_syc\templates\LL_homepage.html:151
+#, python-format
 msgid ""
 "La dernière marée enregistrée sur Observe pour le navire "
 "%(previous_trip_vessel)s est la suivante :"
 msgstr ""
-"The last trip recorded on Observe for the vessel %(previous_trip_vessel)s "
-"is as follows: "
+"The last trip recorded on Observe for the vessel %(previous_trip_vessel)s is "
+"as follows: "
 
 #: .\palangre_syc\templates\LL_homepage.html:164
 #, python-format
@@ -180,6 +181,10 @@ msgstr "Cancel"
 #: .\palangre_syc\templates\LL_homepage.html:560
 msgid "Envoyer le journal de bord"
 msgstr "'Send the logbook'"
+
+#: .\palangre_syc\templates\LL_homepage.html:574
+msgid "Données jour par jour"
+msgstr "Day per day detail"
 
 #: .\palangre_syc\templates\LL_homepage.html:618
 msgid "Accéder au haut de la page"

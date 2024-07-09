@@ -418,7 +418,12 @@ def extract_fishing_effort(df_donnees):
     """
     df_fishing_effort = df_donnees.iloc[24:55, [0, 9, 10, 11]].copy()
     df_fishing_effort.columns = ['Day', 'Hooks per basket', 'Total hooks', 'Total lightsticks']
-    df_fishing_effort['Total hooks / Hooks per basket'] = df_fishing_effort['Total hooks'] / df_fishing_effort['Hooks per basket']
+    
+    try:
+        df_fishing_effort['Total hooks / Hooks per basket'] = common_functions.convert_to_int(df_fishing_effort['Total hooks']) / common_functions.convert_to_int(df_fishing_effort['Hooks per basket'])
+    except TypeError:
+        df_fishing_effort['Total hooks / Hooks per basket'] = None
+        
     df_fishing_effort.reset_index(drop=True, inplace=True)
     return df_fishing_effort
 
