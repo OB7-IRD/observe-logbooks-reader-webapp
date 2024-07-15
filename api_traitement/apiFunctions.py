@@ -476,31 +476,6 @@ def getId(allData, moduleName, argment, nbArg=False, domaine=None):
     return Id
 
 
-def search_in(allData, search="Ocean"):
-    """Fonction permet d'avoir à partir des données de references les oceans ou les programmes
-
-    Args:
-        allData (json): données de references
-        search (str): "Ocean" ou "Program"
-
-    Returns:
-        prog_dic (json)
-    """
-    if allData == []: return {}
-
-    if search == "Ocean":
-        return { val["topiaId"] : val["label2"] for val in allData[search]}
-    prog_dic = {}
-    if allData == [] : 
-        return prog_dic
-    
-    # print(allData)
-    
-    for val in allData[search]:
-        prog_dic[val["topiaId"]] = val["label2"]
-    # print("search_in", prog_dic)
-    return prog_dic
-
 
 def getSome(allData, moduleName, argment):
     """Permet de retouner un dictionnaire de donnée du module dans une liste (tableau)

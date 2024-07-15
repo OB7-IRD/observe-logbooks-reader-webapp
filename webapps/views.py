@@ -51,6 +51,41 @@ def register(request):
 
 #     return getToken(base_url, data_user_connect)
 
+def search_in(request, allData, search="Ocean"):
+    """Fonction permet d'avoir à partir des données de references les oceans ou les programmes
+
+    Args:
+        allData (json): données de references
+        search (str): "Ocean" ou "Program"
+
+    Returns:
+        prog_dic (json)
+    """
+    if allData == []: return {}
+
+    if request.session.get('language') == 'fr':
+        if search == "Ocean":
+            return { val["topiaId"] : val["label2"] for val in allData[search]}
+        prog_dic = {}
+        if allData == [] :
+            return prog_dic
+
+        for val in allData[search]:
+            prog_dic[val["topiaId"]] = val["label2"]
+        return prog_dic
+
+    elif request.session.get('language') == 'en':
+        if search == "Ocean":
+            return { val["topiaId"] : val["label1"] for val in allData[search]}
+        prog_dic = {}
+        if allData == [] :
+            return prog_dic
+
+        for val in allData[search]:
+            prog_dic[val["topiaId"]] = val["label1"]
+        return prog_dic
+
+
 def auth_login(request):
     message = ""
     if request.method == "POST":
@@ -108,9 +143,10 @@ def auth_login(request):
                     request.session['base_url'] = base_url
                     
                     print("="*20, "if (token != "") and (allData is not [])", "="*20)
-                    print("clés présentes dans allDAta ", allData.keys())
+                    # print("clés présentes dans allDAta ", allData.keys())
                     datat_0c_Pr = {
-                        "ocean": search_in(allData),
+                        # "ocean": search_in(request, allData),
+                        "ocean": None,
                         # "senne" : allData['seine'], "palangre" : allData['longline']
                         "program" : allData["Program"]
                     }
@@ -140,10 +176,10 @@ def update_data(request):
     
     print("="*20, "update_data", "="*20)
     with open('allData.json', 'w', encoding='utf-8') as f:
-            json.dump(allData, f, ensure_ascii=False, indent=4)
+        json.dump(allData, f, ensure_ascii=False, indent=4)
     
     datat_0c_Pr = {
-        "ocean": search_in(allData),
+        "ocean": search_in(request, allData),
         # "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
         "program": allData['Program']
     }
@@ -161,24 +197,35 @@ def deconnexion(request):
     return redirect("login")
 
 
-# @login_required
+@login_required
 def home(request):
+    request.session['language'] = request.LANGUAGE_CODE
     return render(request, "home.html")
 
 
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+    try:
+        file_name = "media/data/" + os.listdir('media/data')[0]
+        # Opening JSON file
+        f = open(file_name, encoding="utf8")
+        # returns JSON object as  a dictionary
+        allData = json.load(f)
+
+        datat_0c_Pr.update({"ocean": search_in(request, allData)})
+        request.session['data_Oc_Pr'] = datat_0c_Pr
+        datat_0c_Pr = request.session.get('data_Oc_Pr')
+    except:
+        pass
+
     print(datat_0c_Pr['program'].keys())
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
     # print(datat_0c_Pr.keys())
-    
-    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
-    
+
     apply_conf  = request.session.get('dico_config')
 
-    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
@@ -316,15 +363,16 @@ def getProgram(request, domaine):
     """
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    print(datat_0c_Pr)
+    print(datat_0c_Pr.keys())
+
     # if datat_0c_Pr is not None:
     if domaine == "senne" or domaine == "palangre": 
         if domaine == "senne" :
             looking_for = "seine"
         elif domaine == "palangre":
             looking_for = "longline"
-        
-        datat_0c_Pr = search_in(datat_0c_Pr['program'], looking_for)
+
+        data_0c_Pr = search_in(request, datat_0c_Pr['program'], looking_for)
         print("="*20, "datat_0c_Pr search in", "="*20)
         
         # print(datat_0c_Pr)
@@ -332,7 +380,7 @@ def getProgram(request, domaine):
             "id":[],
             "value":[]
         }
-        for key, value in datat_0c_Pr.items():
+        for key, value in data_0c_Pr.items():
             dataPro["id"].append(key)
             dataPro["value"].append(value)
             
