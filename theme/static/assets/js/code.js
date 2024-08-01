@@ -25,7 +25,7 @@ $(document).ready(function(){
              maxFile = 1;
              group_file   = '.xlsx, .xlsm';
         }else{
-             maxFile = 1;
+             maxFile = 4;
              group_file   = '.xlsx, .xlsm, .zip';
         }
 
@@ -159,7 +159,7 @@ $(document).ready(function(){
                             }
                         },
                         error: function(response){
-                            console.log('La configuration n\'a pas été enregistrée');
+                            console.log('La configuration n\'a pas été enregistrer');
                         }
                     });
                     $("#div_upload").show(1500);

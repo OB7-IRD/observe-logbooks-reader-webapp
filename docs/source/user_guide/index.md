@@ -3,11 +3,6 @@
 # User Guide
 
 ```{toctree}
-:maxdepth: 4
-
-login
-home
-dropzone
-palangre
+:maxdepth: 2
 
 ```

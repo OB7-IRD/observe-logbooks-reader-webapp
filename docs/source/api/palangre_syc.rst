@@ -10,10 +10,10 @@ Subpackages
 Submodules
 ----------
 
-palangre\_syc.excel\_extractions module
-----------------------------------------
+palangre\_syc.api module
+------------------------
 
-.. automodule:: palangre_syc.excel_extractions
+.. automodule:: palangre_syc.api
    :members:
    :undoc-members:
    :show-inheritance:
