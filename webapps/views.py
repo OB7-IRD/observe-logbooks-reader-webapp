@@ -99,6 +99,7 @@ def auth_login(request):
         user = authenticate(request, username=username,  password=password)
 
         print("="*20, "auth_login", "="*20)
+        print(user)
 
         if user is not None and user.is_active:
             print(user)

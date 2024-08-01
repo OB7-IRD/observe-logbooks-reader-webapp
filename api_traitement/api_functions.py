@@ -429,8 +429,7 @@ def check_trip(token, content, base_url):
     ms_ = True
 
     try:
-        id_ = getId_Data(token, url=base_url, moduleName="Trip", route="/data/ps/common/",
-                        argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
+        id_ = getId_Data(token, base_url=base_url, moduleName="Trip", route="/data/ps/common/", argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
     except:
         ms_ = False
 
