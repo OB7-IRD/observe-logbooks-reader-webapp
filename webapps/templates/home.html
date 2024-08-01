@@ -67,7 +67,7 @@ Home
 {% block heading %}
 
 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-  <h1 class="text-3xl font-bold text-gray-900"> Tableau de bord </h1>
+  <h1 class="text-3xl font-bold text-gray-900"> {% translate "Tableau de bord" %} </h1>
    
   <div class = "flex justify-end items-center ml-6">
 
@@ -75,7 +75,7 @@ Home
     {% get_available_languages as AVAILABLE_LANGUAGES %}
     {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
     <div class="languages">
-      <p class="text-m font-medium text-gray-700">{% trans "Choisir une langue" %}:</p>
+      <p class="text-m font-medium text-gray-700">{% translate "Choisir une langue" %}:</p>
       <ul class="languages flex space-x-2">
       {% for language in languages %}
         <li>
@@ -106,12 +106,9 @@ Home
       <div class="pt-16 pb-80 sm:pt-24 sm:pb-40 lg:pt-40 lg:pb-48">
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 sm:static">
           <div class="sm:max-w-lg">
-            <h1 class="text-4xl font font-extrabold tracking-tight text-gray-900 sm:text-6xl">Migration des données de
-              l'observatoire</h1>
+            <h1 class="text-4xl font font-extrabold tracking-tight text-gray-900 sm:text-6xl">{% translate "Migration des données de l'observatoire" %}</h1>
             <p class="mt-4 text-xl text-gray-500">
-              L'Observatoire des Écosystèmes Pélagiques Tropicaux exploités de l'IRD a pour vocation
-              principale la collecte, la validation, l'archivage et l'analyse des données de la pêche thonière
-              tropicale française dans les océans indien et atlantique.
+              {% translate "L'Observatoire des Écosystèmes Pélagiques Tropicaux exploités de l'IRD a pour vocation principale la collecte, la validation, l'archivage et l'analyse des données de la pêche thonière tropicale française dans les océans indien et atlantique." %}
             </p>
           </div>
           <div>
@@ -162,7 +159,7 @@ Home
 
               <a href="{% url 'logbook' %}"
                 class="inline-block text-center bg-indigo-600 border border-transparent rounded-md py-3 px-8 font-medium text-white hover:bg-indigo-700">
-                Commencer l'importation</a>
+                {% translate "Commencer l'importation" %}</a>
             </div>
           </div>
         </div>

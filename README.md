@@ -36,13 +36,28 @@ Pour lancer la documentation :
 
 ```         
 cd docs
-make html # Build the documentation 
+.\make html # Build the documentation 
 sphinx-serve & # Lance le serveur 
 sphinx-serve -b build -h 127.0.0.1
+
+if issue : sphinx-build -b html source build
 ```
 
 # To build the CSS style 
 
 ```bash
 python3 manage.py tailwind build
+```
+
+# To build the auto docstring 
+
+```
+cd source
+sphinx-apidoc -o api palangre-syc # toward a folder with an __init__ file
+```
+
+## To use Django translation
+```
+django-admin makemessages -a
+django-admin compilemessages
 ```

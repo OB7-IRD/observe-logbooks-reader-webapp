@@ -33,7 +33,7 @@ h3:not(#hero h3) {
 
 <div id="hero-left">  <!-- Start Hero Left -->
   <h2 style="font-size: 60px; font-weight: bold; margin: 2rem auto 0;">Logbook to Observe</h2>
-  <h3 style="font-weight: bold; margin-top: 0;">--s</h3>
+  <h3 style="font-weight: bold; margin-top: 0;">A webapp that allow you to transfer logbook automatically into Observe</h3>
   <p>--</p>
 
 <div class="homepage-button-container">
@@ -230,9 +230,10 @@ Builds on top of xarray to work with labeled dimensions and coordinates.
 
 
 ```{toctree}
-:maxdepth: 1
+:maxdepth: 2
 :hidden:
 Getting Started<getting_started/index>
 User Guide<user_guide/index>
 API <api/index>
+
 ```
