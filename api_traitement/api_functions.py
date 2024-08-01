@@ -115,7 +115,7 @@ def get_all_referential_data(token, module, base_url):
             for valin in json.loads(ac_cap.text)["content"][val]:
                 dicoModule[vals].append(valin)
         print("="*20, "get_all_referential_data", "="*20)
-        print(dicoModule)
+        # print(dicoModule)
         return dicoModule
     else:
         return _("Problème de connexion pour recuperer les données")

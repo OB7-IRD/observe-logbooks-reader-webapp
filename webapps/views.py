@@ -129,7 +129,7 @@ def auth_login(request):
                     # token = "ok"
                     token = api_functions.get_token(base_url, data_user_connect)
                     print("Token: ", token)
-                    print('baseURL: ', base_url)
+                    # print('baseURL: ', base_url)
                     allData = load_data(token=token, base_url=base_url)
                     # if allData == []:
                     #     print("="*20, "if allData == []", "="*20)
@@ -153,7 +153,6 @@ def auth_login(request):
                     request.session['data_Oc_Pr'] = datat_0c_Pr
                     request.session['table_files'] = []
                     # allData = load_data(token, base_url)
-                    # print("DATA n n n : ", allData)
                     return redirect("home")
                 else:
                     message = _("Impossible de se connecter au serveur verifier la connexion")
@@ -522,7 +521,7 @@ def file_upload_view(request):
             filename = fs.save("logbooks/"+file.name, file)
             uploaded_file_url = fs.url(filename)                 #To get the file`s url
 
-            print(uploaded_file_url)
+            # print(uploaded_file_url)
 
         # print("Contenu", request.session['table_files'])
     return render(request, "logbook.html")
