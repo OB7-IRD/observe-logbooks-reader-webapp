@@ -1,5 +1,4 @@
-import datetime
-import os
+
 import pandas as pd
 import openpyxl as op
 import numpy as np
@@ -8,48 +7,6 @@ import requests
 import json
 
 from api_traitement.json_fonctions import *
-
-
-def date_convert(time_to_convert):
-    return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
-
-
-def open(username, password, rf_lo):
-
-
-    url = "https://observe.ob7.ird.fr/observeweb-9-alternative"
-    data = {
-        "url": "/api/public/init/open",
-        "method": "GET",
-        "parameters": {
-            "config.modelVersion": "9.0",
-            "config.login": username,
-            "config.password": password,
-            "config.databaseName": "9a",
-            "referentialLocale": rf_lo,
-        }
-    }
-
-    # Recuperation du token
-    url = url + data['url']
-    rep = requests.get(url, params=data["parameters"])
-
-    # orga = rep.url
-    orga = json.loads(rep.text)
-    message = ""
-    token = None
-
-    try:
-        if orga["authenticationToken"]:
-            token = orga["authenticationToken"]
-        else:
-            message = orga["message"]
-    except KeyError as e:
-        pass
-
-    return token, message
-
-
 
 
 

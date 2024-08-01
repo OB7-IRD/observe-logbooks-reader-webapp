@@ -28,6 +28,7 @@ Login
 
                                 <h4 class="font-semibold">{{ message }}</h4>
                                 {% csrf_token %}
+                                {{ form }}
                                         <label class="text-lg">Enter your credentials to access the application.</label>
                                         <div class="relative mt-4">
                                            <select name="base" id="base" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">

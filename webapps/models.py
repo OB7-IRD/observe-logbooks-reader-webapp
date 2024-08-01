@@ -7,8 +7,19 @@ class User(AbstractUser):
     basename = models.CharField(max_length=200)
     url = models.CharField(max_length=300)
     database = models.CharField(max_length=100)
-    ref_language = models.CharField(max_length=50)
-    defaultdomain = models.CharField(max_length=50)
-    defaultprogram = models.CharField(max_length=200)
+    # ref_language = models.CharField(max_length=50)
+    # defaultdomain = models.CharField(max_length=50)
+    # defaultprogram = models.CharField(max_length=200)
+
+
+class WebServiceUserModel(models.Model):
+    basename = models.CharField(max_length=200)
+    url = models.CharField(max_length=300)
+    database = models.CharField(max_length=50)
+    username = models.CharField(max_length=20)
+    password = models.CharField(max_length=20)
+    # ref_language = models.CharField(max_length=50)
+    # defaultdomain = models.CharField(max_length=50)
+    # defaultprogram = models.CharField(max_length=200)
 
 

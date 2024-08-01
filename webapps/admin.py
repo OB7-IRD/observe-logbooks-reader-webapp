@@ -8,8 +8,8 @@ class AdminUser(admin.ModelAdmin):
         "basename",
         "url",
         "database",
-        "ref_language",
-        "defaultdomain",
-        "defaultprogram"
+        # "ref_language",
+        # "defaultdomain",
+        # "defaultprogram"
     )
 admin.site.register(User, AdminUser)

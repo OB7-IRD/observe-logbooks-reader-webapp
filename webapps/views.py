@@ -9,7 +9,7 @@ from api_traitement import api_functions
 from api_traitement.apiFunctions import *
 from api_traitement.api_functions import *
 # from palangre_syc import api
-from .form import UserForm
+from .form import UserForm, WSUserModelForm
 from django.contrib import messages
 from .models import User
 import json
@@ -89,6 +89,7 @@ def search_in(request, allData, search="Ocean"):
 def auth_login(request):
     message = ""
     if request.method == "POST":
+        form = WSUserModelForm(request.POST)
         basename = request.POST['base']
         username = request.POST['username']
         password = request.POST['password']
@@ -122,7 +123,7 @@ def auth_login(request):
                     "config.login": data_user.username,
                     "config.password": password,
                     "config.databaseName": data_user.database,
-                    "referentialLocale": data_user.ref_language,
+                    # "referentialLocale": data_user.ref_language,
                 }
 
 
@@ -161,8 +162,10 @@ def auth_login(request):
                 message = _("serveur incorrect")
         else:
             message = _("username ou mot de passe incorrect")
+    else:
+        form = WSUserModelForm()        
 
-    return render(request, "login.html", {"message": message})
+    return render(request, "login.html", {"form":form, "message": message})
 
 
 @login_required
@@ -363,7 +366,7 @@ def getProgram(request, domaine):
     """
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    print(datat_0c_Pr.keys())
+    # print(datat_0c_Pr.keys())
 
     # if datat_0c_Pr is not None:
     if domaine == "senne" or domaine == "palangre": 

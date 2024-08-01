@@ -186,7 +186,6 @@ def presenting_previous_trip(request):
     apply_conf = request.session.get('dico_config')
 
     print("="*20, "presenting_previous_trip", "="*20)
-
     if request.LANGUAGE_CODE == 'fr':
         programme = common_functions.from_topiaid_to_value(topiaid=apply_conf['programme'],
                                         lookingfor='Program',
