@@ -13,26 +13,39 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import django_browser_reload
 from django.contrib import admin
 from django.urls import path, include
-from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData
+from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData, logbook_del_files
+from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
+
+    
+
+    # path('change_language/', change_language, name='change_language'),
+    # Ajoutez vos autres URL ici
+    
+    # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
+    # path("palangre_syc/", include("palangre_syc.urls")),
+]
+
+urlpatterns += i18n_patterns(
     path('', home, name="home"),
     path('admin', admin.site.urls),
     path('login', auth_login, name="login"),
     # path('register', register, name="register"),
     path('logout', deconnexion, name="logout"),
-    path('logbook', logbook, name="logbook"),
-    path('upload', file_upload_view, name="upload_view"),
-    path('update', update_data, name="update"),
+    path('logbook/', logbook, name="logbook"),
+    path('logbook/upload', file_upload_view, name="upload_view"),
+    path('logbook/update', update_data, name="update"),
     path('<str:domaine>', getProgram, name="getProgram"),
     path('logbook/apply', postProg_info, name="postProg_info"),
     path('logbook/domainselect', domaineSelect, name="domaineSelect"),
     path('logbook/sendData', sendData, name="sendData"),
-    
-    # j'importe l'ensemble des urls qui seront déclinées dans mon app palangre syc
+    path('logbook/del_files', logbook_del_files, name="logbook_del_files"),
     path("palangre_syc/", include("palangre_syc.urls")),
-]
+    path("__reload__/", include("django_browser_reload.urls"))
+)
 
 handler404 = 'webapps.views.error_404_view'

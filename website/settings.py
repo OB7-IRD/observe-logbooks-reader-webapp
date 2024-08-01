@@ -8,9 +8,11 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
+
 """
 
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,6 +33,13 @@ DEBUG = True
 ALLOWED_HOSTS = []
 AUTH_USER_MODEL = "webapps.User"
 
+
+TAILWIND_APP_NAME = "theme"
+INTERNAL_IPS = [
+    "127.0.0.1"
+]
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +52,8 @@ INSTALLED_APPS = [
     'tailwind',
     'theme',
     'webapps',
-    'palangre_syc'
+    'palangre_syc',
+    'django_browser_reload',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +64,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
+    'django.middleware.locale.LocaleMiddleware',
+    ]
+
+# MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
 
 ROOT_URLCONF = 'website.urls'
 
@@ -109,8 +124,18 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
+LANGUAGES = [
+    ('en', _('English')),
+    ('fr', _('Français')),
+    # Ajoutez d'autres langues au besoin
+] 
 
 LANGUAGE_CODE = 'fr'
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
+# A list of directories where Django looks for translation files
 
 TIME_ZONE = 'UTC'
 
@@ -124,15 +149,15 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'theme/theme/static/',
+# ]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-TAILWIND_APP_NAME = "theme"
-INTERNAL_IPS = [
-    "127.0.0.1"
-]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
