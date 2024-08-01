@@ -1,194 +1,456 @@
 import datetime
-from time import gmtime, strftime, strptime
+# from time import gmtime, strftime, strptime
 import os
 import pandas as pd
 import openpyxl as op
 import numpy as np
-import requests
+# import requests
 import json
 
 from api_traitement.json_fonctions import *
-import palangre_syc
 
 
-# Convert date
-def date_convert(time_to_convert):
-    return datetime.datetime.strptime(time_to_convert, '%H:%M:%S').time()
+from webapps.models import User
+from django.contrib.auth import authenticate
 
 
-# recuperer un token
-def getToken(baseUrl, data):
-    """
-    data = {
-            "config.login": "username",
-            "config.password": "password",
-            "config.databaseName": "database",
-            "referentialLocale": "FR",
-        }
-    """ 
+########### Token ###########
 
-    url = baseUrl + "/init/open"
-    # data.update({"config.modelVersion": "9.0"})
-    rep = requests.get(url, params=data)
-    print(rep.url)
-    return rep.json()['authenticationToken']
+# def getToken(baseUrl, data):
+#     """
+#     Adelphe
+#     data = {
+#             "config.login": "username",
+#             "config.password": "password",
+#             "config.databaseName": "database",
+#             "referentialLocale": "FR",
+#         }
+#     """
 
+#     url = baseUrl + "/init/open"
+#     response = requests.get(url, params=data)
+#     print(response.url)
+#     token = response.json()['authenticationToken']
 
-# recuperer toutes les données de la senne
-def get_all_referential_data(token, module, baseUrl):
-    url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
-    ac_cap = requests.get(url)
-    if ac_cap.status_code == 200:
-        dicoModule = {}
-        for val in json.loads(ac_cap.text)["content"]:
-            vals = val.rsplit('.', 1)[1]
-            dicoModule[vals] = []
-
-            for valin in json.loads(ac_cap.text)["content"][val]:
-                dicoModule[vals].append(valin)
-        print("="*20, "get_all_referential_data", "="*20)
-        # print(dicoModule)
-        return dicoModule
-    else:
-        return "Problème de connexion pour recuperer les données"
+#     return token
 
 
-# Recuperer les données de la senne en les stoskant dans un dossier en local chaque 24
-# En utilisant notre fuiseau horaire
-def load_data(token, baseUrl, forceUpdate=False):
-    print("_"*20, "load_data function starting", "_"*20)
-    day = strftime("%Y-%m-%d", gmtime())
+# def is_valid(token):
+#     """ 
+#     Clem
+#     Fonction booléenne qui test si le token est encore valide
+#     Args:
+#         token (str): _description_
+#     """
+#     api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
+#     # Constitution du lien url pour accéder à l'API et fermer la connexion
+#     api_url = api_base + 'authenticationToken=' + token
+#     response = requests.get(api_url)
+#     print("reponse of is valid function ", response.status_code)
+#     return response.status_code == 200
+
+
+# def reload_token(req, username, password):
+
+#     user = authenticate(req, username=username,  password=password)
+#     data_user = User.objects.get(username=user)
+
+#     baseUrl = data_user.url
     
-    # Si les dossiers ne sont pas existant, on les créés
-    if not os.path.exists("media/data"):
-        os.makedirs("media/data")
+#     print("data_user.database",data_user.database)
+#     if data_user.database == 'test' :
+#         data_user.username = 'technicienweb'
+                
+#     data_user_connect = {
+#         "config.login": data_user.username,
+#         "config.login": data_user.username,
+#         "config.password": password,
+#         "config.databaseName": data_user.database,
+#         "referentialLocale": data_user.ref_language,
+#     }
 
-    if not os.path.exists("media/temporary_files"):
-        os.makedirs("media/temporary_files")
+#     return getToken(baseUrl, data_user_connect)
 
-    files = os.listdir("media/data")
 
-    def subFunction(token, day, url):
-        ref_common = get_all_referential_data(token, "common", url)
-        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
-        ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)
+# def get_all_referential_data(token, module, baseUrl):
+#     url = baseUrl + "/referential/" + module + "?authenticationToken=" + token
+#     ac_cap = requests.get(url)
+#     if ac_cap.status_code == 200:
+#         dicoModule = {}
+#         for val in json.loads(ac_cap.text)["content"]:
+#             vals = val.rsplit('.', 1)[1]
+#             dicoModule[vals] = []
 
-        program = {
-            'Program': {
-                'seine' :ps_common["Program"],
-                'longline':ll_common["Program"]
-            }
-        }
-        vesselActivity = {
-            'VesselActivity': {
-                'seine' :ps_common["VesselActivity"],
-                'longline':ll_common["VesselActivity"]
-            }
-        }
+#             for valin in json.loads(ac_cap.text)["content"][val]:
+#                 dicoModule[vals].append(valin)
+#         print("="*20, "get_all_referential_data", "="*20)
+#         # print(dicoModule)
+#         return dicoModule
+#     else:
+#         return "Problème de connexion pour recuperer les données"
 
-        # Suppression des éléments suivant
-        del ps_common["Program"]
-        del ll_common["Program"]
-        del ps_common["VesselActivity"]
-        del ll_common["VesselActivity"]
 
-        allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
-        # allData = {**ref_common, **ps_logbook, **ps_common}
+# # Recuperer les données de la senne en les stockant dans un dossier en local chaque 24
+# # En utilisant notre fuiseau horaire
+# def load_data(token, baseUrl, forceUpdate=False):
+#     print("_"*20, "load_data function starting", "_"*20)
+#     day = strftime("%Y-%m-%d", gmtime())
+    
+#     # Si les dossiers ne sont pas existant, on les créés
+#     if not os.path.exists("media/data"):
+#         os.makedirs("media/data")
 
-        ref_common = get_all_referential_data(token, "common", url)
-        # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
-        ps_logbook = get_all_referential_data(token, "ps/logbook", url)
-        ps_common = get_all_referential_data(token, "ps/common", url)
-        ll_common = get_all_referential_data(token, "ll/common", url)    
+#     if not os.path.exists("media/temporary_files"):
+#         os.makedirs("media/temporary_files")
+
+#     files = os.listdir("media/data")
+
+#     def subFunction(token, day, url):
+#         ref_common = get_all_referential_data(token, "common", url)
+#         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+#         ps_common = get_all_referential_data(token, "ps/common", url)
+#         ll_common = get_all_referential_data(token, "ll/common", url)
+
+#         program = {
+#             'Program': {
+#                 'seine' :ps_common["Program"],
+#                 'longline':ll_common["Program"]
+#             }
+#         }
+#         vesselActivity = {
+#             'VesselActivity': {
+#                 'seine' :ps_common["VesselActivity"],
+#                 'longline':ll_common["VesselActivity"]
+#             }
+#         }
+
+#         # Suppression des éléments suivant
+#         del ps_common["Program"]
+#         del ll_common["Program"]
+#         del ps_common["VesselActivity"]
+#         del ll_common["VesselActivity"]
+
+#         allData = {**ref_common, **ps_logbook, **ps_common, **ll_common, **program, **vesselActivity}
+#         # allData = {**ref_common, **ps_logbook, **ps_common}
+
+#         ref_common = get_all_referential_data(token, "common", url)
+#         # ref_common2 ="https://observe.ob7.ird.fr/observeweb/api/public/referential/common?authenticationToken=6811592f-bf3b-4fa0-8320-58a4a58c9ab7"
+#         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
+#         ps_common = get_all_referential_data(token, "ps/common", url)
+#         ll_common = get_all_referential_data(token, "ll/common", url)    
         
-        print("="*20, "load_data SubFunction", "="*20)
-        # print(ref_common[5:])
-        # with open('allData_load.json', 'w', encoding='utf-8') as f:
-        #     json.dump(allData, f, ensure_ascii=False, indent=4)
+#         print("="*20, "load_data SubFunction", "="*20)
+#         # print(ref_common[5:])
+#         # with open('allData_load.json', 'w', encoding='utf-8') as f:
+#         #     json.dump(allData, f, ensure_ascii=False, indent=4)
         
-        file_name = "media/data/data_" + str(day) + ".json"
+#         file_name = "media/data/data_" + str(day) + ".json"
 
-        with open(file_name, 'w', encoding='utf-8') as f:
-            f.write(json.dumps(allData, ensure_ascii=False, indent=4))
+#         with open(file_name, 'w', encoding='utf-8') as f:
+#             f.write(json.dumps(allData, ensure_ascii=False, indent=4))
 
-        return allData
+#         return allData
 
-    if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
+#     if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
         
-        last_date = files[0].split("_")[1].split(".")[0]
-        last_file = files[0]
+#         last_date = files[0].split("_")[1].split(".")[0]
+#         last_file = files[0]
 
-        formatted_date1 = strptime(day, "%Y-%m-%d")
-        formatted_date2 = strptime(last_date, "%Y-%m-%d")
+#         formatted_date1 = strptime(day, "%Y-%m-%d")
+#         formatted_date2 = strptime(last_date, "%Y-%m-%d")
 
-        # Verifier si le jour actuel est superieur au jour precedent
-        if (formatted_date1 > formatted_date2):
-            allData = subFunction(token, day, baseUrl)
+#         # Verifier si le jour actuel est superieur au jour precedent
+#         if (formatted_date1 > formatted_date2):
+#             allData = subFunction(token, day, baseUrl)
 
-            # Suprimer l'ancienne
-            os.remove("media/data/" + last_file)
+#             # Suprimer l'ancienne
+#             os.remove("media/data/" + last_file)
             
-            print("="*20, "allData updated", "="*20)
-            # print(allData[5:])
+#             print("="*20, "allData updated", "="*20)
+#             # print(allData[5:])
 
-        else:
-            file_name = "media/data/" + files[0]
-            # Opening JSON file
-            f = open(file_name , encoding='utf-8')
-            # returns JSON object as  a dictionary
-            allData = json.load(f)
+#         else:
+#             file_name = "media/data/" + files[0]
+#             # Opening JSON file
+#             f = open(file_name , encoding='utf-8')
+#             # returns JSON object as  a dictionary
+#             allData = json.load(f)
             
-            print("="*20, "allData already existing", "="*20)
-            # print(allData)
-    else:
-        list_file = os.listdir("media/data")
-        for file_name in list_file:
-            os.remove("media/data/" + str(file_name))
+#             print("="*20, "allData already existing", "="*20)
+#             # print(allData)
+#     else:
+#         list_file = os.listdir("media/data")
+#         for file_name in list_file:
+#             os.remove("media/data/" + str(file_name))
 
-        allData = subFunction(token, day, baseUrl)
-        print("="*20, "subFunction getting allData", "="*20)
-        # print(al/lData[5:])
+#         allData = subFunction(token, day, baseUrl)
+#         print("="*20, "subFunction getting allData", "="*20)
+#         # print(allData[5:])
 
-    return allData
+#     return allData
 
 
 # print(load_data(token = '9f49725e-2402-46fd-ab52-c03a6ba2c529',
 #                 baseUrl = 'https://observe.ob7.ird.fr/observeweb/api/public'))
 
 
-def load_allData_file():
-    files = os.listdir("media/data")
+# def load_allData_file():
+#     files = os.listdir("media/data")
 
-    file_name = "media/data/" + files[0]
-    # Opening JSON file
-    f = open(file_name,  encoding='utf-8')
-    # returns JSON object as  a dictionary
-    allData = json.load(f)
+#     file_name = "media/data/" + files[0]
+#     # Opening JSON file
+#     f = open(file_name,  encoding='utf-8')
+#     # returns JSON object as  a dictionary
+#     allData = json.load(f)
 
-    return allData
+#     return allData
 
+# def load_json_file(file_path):
+#     try:
+#         with open(file_path, 'r') as file:
+#             data = json.load(file)
+#             return data
+#     except FileNotFoundError:
+#         print(f"File '{file_path}' not found.")
+#         return None
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON file '{file_path}': {e}")
+#         return None
+    
+# def serialize(obj): 
+#     """ 
+#     Serialize obj dans un format json de type date, int ou str.
+#     """
+#     if isinstance(obj, datetime.datetime):
+#         return obj.isoformat()
+#     if isinstance(obj, np.int64):
+#         return int(obj)
+#     return str(obj)
+#     # raise TypeError("Type not serializable")
+
+# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
+#     """ Fonction qui affiche le fichier json avec les bonnes indentations un fichier json
+
+#     Args:
+#         json_data (json): Données json en entrée
+#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
+#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
+#     """
+    
+#     json_formatted_str = json.dumps(
+#         json_data, indent=2, default=serialize)
+#     # print("¤"*20, "pretty print function" ,"¤"*20)
+#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
+#     with open(file, mode) as outfile:
+#         outfile.write(json_formatted_str)
+
+
+
+########### Fonctions faisant appel au le web service ###########
+# def getId_Data(token, url, moduleName, argment, route):
+#     """
+#     Permet de retourner un id en fonction du module et de la route envoyé
+#     """
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
+
+#     urls = url + route + moduleName + "?filters." + argment
+#     rep = requests.get(urls, headers=headers)
+
+#     # print(rep.url)
+
+#     if rep.status_code == 200:
+#         return json.loads(rep.text)["content"][0]["topiaId"]
+#     else:
+#         return json.loads(rep.text)["message"]
+
+
+# def check_trip(token, content, url_base):
+#     """
+#     Permet de verifier si la marée a inserer existe déjà dans la base de donnée
+#     """
+#     start = content["startDate"].replace("T00:00:00.000Z", "")
+#     end = content["endDate"].replace("T00:00:00.000Z", "")
+
+#     vessel_id = content["vessel"].replace("#", "-")
+
+#     # print(start, end, vessel_id)
+
+#     id_ = ""
+#     ms_ = True
+
+#     try:
+#         id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
+#                         argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
+#     except:
+#         ms_ = False
+
+#     return id_, ms_
+
+    
+# def get_one_from_ws(token, url_base, route, topiaid):
+#     """ Fonction qui interroge le web service (ws) pour récupérer toutes les données relatives à une route et un topiaid
+
+#     Args:
+#         token (str): token
+#         url_base: chemin d'accès à la connexion ('https://observe.ob7.ird.fr/observeweb/api/public')
+#         route: chemin d'accès plus précis (par ex : '/data/ll/common/Trip/')
+#         topiaid: topiaid avec des '-' à la place des '#'
+
+#     Returns:
+#         file.json: informations relatives au topiaid fourni
+#     """
+    
+#     headers = {
+#         'authenticationToken': token, 
+#     }
+    
+#     params = {
+#         'config.recursive' : 'true', 
+#     }
+    
+#     url = url_base + route + topiaid
+    
+#     response = requests.get(url, headers=headers, params = params, timeout=15)
+
+#     if response.status_code == 200 :
+#         # with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
+#         #     outfile.write(response.text)
+#         return response.content
+    
+#     else:
+#         return None
+    
+
+# def send_trip(token, data, url_base, route):
+#     """ Fonction qui ajoute un trip (marée) dans la base
+
+#     Args:
+#         token (str): token
+#         data (json): json file (trip) que l'on envoie dans la base
+#         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+#         route (str):  '/data/ps/common/Trip' ou '/data/ll/common/Trip'
+#     Returns:
+#         le json inséré dans le temporary_files 
+#         text message: logbook bien inséré, ou bien un json d'erreur
+#     """
+
+#     data_json = json.dumps(data)
+
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
+
+#     url = url_base + route
+
+#     print("Post")
+#     pretty_print(data)
+    
+#     response = requests.post(url, data=data_json, headers=headers)
+
+#     print(response.status_code, "\n")
+
+#     if response.status_code == 200:
+#         # return json.loads(res.text)
+#         return ("Logbook inséré avec success", 1)
+#     else:
+#         with open(file = "media/temporary_files/error.json", mode = "w") as outfile:
+#             outfile.write(response.text)
+#         try:
+#             return (errorFilter(response.text), 2)
+#             # return json.loads(res.text), 2
+#         except KeyError:
+#             # Faire une fonction pour mieux traiter ce type d'erreur
+#             # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
+#             print("Message d'erreur: ", json.loads(response.text)) # A faire
+#             return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
+
+
+# def update_trip(token, data, url_base, topiaid):
+#     """Fonction qui met à jour un trip dans la base de données, donc supprime le trip existant pour insérer le nouveau data_json sous le même topiaid
+
+#     Args:
+#         token (str): token
+#         data (json): json file qu'on envoie dans la base
+#         url_base (str): 'https://observe.ob7.ird.fr/observeweb/api/public' base de connexion à l'api
+#         topiaid du trip que l'on veut update (l'ancienne version sera supprimée)
+#     Returns:
+#     """
+
+#     data_json = json.dumps(data, default=serialize)
+
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token,}
+
+#     url = url_base + '/data/ll/common/Trip/' + topiaid
+
+#     pretty_print(data)
+#     response = requests.put(url, data=data_json, headers=headers, timeout=15)
+    
+#     print("Code resultat de la requete", response.status_code)
+    
+#     if response.status_code == 200:
+#         return ("Logbook inséré avec success", 1)
+#     else:
+#         with open(file = "media/temporary_files/errorupdate.json", mode = "w") as outfile:
+#             outfile.write(response.text)
+
+
+# def trip_for_prog_vessel(token, url_base, route, vessel_id, programme_topiaid):
+#     """
+#     Pour un navire et un programme donnée, renvoie le topiaid du dernier trip saisi
+
+#     Args:
+#         token
+#         url_base: 'https://observe.ob7.ird.fr/observeweb/api/public'
+#         vessel_id: topiaid du navire (avec les '-')
+#         programme_topiaid: topiaid du programme choisi (avec les '-')
+
+#     Returns:
+#         trip topiaid
+#     """
+#     # api_base = 'https://observe.ob7.ird.fr/observeweb/api/'
+#     api_trip = '?authenticationToken='
+
+#     api_vessel_filter = '&filters.vessel_id='
+#     api_programme_filter = '&filters.logbookProgram_id='
+#     api_ordeer_filter = '&orders.endDate=DESC'
+
+#     api_trip_request = url_base + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
+#     response = requests.get(api_trip_request, timeout=15)
+#     return response.content
+
+# ########### Fonctions de recherche dans allData --> à déplacer dans json_functions ###########
 
 # Retourne ID d'un module en fonction des arguments donnés
-def getId(allData, module, argment, nbArg=False, domaine=None):
+def getId(allData, moduleName, argment, nbArg=False, domaine=None):
+    """Fonction qui retourne l'ID d'un module en fonction des arguments donnés
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        argment (str): les arguments de la requete sur le module
+        domaine (str): "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
+        nbArg (bool): permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
+               par defaut quand c'est False nous avons 1 argument en paramentre
+               si c'est True, nous avons 2 arguments en parametre
+
+    Returns:
+         topiad (str)
     """
-        :param allData:
-        :param module:
-        :param argment:
-        :param domaine: "seine" ou "longline" dans le cas ou nous voulons recuperer les id de VesselActivity
-        :param nbArg: permet de signifier le nombre d'argument dont on aura besoin pour trouver l'ID
-                    par defaut quand c'est False nous avons 1 argument en paramentre
-                    si c'est egale True, nous avons 2 arguments en parametre
-        :return: Retourne ID d'un module en fonction des arguments donnés et un message
-    """
-    message = Id = ""
+    message = ""
+    Id = ""
     dataKey = [k for (k, v) in allData.items()]
 
-    if module in dataKey:
+    if moduleName in dataKey:
         if domaine != None:
-            tempDic = allData[module][domaine]
+            tempDic = allData[moduleName][domaine]
         else:
-            tempDic = allData[module]
+            tempDic = allData[moduleName]
 
         if nbArg:
             # 2 arguments
@@ -211,54 +473,75 @@ def getId(allData, module, argment, nbArg=False, domaine=None):
         # message = "Le module: "+ module + " n'existe pas"
         Id = None
 
-    # return Id, message
     return Id
 
 
-def search_in(allData, search="Ocean"):
+
+def getSome(allData, moduleName, argment):
+    """Permet de retouner un dictionnaire de donnée du module dans une liste (tableau)
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        argment (str): les arguments de la requete sur le module
+
+    Returns:
+        (list)
     """
-        search => Ocean ou Program
+    tempDic = {}
+    dico = {}
+    dataKey = [k for (k, v) in allData.items()]
+
+    if moduleName in dataKey:
+        tempDic = allData[moduleName]
+        # print(tempDic)
+        argments = argment.split("=")
+        for val in tempDic:
+            if val[argments[0]].lower() == argments[1].lower():
+                dico = val
+
+    return [dico]
+
+
+def getAll(allData, moduleName, type_data="dictionnaire"):
+    """Permet de retourner un dictionnaire ou un tableau
+
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        type_data (str): "dictionnaire" ou "tableau"
+
+    Returns:
+        tab (list)
+        dico (dict)
     """
-    if allData == []: return {}
+    if type_data == "tableau":
+        tab = []
+        for val in allData[moduleName]:
+            tab.append((val["topiaId"], val["label1"]))
 
-    if search == "Ocean":
-        return { val["topiaId"] : val["label2"] for val in allData[search]}
-    prog_dic = {}
-    if allData == [] : 
-        return prog_dic
-    
-    # print(allData)
-    
-    for val in allData[search]:
-        prog_dic[val["topiaId"]] = val["label2"]
-    # print("search_in", prog_dic)
-    return prog_dic
-
-
-# Traitement du logbook
-def traiLogbook2(logB):
-    # Chargement du fichier
-    # wb = Workbook()
-
-    try:
-        wb = op.load_workbook(logB)
-    except Exception as e:
-        return '', '', '', "Error : Fichier illisible" + str(e)
-
-    if logB.name.split('.')[1] == "xlsm":
-        # Recuperer le non du bateau et autres information utils
-        #   st.text(wb.get_sheet_names())
-        maree_log = wb["1.Marée"]
-
-        # Recuperer la feuille active
-        act_sheet = wb["2.Logbook"]
+        return tab
     else:
-        return {
-            }
+        dico = {}
+        for val in allData[moduleName]:
+            dico[val["code"]] = val["topiaId"]
 
+        return dico
 
 # Traitement du logbook
 def traiLogbook(logB):
+    """Fonction qui permet d'extraire les informations d'un logbook SENNE dans ces variables
+        --> info_bat : contient les informations sur le navire, le port (D/A) et heure (D/A)
+        --> observ : contient les informations sur le capitaine et le mar_homeid
+        --> df_data : contient les données du logbook
+
+    Args:
+        logB (str): fichier logbook à traiter
+
+    Returns:
+         info_bat (json), df_data (dataframe), observ (json), (str)
+    """
+
     # Chargement du fichier
     # wb = Workbook()
 
@@ -317,17 +600,17 @@ def traiLogbook(logB):
     # Titrer le tableau
     data = data.rename(
         columns={0: "date", 1: "heure", 2: "lat1", 3: "lat2", 4: "lat3", 5: "long1", 6: "long2", 7: "long3", 8: "zee",
-                 9: "temp_mer", 10: "vent_dir", 11: "vent_vit", 12: "calee_porta", 13: "calee_nul", 14: "calee_type",
-                 15: "cap_alb_yft_p10_tail", 16: "cap_alb_yft_p10_cap", 17: "cap_alb_yft_m10_tail",
-                 18: "cap_alb_yft_m10_cap", 19: "cap_lst_skj_tail", 20: "cap_lst_skj_cap", 21: "cap_pat_bet_p10_tail",
-                 22: "cap_pat_bet_p10_cap", 23: "cap_pat_bet_m10_tail", 24: "cap_pat_bet_m10_cap",
-                 25: "cap_ger_alb_tail", 26: "cap_ger_alb_cap", 27: "cap_aut_esp_oth_esp", 28: "cap_aut_esp_oth_tail",
-                 29: "cap_aut_esp_oth_cap", 30: "cap_rej_dsc_esp", 31: "cap_rej_dsc_tail", 32: "cap_rej_dsc_cap",
-                 33: "asso_bc_libre", 34: "asso_objet", 35: "asso_balise", 36: "asso_baliseur", 37: "asso_requin",
-                 38: "asso_baleine", 39: "asso_oiseaux", 40: "obj_flot_act_sur_obj", 41: "obj_flot_typ_obj",
-                 42: "obj_flot_typ_dcp_deriv", 43: "obj_flot_risq_mail_en_surf", 44: "obj_flot_risq_mail_sou_surf",
-                 45: "bouee_inst_act_bou", 46: "bouee_inst_bou_prst_typ", 47: "bouee_inst_bou_prst_id",
-                 48: "bouee_inst_bou_deplo_typ", 49: "bouee_inst_bou_deplo_id", 50: "comment"})
+                9: "temp_mer", 10: "vent_dir", 11: "vent_vit", 12: "calee_porta", 13: "calee_nul", 14: "calee_type",
+                15: "cap_alb_yft_p10_tail", 16: "cap_alb_yft_p10_cap", 17: "cap_alb_yft_m10_tail",
+                18: "cap_alb_yft_m10_cap", 19: "cap_lst_skj_tail", 20: "cap_lst_skj_cap", 21: "cap_pat_bet_p10_tail",
+                22: "cap_pat_bet_p10_cap", 23: "cap_pat_bet_m10_tail", 24: "cap_pat_bet_m10_cap",
+                25: "cap_ger_alb_tail", 26: "cap_ger_alb_cap", 27: "cap_aut_esp_oth_esp", 28: "cap_aut_esp_oth_tail",
+                29: "cap_aut_esp_oth_cap", 30: "cap_rej_dsc_esp", 31: "cap_rej_dsc_tail", 32: "cap_rej_dsc_cap",
+                33: "asso_bc_libre", 34: "asso_objet", 35: "asso_balise", 36: "asso_baliseur", 37: "asso_requin",
+                38: "asso_baleine", 39: "asso_oiseaux", 40: "obj_flot_act_sur_obj", 41: "obj_flot_typ_obj",
+                42: "obj_flot_typ_dcp_deriv", 43: "obj_flot_risq_mail_en_surf", 44: "obj_flot_risq_mail_sou_surf",
+                45: "bouee_inst_act_bou", 46: "bouee_inst_bou_prst_typ", 47: "bouee_inst_bou_prst_id",
+                48: "bouee_inst_bou_deplo_typ", 49: "bouee_inst_bou_deplo_id", 50: "comment"})
 
     #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
 
@@ -351,50 +634,29 @@ def traiLogbook(logB):
 
     return info_bat, df_data, observ, ''
 
-
 def read_data(file):
+    """Fonction qui permet de faire appel à la fonction de traitement du logbook
+
+    Args:
+        file (str): fichier logbook à traiter
+
+    Returns:
+         info_bat (json), data_bat (dataframe), obs (json), message (str)
+    """
+
     info_bat, data_bat, obs, message = traiLogbook(file)
 
     return info_bat, data_bat, obs, message
 
-
-def read_data2(file):
-    try:
-        print(file)
-        if file.content_type.split("/")[1] == "vnd.ms-excel.sheet.macroenabled.12":
-            # print(up)
-            info_bat, data_bat, obs, message = traiLogbook(file)
-            data_bats = data_bat.copy()
-
-            data_bats['date'] = data_bats['date'].astype(str)
-            data_bats['heure'] = data_bats['heure'].astype(str)
-
-            # request.session['data_log'] = data_bats.to_dict()
-            # request.session['data_log_info'] = info_bat
-            # request.session['obs'] = obs
-
-            return info_bat, data_bats, obs, message
-
-    except KeyError:
-        message = " 'Content' Selection du programme et l'ocean mise a jour du OBS"
-        return '', '', '', message
-
-
-def get_lat_long2(allData, harbour):
-    for val in allData["Harbour"]:
-        # print("Label 2: ",val["label2"], " ==> Recherche: ", harbour)
-
-        if (harbour.lower() in val["label1"].lower()) or (harbour.lower() in val["label2"].lower()) or (
-                harbour.lower() in val["label3"].lower()):
-            return float(val["latitude"]), float(val["longitude"])
-
-    # return "Le port de départ << "+ harbour + " >> n'a pas été trouvé dans le service."
-    return None, None
-
-
 def get_lat_long(allData, harbour):
-    """
-    Permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
+    """Fonction qui permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
+
+    Args:
+        allData (json): données de references
+        harbour (str): nom du port
+
+    Returns:
+         (float), (float)
     """
     print(harbour)
     if harbour != None:
@@ -414,8 +676,13 @@ def get_lat_long(allData, harbour):
 
 
 def lat_long(lat1, lat2, lat3, long1, long2, long3):
-    """
-    Permet de calculer la longitude et la latitude pour l'inserer facilement dans la BD
+    """Fonction qui permet de calculer la longitude et la latitude pour l'inserer facilement dans la BD
+
+    Args:
+        lat1, lat2, lat3, long1, long2, long3 (str): position geographique
+
+    Returns:
+         (float), (float), (bool)
     """
     try:
         lat_1 = int(float(str(lat1).replace("°", "")))
@@ -472,57 +739,20 @@ def lat_long(lat1, lat2, lat3, long1, long2, long3):
 # wind:"fr.ird.referential.common.Wind#1239832686605#0.561188597983181" Ecris le scrit pour le vent pour verifier si la vitesse du vent correspond a l'interval dans la base
 
 
-# Fonction typique
-def getId_Data(token, url, moduleName, argment, route):
-    """
-    Permet de retourner un id en fonction du module et de la route envoyé
-    """
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+def get_wind_id_interval(allData, moduleName, windSpeed):
+    """Fonction qui permet de retourner le topiaId de l'interval de vitesse du vent
 
-    urls = url + route + moduleName + "?filters." + argment
-    rep = requests.get(urls, headers=headers)
+    Args:
+        allData (json): données de references
+        moduleName (str): le module de la base de donnée
+        windSpeed (str): vitesse du vent
 
-    # print(rep.url)
-
-    if rep.status_code == 200:
-        return json.loads(rep.text)["content"][0]["topiaId"]
-    else:
-        return json.loads(rep.text)["message"]
-
-
-def check_trip(token, content, url_base):
-    """
-    Permet de verifier si la marée a inserer existe déjà dans la base de donnée
-    """
-    start = content["startDate"].replace("T00:00:00.000Z", "")
-    end = content["endDate"].replace("T00:00:00.000Z", "")
-
-    vessel_id = content["vessel"].replace("#", "-")
-
-    # print(start, end, vessel_id)
-
-    id_ = ""
-    ms_ = True
-
-    try:
-        id_ = getId_Data(token, url=url_base, moduleName="Trip", route="/data/ps/common/",
-                         argment="startDate=" + start + "&filters.endDate=" + end + "&filters.vessel_id=" + vessel_id)
-    except:
-        ms_ = False
-
-    return id_, ms_
-
-
-def get_wind_id_interval(allData, module, windSpeed):
-    """
-        Permet de retourner .......
+    Returns:
+         id (str)
     """
 
     tab = []
-    for val in allData[module]:
+    for val in allData[moduleName]:
         if val['code'] == '0':
             pass
         else:
@@ -532,47 +762,18 @@ def get_wind_id_interval(allData, module, windSpeed):
                 return None
     return None
 
-
-def getSome(allData, module, argment):
-    """
-    Permet de retouner un element(==> dictionnaire) du module sous forme de tableau
-    """
-    tempDic = dico = {}
-    dataKey = [k for (k, v) in allData.items()]
-
-    if module in dataKey:
-        tempDic = allData[module]
-        # print(tempDic)
-        argments = argment.split("=")
-        for val in tempDic:
-            if val[argments[0]].lower() == argments[1].lower():
-                dico = val
-
-    return [dico]
-
-
-def getAll(allData, module, type_data="dictionnaire"):
-    """
-        Permet de retourner un dictionnaire ou un tableau
-    """
-    if type_data == "tableau":
-        tab = []
-        for val in allData[module]:
-            tab.append((val["topiaId"], val["label1"]))
-
-        return tab
-    else:
-        dico = {}
-        for val in allData[module]:
-            dico[val["code"]] = val["topiaId"]
-
-        return dico
-
-
 def fpaZone_id(chaine, tableau, allData):
+    """Fonction qui permet de retourner le topiaId et un commentaire lorsqu'on ne retrouve pas la zone fpa passée en paramettre
+
+    Args:
+        allData (json): données de references
+        tableau (list): liste de données fpa zone
+        chaine (str): zone à rechercher
+
+    Returns:
+         id (str), '' (str) ou chaine (str)
     """
-     return: id et un commentaire
-    """
+
     status = False
     for val in tableau:
         # print("FPA : ", chaine)
@@ -583,7 +784,16 @@ def fpaZone_id(chaine, tableau, allData):
         return getId(allData, "FpaZone", argment="code=XXX*"), chaine
 
 
-def transmittingBType(chaine, dico, allData):
+def transmittingBType(chaine, dico):
+    """Fonction qui permet de retourner le topiaId du type de balise et un commentaire lorsqu'on ne retrouve pas la balise passée en paramettre
+
+    Args:
+        dico (json): dictionnaire de données pour les balises
+        chaine (str): balise à rechercher
+
+    Returns:
+         id (str), '' (str) ou commentaire (str)
+    """
     if ("m3i+" in str(chaine).lower()): return dico['26'], ""
     if ("m3igo" in str(chaine).lower()): return dico['29'], ""
     if ("m3i" in str(chaine).lower()): return dico['25'], ""
@@ -616,6 +826,19 @@ def transmittingBType(chaine, dico, allData):
 
 
 def floatingObjectPart(chaine, data, dico, index, perte_act=False):
+    """Fonction qui permet de retourner un ou deux topiaId en fonction du type d'objet flottant
+
+    Args:
+        data (dataFrame): les données du logbook en cours d'insertion
+        index (str): nom de la colonne du dataFrame faisant reference aux objets flottants
+        dico (json): dictionnaire de données pour les objets flottants
+        perte_act (bool): gestion des pertes
+        chaine (str): objet flottant à rechercher
+
+    Returns:
+         id (str), id (str)
+    """
+
     # Types objets flottants
     if index == 'obj_flot_typ_obj':
         if ("dcp ancré" in str(chaine).lower()): return dico['1-2']
@@ -667,6 +890,15 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
 
 
 def cap_obs_sea(allData, ob):
+    """Fonction qui permet d'appliquer des traitement sur le nom et prenoms du capitaine pour retrouver son topiaId
+
+    Args:
+        allData (json): données de references
+        ob (str): les informations sur le capitaine et le mar_homeid
+
+    Returns:
+         id (str)
+    """
     cap = []
     logbookDataEntryOperator = []
 
@@ -725,19 +957,38 @@ def cap_obs_sea(allData, ob):
 
 
 class TransmitException(Exception):
+    """Classe qui permet de gerer les exceptions sur les activités sur objet
+
+    Args:
+
+    Returns:
+
+    """
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
 
-
 def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner, allData, operation):
+    """Fonction qui permet de construire les operations sur les objets et retourne l'ensemble des operations sur balise pour une route
+
+    Args:
+        dico_trams (json): dictionnaire de données pour les balises
+        dico_trams_oper (json): dictionnaire de données pour les operations sur balises
+        dico_trams_owner (json): dictionnaire de données pour les  sur balises
+        allData (json): données de references
+        js_Transmitts (json): structure json pour un enregistrement sur les balises
+        data (dataFrame): les données du logbook en cours d'insertion
+        operation (str) : permet de connaitre le type d'operation (visite, transfert, mise à l'eau...)
+
+    Returns:
+         tab2_Transmitt (liste) : liste de structure de données Json
+    """
     tab2_Transmitt = []
 
     def sub_func(data, tab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper, dico_trams,
-                 dico_trams_owner, allData, js_Transmitts):
+                 dico_trams_owner, js_Transmitts):
         js_Transmitts['transmittingBuoyOperation'] = dico_trams_oper[code_trams_oper]
-        js_Transmitts['transmittingBuoyType'], comment = transmittingBType(data[tab_dcp_type_and_id[0]], dico_trams,
-                                                                           allData)
+        js_Transmitts['transmittingBuoyType'], comment = transmittingBType(data[tab_dcp_type_and_id[0]], dico_trams)
         if comment != "":
             js_Transmitts['comment'] = comment
 
@@ -767,7 +1018,7 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
         if (data[Basetab_dcp_type_and_id[0]] != None) and (
                 "pas de" not in str(data[Basetab_dcp_type_and_id[0]]).lower()):
             js_transmi = sub_func(data, Basetab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
-                                  dico_trams, dico_trams_owner, allData, js_Transmitts)
+                                  dico_trams, dico_trams_owner, js_Transmitts)
 
             if (data[Othtab_dcp_type_and_id[0]] != None) and (
                     "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()) and (makeException == True):
@@ -781,7 +1032,7 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
         elif (data[Othtab_dcp_type_and_id[0]] != None) and (
                 "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()):
             return sub_func(data, Othtab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
-                            dico_trams, dico_trams_owner, allData, js_Transmitts)
+                            dico_trams, dico_trams_owner, js_Transmitts)
 
     js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut
     if ("mise" in str(data['bouee_inst_act_bou']).lower()):
@@ -831,6 +1082,15 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
 
 
 def obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple=("false", "false")):
+    """Fonction qui permet de traiter les materiels
+
+    Args:
+        tab1_Float (list): liste de données pour les materiels
+        js_Floats (json): structure json pour un enregistrement sur les materiels
+
+    Returns:
+
+    """
     js_Floats = js_Float()
     if temp_float == None:
         pass
@@ -855,48 +1115,8 @@ def obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple=("false", "f
         tab1_Float.append(js_Floats)
 
 
-def add_trip(token, content, url_base):
-    """
-    Permet d'inserer un Trip(une marée)
-    """
-
-    dict = content
-    dicts = json.dumps(dict)
-
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
-
-    url = url_base + '/data/ps/common/Trip'
-
-    print("Post")
-
-    res = requests.post(url, data=dicts, headers=headers)
-
-    print(res.status_code, "\n")
-
-    if res.status_code == 200:
-        # return json.loads(res.text)
-        return ("Logbook inséré avec success", 1)
-    else:
-        try:
-            return (errorFilter(res.text), 2)
-            # return json.loads(res.text), 2
-        except KeyError:
-
-
-            # Faire une fonction pour mieux traiter ce type d'erreur
-            # print("Message d'erreur: ", json.loads(res.text)["exception"]["result"]["nodes"]) # A faire
-            print("Message d'erreur: ", json.loads(res.text)) # A faire
-
-
-            return ("L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un autre", 3)
-
-
 def errorFilter(response):
-    """
-    Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
+    """Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
     """
     error = json.loads(response)
     # print(error) ['exception']['result']['nodes']
@@ -925,40 +1145,40 @@ def errorFilter(response):
     return all_message
 
 
-# Supprimer un trip
-def del_trip(token, content):
-    dict = content
-    dicts = json.dumps(dict)
+# # Supprimer un trip
+# def del_trip(token, content):
+#     dict = content
+#     dicts = json.dumps(dict)
 
-    headers = {
-        "Content-Type": "application/json",
-        'authenticationToken': token
-    }
+#     headers = {
+#         "Content-Type": "application/json",
+#         'authenticationToken': token
+#     }
 
-    id_, ms_ = check_trip(token, content)
+#     id_, ms_ = check_trip(token, content)
 
-    if ms_ == True:
+#     if ms_ == True:
 
-        id_ = id_.replace("#", "-")
+#         id_ = id_.replace("#", "-")
 
-        url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
+#         url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
 
-        print(id_)
+#         print(id_)
 
-        print("Supprimer")
+#         print("Supprimer")
 
-        res = requests.delete(url, data=dicts, headers=headers)
+#         res = requests.delete(url, data=dicts, headers=headers)
 
-        print(res.status_code, "\n")
+#         print(res.status_code, "\n")
 
-        if res.status_code == 200:
-            print("Supprimer avec succes")
-            return json.loads(res.text)
-        else:
-            try:
-                return errorFilter(res.text)
-            except KeyError:
-                print("Message d'erreur: ", json.loads(res.text))
+#         if res.status_code == 200:
+#             print("Supprimer avec succes")
+#             return json.loads(res.text)
+#         else:
+#             try:
+#                 return errorFilter(res.text)
+#             except KeyError:
+#                 print("Message d'erreur: ", json.loads(res.text))
 
 
 # Constitution de contents
@@ -967,14 +1187,18 @@ def del_trip(token, content):
 # Si la premiere activité n'a pas de possition prendre la possition du port d'arriver
 
 def build_trip(allData, info_bat, data_log, oce, prg, ob):
-    """
-    :param allData:
-    :param info_bat: info sur le bateau date de depart/arrivée du port de depart/arrivé
-    :param data_log: info du logbook
-    :param oce: ocean
-    :param prg: programme
-    :param ob: info sur le capitaine et homeid
-    :return: allMessages, content_json
+    """Fonction qui permet de contruire le gros fragment json de la marée et retourner des messages par rapport à la construction
+
+    Args:
+        allData (json): données de references
+        info_bat (json): info sur le bateau date de depart/arrivée du port de depart/arrivé
+        data_log (dataFrame):  les données du logbook
+        oce (list): la liste des océans
+        prg (list): pour la liste des programmes
+        ob (json) : info sur le capitaine et homeid du bateau
+
+    Returns:
+        allMessages, js_contents
     """
 
     group = data_log.groupby(['date'])
@@ -1486,36 +1710,36 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                 if (comment_temp != "") and (comment_temp != None):
                     js_activitys["comment"] = js_activitys["comment"] + " # " + comment_temp
 
-                ObserSys0 = getSome(allData, argment="code=0", module="ObservedSystem")[0]["topiaId"]
+                ObserSys0 = getSome(allData, argment="code=0", moduleName="ObservedSystem")[0]["topiaId"]
                 observedSystem = [ObserSys0]
 
                 if data["asso_bc_libre"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=0", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=0", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_objet"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=20", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_balise"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=20", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_baliseur"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=28", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=28", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_requin"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=12", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=12", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_baleine"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=11", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=11", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_oiseaux"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=4", module="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(getSome(allData, argment="code=4", moduleName="ObservedSystem")[0]["topiaId"])
 
                 js_activitys["observedSystem"] = observedSystem
                 js_activitys["wind"] = get_wind_id_interval(allData, "Wind", data["vent_vit"])

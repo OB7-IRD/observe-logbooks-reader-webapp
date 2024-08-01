@@ -95,6 +95,7 @@
 
 from api import get_token, update_trip
 
+
 token = get_token()
 url_base = 'https://observe.ob7.ird.fr/observeweb/api/public'
 

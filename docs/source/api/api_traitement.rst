@@ -3,17 +3,24 @@ api\_traitement package
 
 Submodules
 ----------
+api\_traitement.common\_functions module
+------------------------------------------
 
-api\_traitement.apiFunctions module
------------------------------------
+.. automodule:: api_traitement.common_functions
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. automodule:: api_traitement.apiFunctions
+api\_traitement.api\_functions module
+--------------------------------------
+
+.. automodule:: api_traitement.api_functions
    :members:
    :undoc-members:
    :show-inheritance:
 
 api\_traitement.json\_fonctions module
---------------------------------------
+---------------------------------------
 
 .. automodule:: api_traitement.json_fonctions
    :members:

@@ -5,13 +5,17 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 
+from api_traitement import api_functions
 from api_traitement.apiFunctions import *
+from api_traitement.api_functions import *
+# from palangre_syc import api
 from .form import UserForm
 from django.contrib import messages
 from .models import User
 import json
 from zipfile import ZipFile
 import os
+from django.utils.translation import gettext as _
 
 # Create your views here.
 def register(request):
@@ -26,26 +30,61 @@ def register(request):
             messages.error(request, form.errors)
     return render(request, "register.html", {"form": form})
 
-def relordToken(req, username, password):
+# def reloadToken(req, username, password):
 
-    user = authenticate(req, username=username,  password=password)
-    data_user = User.objects.get(username=user)
+#     user = authenticate(req, username=username,  password=password)
+#     data_user = User.objects.get(username=user)
 
-    baseUrl = data_user.url
+#     base_url = data_user.url
     
-    print(data_user.database)
-    if data_user.database == 'test' :
-        data_user.username = 'technicienweb'
+#     print(data_user.database)
+#     if data_user.database == 'test' :
+#         data_user.username = 'technicienweb'
                 
-    data_user_connect = {
-        "config.login": data_user.username,
-        "config.login": data_user.username,
-        "config.password": password,
-        "config.databaseName": data_user.database,
-        "referentialLocale": data_user.ref_language,
-    }
+#     data_user_connect = {
+#         "config.login": data_user.username,
+#         "config.login": data_user.username,
+#         "config.password": password,
+#         "config.databaseName": data_user.database,
+#         "referentialLocale": data_user.ref_language,
+#     }
 
-    return getToken(baseUrl, data_user_connect)
+#     return getToken(base_url, data_user_connect)
+
+def search_in(request, allData, search="Ocean"):
+    """Fonction permet d'avoir à partir des données de references les oceans ou les programmes
+
+    Args:
+        allData (json): données de references
+        search (str): "Ocean" ou "Program"
+
+    Returns:
+        prog_dic (json)
+    """
+    if allData == []: return {}
+
+    if request.session.get('language') == 'fr':
+        if search == "Ocean":
+            return { val["topiaId"] : val["label2"] for val in allData[search]}
+        prog_dic = {}
+        if allData == [] :
+            return prog_dic
+
+        for val in allData[search]:
+            prog_dic[val["topiaId"]] = val["label2"]
+        return prog_dic
+
+    elif request.session.get('language') == 'en':
+        if search == "Ocean":
+            return { val["topiaId"] : val["label1"] for val in allData[search]}
+        prog_dic = {}
+        if allData == [] :
+            return prog_dic
+
+        for val in allData[search]:
+            prog_dic[val["topiaId"]] = val["label1"]
+        return prog_dic
+
 
 def auth_login(request):
     message = ""
@@ -69,14 +108,14 @@ def auth_login(request):
             if basename == data_user.basename.lower():
                 token = ""
                 allData = []
-                baseUrl = data_user.url
+                base_url = data_user.url
                 
                 
                 if basename == 'test-proto.ird.fr' :
                     data_user.username = 'technicienweb'
-                    print(user , data_user)
+                    request.session['username'] = data_user.username
                 
-                print("_"*20, "baseUrl", "_"*20)
+                print("_"*20, "base_url", "_"*20)
                 
                 data_user_connect = {
                     "config.login": data_user.username,
@@ -88,10 +127,10 @@ def auth_login(request):
 
                 try:
                     # token = "ok"
-                    token = getToken(baseUrl, data_user_connect)
+                    token = api_functions.get_token(base_url, data_user_connect)
                     print("Token: ", token)
-                    print('baseURL: ', baseUrl)
-                    allData = load_data(token=token, baseUrl=baseUrl)
+                    # print('baseURL: ', base_url)
+                    allData = load_data(token=token, base_url=base_url)
                     # if allData == []:
                     #     print("="*20, "if allData == []", "="*20)
 
@@ -101,26 +140,26 @@ def auth_login(request):
                 if (token != "") and (allData != []):
                     login(request, user)
                     request.session['token'] = token
-                    request.session['baseUrl'] = baseUrl
+                    request.session['base_url'] = base_url
                     
                     print("="*20, "if (token != "") and (allData is not [])", "="*20)
-                    print("clés présentes dans allDAta ", allData.keys())
+                    # print("clés présentes dans allDAta ", allData.keys())
                     datat_0c_Pr = {
-                        "ocean": search_in(allData),
+                        # "ocean": search_in(request, allData),
+                        "ocean": None,
                         # "senne" : allData['seine'], "palangre" : allData['longline']
                         "program" : allData["Program"]
                     }
                     request.session['data_Oc_Pr'] = datat_0c_Pr
                     request.session['table_files'] = []
-                    # allData = load_data(token, baseUrl)
-                    # print("DATA n n n : ", allData)
+                    # allData = load_data(token, base_url)
                     return redirect("home")
                 else:
-                    message = "Impossible de se connecter au serveur verifier la connexion"
+                    message = _("Impossible de se connecter au serveur verifier la connexion")
             else:
-                message = "serveur incorrect"
+                message = _("serveur incorrect")
         else:
-            message = "username ou mot de passe incorrect"
+            message = _("username ou mot de passe incorrect")
 
     return render(request, "login.html", {"message": message})
 
@@ -129,19 +168,19 @@ def auth_login(request):
 def update_data(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = relordToken(request, username, password)
-    baseUrl = request.session.get('baseUrl')
+    token  = api_functions.reload_token(request, username, password)
+    base_url = request.session.get('base_url')
 
-    allData = load_data(token=token, baseUrl=baseUrl, forceUpdate=True)
+    allData = load_data(token=token, base_url=base_url, forceUpdate=True)
     
     print("="*20, "update_data", "="*20)
     with open('allData.json', 'w', encoding='utf-8') as f:
-            json.dump(allData, f, ensure_ascii=False, indent=4)
+        json.dump(allData, f, ensure_ascii=False, indent=4)
     
     datat_0c_Pr = {
-        "ocean": search_in(allData),
+        "ocean": search_in(request, allData),
         # "domains": {'senne' : allData['seine'], "palangre" : allData['longline']}
-        "program": allData['program']
+        "program": allData['Program']
     }
     request.session['data_Oc_Pr'] = datat_0c_Pr
 
@@ -157,23 +196,35 @@ def deconnexion(request):
     return redirect("login")
 
 
-# @login_required
+@login_required
 def home(request):
+    request.session['language'] = request.LANGUAGE_CODE
     return render(request, "home.html")
 
 
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+    try:
+        file_name = "media/data/" + os.listdir('media/data')[0]
+        # Opening JSON file
+        f = open(file_name, encoding="utf8")
+        # returns JSON object as  a dictionary
+        allData = json.load(f)
+
+        datat_0c_Pr.update({"ocean": search_in(request, allData)})
+        request.session['data_Oc_Pr'] = datat_0c_Pr
+        datat_0c_Pr = request.session.get('data_Oc_Pr')
+    except:
+        pass
+
+    print(datat_0c_Pr['program'].keys())
     print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
     # print(datat_0c_Pr)
     # print(datat_0c_Pr.keys())
-    
-    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
-    
+
     apply_conf  = request.session.get('dico_config')
 
-    # ll_programs = search_in(datat_0c_Pr["palangre"], search="Program")
     # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
     if request.POST.get('submit'):
@@ -184,16 +235,16 @@ def logbook(request):
         #Si validé sans fichier excel televersé
         if logbooks == []:
             print("="*10, "Validé sans fichier excel", "="*10)
-            msg = "Merci de déposer un fichier excel avant de lancer l'extraction de données !"
+            msg = _("Merci de déposer un fichier excel avant de lancer l'extraction de données !")
             messages.error(request, msg)
             tags = "error2"
 
             return render(request, "logbook.html",{
                 "tags": tags,
-                "alert_message": "Merci de téléverser un fichier excel",
+                "alert_message": _("Merci de téléverser un fichier excel"),
                 "ocean_data": datat_0c_Pr["ocean"],
             })
-
+        print(apply_conf)
         # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
         if apply_conf["domaine"] == "palangre":
             logbooks = os.listdir("media/logbooks")
@@ -228,22 +279,22 @@ def logbook(request):
 
                  #print(content_json,'\n')
 
-                 if os.path.exists("media/content_json/content_json.json"):
-                     os.remove("media/content_json/content_json.json")
+                 if os.path.exists("media/temporary_files/content_json.json"):
+                     os.remove("media/temporary_files/content_json.json")
                      # creer le nouveau 
-                     file_name = "media/content_json/content_json.json"
+                     file_name = "media/temporary_files/content_json.json"
 
                      with open(file_name, 'w', encoding='utf-8') as f:
                          f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
                  else:
                      # creer le nouveau content
-                     file_name = "media/content_json/content_json.json"
+                     file_name = "media/temporary_files/content_json.json"
 
                      with open(file_name, 'w', encoding='utf-8') as f:
                          f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
 
                  if allMessages == []:
-                     messages.info(request, "Extration des données avec succès vous pouvez les soumettre maintenant.")
+                     messages.info(request, _("Extration des données avec succès vous pouvez les soumettre maintenant."))
                  else:
                      for msg in allMessages:
                          messages.error(request, msg)
@@ -256,7 +307,7 @@ def logbook(request):
                          log_mess = "\r\r".join(allMessages)
                          f_log.write(log_mess)
              except UnboundLocalError:
-                 messages.error(request, "Veuillez recharger la page et reprendre votre opération SVP.")
+                 messages.error(request, _("Veuillez recharger la page et reprendre votre opération SVP."))
                  tags = "error2"
 
                  logbooks = os.listdir("media/logbooks")
@@ -300,27 +351,38 @@ def logbook(request):
 
 @login_required
 def getProgram(request, domaine):
+    """_summary_
+
+    Args:
+        request (_type_): _description_
+        domaine (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    if datat_0c_Pr is not None:
+    print(datat_0c_Pr.keys())
+
+    # if datat_0c_Pr is not None:
+    if domaine == "senne" or domaine == "palangre": 
         if domaine == "senne" :
             looking_for = "seine"
         elif domaine == "palangre":
             looking_for = "longline"
-            
-        datat_0c_Pr = search_in(datat_0c_Pr['program'], looking_for)
+
+        data_0c_Pr = search_in(request, datat_0c_Pr['program'], looking_for)
         print("="*20, "datat_0c_Pr search in", "="*20)
+        
         # print(datat_0c_Pr)
         dataPro = {
             "id":[],
             "value":[]
         }
-        for key, value in datat_0c_Pr.items():
-            # print(key, value)
+        for key, value in data_0c_Pr.items():
             dataPro["id"].append(key)
             dataPro["value"].append(value)
-            # print("="*20, "dataPro", "="*20)
-            # print(datat_0c_Pr)
+            
         # print(dataPro)
         return JsonResponse({"dataPro": dataPro})
     else:
@@ -331,16 +393,15 @@ def postProg_info(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         request.session['dico_config'] = {
-            'langue': request.POST["langue"],
+            # 'langue': request.POST["langue"],
             'domaine': request.POST["domaine"],
             'ocean': request.POST["ocean"],
             'programme': request.POST["programme"],
             'ty_doc': request.POST["ty_doc"]
         }
-        # print(request.session.get('dico_config'))
         return JsonResponse({"message": "success", 
-                             "domaine": request.session.get('dico_config')['domaine']})
-    return JsonResponse({"message": "Veuillez ressayer svp."})
+                            "domaine": request.session.get('dico_config')['domaine']})
+    return JsonResponse({"message": _("Veuillez ressayer svp.")})
 
 def logbook_del_files(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -373,17 +434,17 @@ def domaineSelect(request):
 def sendData(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = relordToken(request, username, password)
-    baseUrl = request.session.get('baseUrl')
+    token  = api_functions.reload_token(request, username, password)
+    base_url = request.session.get('base_url')
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        file_name = "media/content_json/content_json.json"
+        file_name = "media/temporary_files/content_json.json"
         # Opening JSON file
         f = open(file_name, encoding="utf8")
         # returns JSON object as  a dictionary
         content_json = json.load(f)
-
-        message, code = add_trip(token, content_json, baseUrl)
+        route = '/data/ps/common/Trip'
+        message, code = api_functions.send_trip(token, content_json, base_url, route)
 
         if code == 1:
             messages.success(request, message)
@@ -397,7 +458,7 @@ def sendData(request):
             print(3, message)
 
         return JsonResponse({"message": "Success", "code": code, "msg": message})
-    return JsonResponse({"message": "Veuillez ressayer svp."})
+    return JsonResponse({"message": _("Veuillez ressayer svp.")})
 
 def extract_data(my_file):
     with ZipFile(my_file, 'r') as zip:
@@ -460,7 +521,7 @@ def file_upload_view(request):
             filename = fs.save("logbooks/"+file.name, file)
             uploaded_file_url = fs.url(filename)                 #To get the file`s url
 
-            print(uploaded_file_url)
+            # print(uploaded_file_url)
 
         # print("Contenu", request.session['table_files'])
     return render(request, "logbook.html")
