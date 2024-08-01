@@ -1,27 +1,22 @@
-# observe-logbooks-reader-webapp
+# LTO-webapp
 
-Application web pour l'interprétation automatisée des livres de bord
+Web application for automatically transfer logbooks
 
-## Documentation réalisée par le biais de MkDocs
+## LTO-webapp installation
 
-Il faut péralablement installer [MkDocs](https://www.mkdocs.org) :
+pip install -r requirements.txt
 
-```         
-pip install mkdocs
-pip install mkdocs-material
-pip install mkdocstrings
-```
+There might be an issue with the versions asked for numpy and pandas - if so, remove the versions on requirements.txt
 
-Pour lancer la documentation :
+install node.js
+python manage.py tailwind start
 
-```         
-cd website-documentation
-mkdocs serve --dev-addr 127.0.0.1:8005
-mkdocs -h # Print help message and exit.
-```
+There might be a conflict between flake-8 and pylint. If so, remove pylint
 
-## Documentation réalisée par le biais de Sphinx
-```
+Then add the connexion profiles
+
+
+## Documentation through Sphinx
 pip install pydata-sphinx-theme
 sphinx-quickstart docs
 
@@ -32,12 +27,12 @@ pip install sphinx_codeautolink
 pip install sphinx-serve
 
 ```
-Pour lancer la documentation :
+To launch the documentation :
 
 ```         
 cd docs
 .\make html # Build the documentation 
-sphinx-serve & # Lance le serveur 
+sphinx-serve & # Launch the serveur 
 sphinx-serve -b build -h 127.0.0.1
 
 if issue : sphinx-build -b html source build

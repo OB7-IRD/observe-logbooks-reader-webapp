@@ -363,7 +363,6 @@ def getProgram(request, domaine):
     """
     datat_0c_Pr = request.session.get('data_Oc_Pr')
     print('views.py getProgram domaine when domaine not selected : ', domaine)
-    print(datat_0c_Pr.keys())
 
     # if datat_0c_Pr is not None:
     if domaine == "senne" or domaine == "palangre": 
