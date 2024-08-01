@@ -186,6 +186,18 @@ $(document).ready(function(){
         }
     });
 
+    $("#btn_apply_last_config").click(function(e){
+        e.preventDefault();
+        $("#div_upload").show(1500);
+        $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+
+        // Sélectionnez le span à l'intérieur de #btn_apply_last_config et récupérez sa classe
+        var classeDuSpan = $("#btn_apply_last_config").find("span").attr('class');
+        dropZone(classeDuSpan);
+
+        console.log("last ll config");
+    });
+
     $("#my-dropzone button[class='dz-button']").click(function(e){
         e.preventDefault();
         console.log($("#my-dropzone").serialize());

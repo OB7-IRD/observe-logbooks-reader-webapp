@@ -65,10 +65,15 @@
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <h1 class="text-3xl font-bold text-gray-900">Logbook</h1>
       <div class="text-center justify-between">
-
           <a href="{% url 'update' %}" class="font-bold mt-2 px-4 py-2 rounded-full text-xs text-white uppercase transition bg-blue-600 hover:bg-blue-900 shadow">
               {% translate "Mise à jour des données de réferences" %}
           </a>
+          {% if ll_context != None %}
+              <a id="btn_apply_last_config" href="#" class="font-bold mt-2 px-4 py-2 rounded-full text-xs text-white uppercase transition bg-green-600 hover:bg-green-900 shadow">
+                  <span class="{{ll_context.domaine}}"></span>
+                  Use old config
+              </a>
+          {% endif %}
       </div>
     </div>
 

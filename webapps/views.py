@@ -193,6 +193,7 @@ def deconnexion(request):
     request.session['token'] = None
     request.session['username'] = None
     request.session['password'] = None
+    request.session['context'] = None
 
     return redirect("login")
 
@@ -206,6 +207,8 @@ def home(request):
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
+    ll_context = request.session.get('context')
+
     try:
         file_name = "media/data/" + os.listdir('media/data')[0]
         # Opening JSON file
@@ -244,6 +247,7 @@ def logbook(request):
                 "tags": tags,
                 "alert_message": _("Merci de téléverser un fichier excel"),
                 "ocean_data": datat_0c_Pr["ocean"],
+                "ll_context" : ll_context
             })
         print(apply_conf)
         # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
@@ -323,6 +327,7 @@ def logbook(request):
         return render(request, "logbook.html",{
             "tags": tags,
             "ocean_data": datat_0c_Pr["ocean"],
+            "ll_context" : ll_context
         })
 
     # else : 
@@ -335,19 +340,22 @@ def logbook(request):
         if apply_conf['domaine'] == 'palangre' :
             return render(request, "logbook.html", context={
                 "program_data": datat_0c_Pr['program']['longline'],
-                "ocean_data": datat_0c_Pr["ocean"]
+                "ocean_data": datat_0c_Pr["ocean"],
+                "ll_context" : ll_context
             })
         elif apply_conf['domaine'] == 'senne' : 
             return render(request, "logbook.html", context={
                 "program_data": datat_0c_Pr['program']['seine'],
-                "ocean_data": datat_0c_Pr["ocean"]
+                "ocean_data": datat_0c_Pr["ocean"],
+                "ll_context" : ll_context
             })
     # print("="*20, "apply_conf is None", "="*20)
     # print(apply_conf)
     return render(request, "logbook.html", context={
                 # "program_data": ll_programs,
                 "program_data": datat_0c_Pr["program"],
-                "ocean_data": datat_0c_Pr["ocean"]
+                "ocean_data": datat_0c_Pr["ocean"],
+                "ll_context" : ll_context
             })
 
 @login_required
