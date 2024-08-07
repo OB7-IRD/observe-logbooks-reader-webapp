@@ -34,7 +34,7 @@ def get_token(base_url, data):
                             "config.login": "username",
                             "config.password": "password",
                             "config.databaseName": "database",
-                            "referentialLocale": "FR"
+                            "referentialLocale": "fr_FR"
                     }
     Returns:
         token (str)

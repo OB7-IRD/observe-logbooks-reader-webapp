@@ -29,21 +29,22 @@ SECRET_KEY = 'django-insecure-wrfy0(-$v8!7i^o%m%%^-w#sx(5ur(j1ufr0)%^u8h$ta$yysl
 # DEBUG = True
 DEBUG = False
 
-# ALLOWED_HOSTS = ["127.0.0.1"]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1"]
+# ALLOWED_HOSTS = []
 AUTH_USER_MODEL = "webapps.User"
 
 
 TAILWIND_APP_NAME = "theme"
-INTERNAL_IPS = [
-    "127.0.0.1"
-]
+# INTERNAL_IPS = [
+#     "127.0.0.1"
+# ]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+        'daphne',
+        'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -89,7 +90,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'website.wsgi.application'
+# WSGI_APPLICATION = 'website.wsgi.application'
+ASGI_APPLICATION = 'website.asgi.application'
 
 
 # Database
