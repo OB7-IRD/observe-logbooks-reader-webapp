@@ -878,7 +878,7 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
 
     # Risque de maillage sous la surface
     if index == 'obj_flot_risq_mail_sou_surf':
-        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-3-3'], dico['1-1-2-3']
+        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-2-1-3'], dico['1-1-2-3']
         if ("< 6, 5 cm" in str(chaine).lower()): return dico['1-1-1-3-1'], dico['1-1-2-4-2']
         if ("> 6,5 cm" in str(chaine).lower()): return dico['1-1-1-3-2'], dico['1-1-2-4-3']
         if ("mailles de taille inconnue" in str(chaine).lower()): return dico['1-1-1-3-5'], dico['1-1-2-2']
@@ -1483,8 +1483,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                          dico_trams_owner, allData, operation)
                         # print("perte ou Fin ", data['date'])
                         # code 13 mettre avec ce que
-                        js_floatingObjects = func_tab3_floatingObject(allData, data, dico_objeMat, js_Float,
-                                                                      bool_tuple=("true", "true"), argment="code=11")
+                        js_floatingObjects = func_tab3_floatingObject(allData, data, dico_objeMat, js_Float, bool_tuple=("true", "true"), argment="code=11")
                         tab3_floatingObject.append(js_floatingObjects)
 
                 elif ("mise" in str(data['obj_flot_act_sur_obj']).lower()):

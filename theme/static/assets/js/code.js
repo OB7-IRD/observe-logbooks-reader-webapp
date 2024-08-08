@@ -37,6 +37,64 @@ $(document).ready(function(){
         });
     };
 
+    var ll_context = JSON.parse(document.getElementById('context-data').textContent);
+    /*console.log(ll_context.programtopiaid)*/
+
+    if (ll_context.domaine == "palangre") {
+        $.ajax({
+            url: '/palangre',
+            type: 'GET',
+            success: function(response) {
+                var option = '';
+                for (var i = 0; i < response.dataPro.id.length; i++) {
+                    if (!ll_context.programtopiaid) {
+                        option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                    } else {
+                        if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                            $("#apply select[name='ty_doc']").find('.after').after('<option selected value="ll">Logbook SFA industriel</option>');
+                            option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        } else {
+                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        }
+                    }
+                }
+                $("#apply select[name='programme']").find('.after').after(option);
+            },
+            error: function(response) {
+                console.log('Erreur lors de la requête AJAX');
+            }
+        });
+    } else if (ll_context.domaine == "senne") {
+        $.ajax({
+            url: '/senne',
+            type: 'GET',
+            success: function(response) {
+                var option = '';
+                for (var i = 0; i < response.dataPro.id.length; i++) {
+                    if (!ll_context.programtopiaid) {
+                        option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                    } else {
+                        if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                            $("#apply select[name='ty_doc']").find('.after').after('<option selected class="orth" value="ps">Logbook ORTHONGEL v21</option>');
+                            $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
+                            $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
+
+                            option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        } else {
+                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        }
+                    }
+                }
+                $("#apply select[name='programme']").find('.after').after(option);
+            },
+            error: function(response) {
+                console.log('Erreur lors de la requête AJAX');
+            }
+        });
+    };
+
+
+
     $("#domaine").change(function(){
         // console.log($(this).val());
         $this = $(this);
@@ -186,7 +244,7 @@ $(document).ready(function(){
         }
     });
 
-    $("#btn_apply_last_config").click(function(e){
+    /*$("#btn_apply_last_config").click(function(e){
         e.preventDefault();
         $("#div_upload").show(1500);
         $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
@@ -196,7 +254,7 @@ $(document).ready(function(){
         dropZone(classeDuSpan);
 
         console.log("last ll config");
-    });
+    });*/
 
     $("#my-dropzone button[class='dz-button']").click(function(e){
         e.preventDefault();
