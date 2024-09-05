@@ -30,7 +30,7 @@ DEBUG = True
 # DEBUG = False
 
 # ALLOWED_HOSTS = ["127.0.0.1"]
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = "webapps.User"
 
 
@@ -43,6 +43,7 @@ INTERNAL_IPS = [
 # Application definition
 
 INSTALLED_APPS = [
+#    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

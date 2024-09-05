@@ -10,8 +10,8 @@ RUN mkdir -p $DockerHOME
 WORKDIR $DockerHOME  
 
 # set environment variables  
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1  
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1  
 
 # install dependencies  
 RUN pip install --upgrade pip  
