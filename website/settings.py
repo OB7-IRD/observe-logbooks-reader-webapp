@@ -30,7 +30,7 @@ SECRET_KEY = 'yvz$wx7h!urn+asjmu$9l56&_d6&7s+y7_9i8+7tsou7cp2xfw'
 DEBUG = False
 
 #SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
+# SESSION_COOKIE_SECURE=True
 CSRF_COOKIE_SECURE=True
 
 ALLOWED_HOSTS = ['*']
@@ -38,9 +38,9 @@ AUTH_USER_MODEL = "webapps.User"
 
 
 TAILWIND_APP_NAME = "theme"
-INTERNAL_IPS = [
-    "127.0.0.1"
-]
+# INTERNAL_IPS = [
+#     "127.0.0.1"
+# ]
 
 
 # Application definition
