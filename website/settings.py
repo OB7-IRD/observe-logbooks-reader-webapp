@@ -23,13 +23,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-wrfy0(-$v8!7i^o%m%%^-w#sx(5ur(j1ufr0)%^u8h$ta$yysl'
+SECRET_KEY = 'yvz$wx7h!urn+asjmu$9l56&_d6&7s+y7_9i8+7tsou7cp2xfw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
-# ALLOWED_HOSTS = ["127.0.0.1"]
+#SECURE_SSL_REDIRECT=True
+# SESSION_COOKIE_SECURE=True
+CSRF_COOKIE_SECURE=True
+
 ALLOWED_HOSTS = ['*']
 AUTH_USER_MODEL = "webapps.User"
 
@@ -59,18 +62,20 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     'django.middleware.locale.LocaleMiddleware',
     ]
 
 # MESSAGE_STORAGE = "django.contrib.messages.storage.cookie.CookieStorage"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 ROOT_URLCONF = 'website.urls'
 
@@ -81,7 +86,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.debug',
+               'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -149,7 +154,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # STATICFILES_DIRS = [
 #     BASE_DIR / 'theme/theme/static/',
