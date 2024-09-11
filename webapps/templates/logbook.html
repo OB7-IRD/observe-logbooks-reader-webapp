@@ -79,8 +79,9 @@
 
   </header>
   <main>
-
-    {{ ll_context | json_script:"context-data" }}
+      {% if ll_context != None %}
+            {{ ll_context | json_script:"context-data" }}
+      {% endif %}
 <!--
     {% if ll_context != None %}
         <div class="max-w-3xl mx-auto p-2 sm:px-3 lg:px-3">
