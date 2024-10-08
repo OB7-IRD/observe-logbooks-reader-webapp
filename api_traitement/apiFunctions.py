@@ -687,42 +687,46 @@ def traiLogbook_v23(logB):
     # Transformer le tableau "data" en dataFrame pour faciliter la manipulation des données
     data = pd.DataFrame(np.array(data))
 
-    data = data.drop(data.columns[[0, 40, 41]], axis=1)  # supprimer la 1ere colonne
-    data.columns = range(data.columns.size)  # reninitialiser les colonnes à partir de 0
+    try:
+        data = data.drop(data.columns[[0, data.shape[1]-2]], axis=1)  # supprimer la 1ere et derniere colonne
+        data.columns = range(data.columns.size)  # reninitialiser les colonnes à partir de 0
 
-    # Titrer le tableau
-    data = data.rename(
-        columns={0: "type_declaration", 1: "date", 2: "heure",
-                 3: "lat1", 4: "lat2", 5: "lat3", 6: "long1",
-                 7: "long2", 8: "long3", 9: "port", 10: "zee",
-                 11: "temp_mer", 12: "vent_dir", 13: "vent_vit",
-                 14: "calee_type", 15: "espece", 16: "categ_poids",
-                 17: "quant_conser_tonne", 18: "quant_conser_nb",
-                 19: "quant_reje_tonne", 20: "quant_reje_nb",
-                 21: "obj_flot_act_sur_obj", 22: "obj_flot_typ_obj",
-                 23: "obj_flot_typ_dcp_deriv", 24: "obj_type_composant",
-                 25: "obj_nombre", 26: "obj_hauteur", 27: "obj_longueur",
-                 28: "obj_largeur", 29: "obj_profondeur", 30: "obj_mailles",
-                 31: "obj_plastique", 32: "obj_metal", 33: "obj_bio",
-                 34: "bouee_inst_act_bou", 35: "bouee_posit_connue",
-                 36: "bouee_nav_proprietaire", 37: "bouee_modele", 38: "bouee_numero", 39: "commentaire"})
+        # Titrer le tableau
+        data = data.rename(
+            columns={0: "type_declaration", 1: "date", 2: "heure",
+                     3: "lat1", 4: "lat2", 5: "lat3", 6: "long1",
+                     7: "long2", 8: "long3", 9: "port", 10: "zee",
+                     11: "temp_mer", 12: "vent_dir", 13: "vent_vit",
+                     14: "calee_type", 15: "espece", 16: "categ_poids",
+                     17: "quant_conser_tonne", 18: "quant_conser_nb",
+                     19: "quant_reje_tonne", 20: "quant_reje_nb",
+                     21: "obj_flot_act_sur_obj", 22: "obj_flot_typ_obj",
+                     23: "obj_flot_typ_dcp_deriv", 24: "obj_type_composant",
+                     25: "obj_nombre", 26: "obj_hauteur", 27: "obj_longueur",
+                     28: "obj_largeur", 29: "obj_profondeur", 30: "obj_mailles",
+                     31: "obj_plastique", 32: "obj_metal", 33: "obj_bio",
+                     34: "bouee_inst_act_bou", 35: "bouee_posit_connue",
+                     36: "bouee_nav_proprietaire", 37: "bouee_modele", 38: "bouee_numero", 39: "commentaire"})
 
-    #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
+        #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
 
-    # Suppression des lignes identiques c.a.d les doublons
-    df_data = data.drop_duplicates(keep=False)
+        # Suppression des lignes identiques c.a.d les doublons
+        df_data = data.drop_duplicates(keep=False)
 
-    # pd.options.mode.copy_on_write = True
-    df_data.date = df_data.date.fillna(method="ffill")
+        # pd.options.mode.copy_on_write = True
+        df_data.date = df_data.date.fillna(method="ffill")
 
-    # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
-    if df_data.date.isnull().sum() > 0:
-        df_data = df_data[~df_data["date"].isna()]
-        df_data.reset_index(drop=True,
-                            inplace=True)  #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
-    df_data = df_data.loc[:, :"commentaire"]
+        # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
+        if df_data.date.isnull().sum() > 0:
+            df_data = df_data[~df_data["date"].isna()]
+            df_data.reset_index(drop=True,
+                                inplace=True)  #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
+        df_data = df_data.loc[:, :"commentaire"]
 
-    return info_bat, df_data, ""
+        return info_bat, df_data, ""
+
+    except:
+        return None, None, "Mauvais format de logbook"
 
 
 def read_data(file, type_doc="v21"):
