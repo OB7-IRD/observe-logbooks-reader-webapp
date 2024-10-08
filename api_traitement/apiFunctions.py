@@ -712,7 +712,7 @@ def traiLogbook_v23(logB):
     # Suppression des lignes identiques c.a.d les doublons
     df_data = data.drop_duplicates(keep=False)
 
-    pd.options.mode.copy_on_write = True
+    # pd.options.mode.copy_on_write = True
     df_data.date = df_data.date.fillna(method="ffill")
 
     # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
@@ -720,7 +720,6 @@ def traiLogbook_v23(logB):
         df_data = df_data[~df_data["date"].isna()]
         df_data.reset_index(drop=True,
                             inplace=True)  #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
-
     df_data = df_data.loc[:, :"commentaire"]
 
     return info_bat, df_data, ""
@@ -831,11 +830,6 @@ def lat_long(lat1, lat2, lat3, long1, long2, long3):
     except ValueError:
         return None, None, False
 
-
-# Ajuter le champs wind
-# wind:"fr.ird.referential.common.Wind#1239832686605#0.561188597983181" Ecris le scrit pour le vent pour verifier si la vitesse du vent correspond a l'interval dans la base
-
-
 def get_wind_id_interval(allData, moduleName, windSpeed):
     """Fonction qui permet de retourner le topiaId de l'interval de vitesse du vent
 
@@ -859,6 +853,35 @@ def get_wind_id_interval(allData, moduleName, windSpeed):
                 return None
     return None
 
+def weightCategory(allData, chaine, specise):
+    """Fonction qui permet de retourner le topiaId de la categorie d'especes trouvées
+
+    Args:
+        allData (json): données de references
+        chaine (str): chaine contenant la categorie
+        specise (str): type d'especes
+
+    Returns:
+         id (str)
+    """
+
+    inconnu = [val['topiaId'] for val in allData["WeightCategory"] if 'inconnu' in val['label2'].lower()]
+    if chaine != None:
+        if ">" in chaine:
+            chaine  = chaine.replace(">", "plus de")
+        elif "<" in chaine:
+            chaine  = chaine.replace("<", "moins de")
+        elif "-" in chaine:
+            chaine  = chaine.replace("-", "à")
+
+
+        for val in allData["WeightCategory"]:
+            if ((specise.lower() in val['label2'].lower()) and (chaine.lower() in val['label2'].lower())):
+                # print("Chaine: ", specise, chaine, " Id & lab: ",val['topiaId'], val['label2'])
+                return val['topiaId']
+        return inconnu[0]
+    else:
+        return inconnu[0]
 
 def fpaZone_id(chaine, tableau, allData):
     """Fonction qui permet de retourner le topiaId et un commentaire lorsqu'on ne retrouve pas la zone fpa passée en paramettre
@@ -940,14 +963,16 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
     # Types objets flottants
     if index == 'obj_flot_typ_obj':
         if ("dcp ancré" in str(chaine).lower()): return dico['1-2']
-        if ("epave artificielle liée à la pêche" in str(chaine).lower()): return dico['2-2-4']
-        if ("epave artificielle liée à d'autres activités humaines" in str(chaine).lower()): return dico['2-2-5']
-        if ("epave naturelle d'origine animale" in str(chaine).lower()): return dico['2-1-2']
-        if ("epave naturelle d'origine végétale" in str(chaine).lower()): return dico['2-1-1']
+        if (("epave artificielle liée à la pêche" in str(chaine).lower()) or ("débris artificiel issu de la pêche" in str(chaine).lower())): return dico['2-2-4']
+        if (("epave artificielle liée à d'autres activités humaines" in str(chaine).lower()) or ("débris artificiel non issu de la pêche" in str(chaine).lower())): return dico['2-2-5']
+        if ("d'origine animale" in str(chaine).lower()): return dico['2-1-2']
+        if ("d'origine végétale" in str(chaine).lower()): return dico['2-1-1']
+
 
         if ("dcp dérivant" in str(chaine).lower()):
             # Types de DCP
-            if ("dcp français émergé bambou" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1-1-1']
+            if (("dcp français émergé bambou" in str(data['obj_flot_typ_dcp_deriv']).lower()) or ("radeau émergé bambou" in str(data['obj_flot_typ_dcp_deriv']).lower())): return dico['1-1-1-1-1']
+            if ("radeau immergé métal" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1-1-5']
             if ("dcp français émergé métal" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1-1-2']
             if ("dcp français émergé bambou-métal" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico[
                 '1-1-1-1-1'], dico['1-1-1-1-2']
@@ -955,16 +980,36 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
             if ("dcp français cage" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1']
             if ("dcp espagnol émergé bambou" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1-1-1']
             if ("dcp espagnol émergé métal" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1-1-2']
+            if ("traine" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-2-6']
             if ("dcp espagnol émergé bambou-métal" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico[
                 '1-1-1-1-1'], dico['1-1-1-1-2']
             if ("dcp espagnol émergé plastique" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico[
                 '1-1-1-1-2']
             if ("dcp espagnol furtif" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['4-9'], dico['1-1-1']
-            if ("dcp espagnol cage" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1']
-            if ("dcp coréen" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1']
-            if ("autre dcp dérivant" in str(data['obj_flot_typ_dcp_deriv']).lower()) or (
-                    "autre objet" in str(data['obj_flot_typ_dcp_deriv']).lower()) or (
-                    data['obj_flot_typ_dcp_deriv'] == ""): return dico['1-1']
+            if ("dcp espagnol cage" in str(data['obj_flot_typ_dcp_deriv']).lower()) or ("radeau" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-1']
+            if ("dcp coréen" in str(data['obj_flot_typ_dcp_deriv']).lower()) : return dico['1-1']
+
+            if (("dcp cage" in str(data['obj_flot_typ_dcp_deriv']).lower()) or \
+                ("dcp avd" in str(data['obj_flot_typ_dcp_deriv']).lower()) or \
+                ("autre dcp dérivant" in str(data['obj_flot_typ_dcp_deriv']).lower()) or \
+                ("autre objet" in str(data['obj_flot_typ_dcp_deriv']).lower()) or \
+                (data['obj_flot_typ_dcp_deriv'].isna() | (data['obj_flot_typ_dcp_deriv'] == "")).any()):
+
+                return dico['1-1']
+
+            if ("cage" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['1-1-2-5']
+            if ("tas de bout" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['2-2-4-1']
+            if ("tas de paille" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['2-1-1-1']
+            if ("bille de bois" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['2-1-1-3']
+            if ("defense" in str(data['obj_flot_typ_dcp_deriv']).lower()): return dico['2-2']
+
+    # Mailles
+    if index == 'obj_mailles':
+        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-2-1-3']
+        if ("< 7 cm" in str(chaine).lower()): return dico['1-1-1-2-1-1']
+        if ("> 7 cm" in str(chaine).lower()): return dico['1-1-1-2-1-2']
+        if ("mailles de taille inconnue" in str(chaine).lower()): return dico['1-1-1-2-1-6']
+        if ("non observable" in str(chaine).lower()): return dico['1-1-1-2-1-5']
 
     # Risque de maillage en surface
     if index == 'obj_flot_risq_mail_en_surf':
@@ -976,7 +1021,7 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
 
     # Risque de maillage sous la surface
     if index == 'obj_flot_risq_mail_sou_surf':
-        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-2-1-3'], dico['1-1-2-3']
+        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-3-3'], dico['1-1-2-3']
         if ("< 6, 5 cm" in str(chaine).lower()): return dico['1-1-1-3-1'], dico['1-1-2-4-2']
         if ("> 6,5 cm" in str(chaine).lower()): return dico['1-1-1-3-2'], dico['1-1-2-4-3']
         if ("mailles de taille inconnue" in str(chaine).lower()): return dico['1-1-1-3-5'], dico['1-1-2-2']
@@ -1176,6 +1221,111 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
                                    ['bouee_inst_bou_prst_typ', 'bouee_inst_bou_prst_id'], '3', '3', dico_trams_oper,
                                    dico_trams, dico_trams_owner, allData, js_Transmitts, makeException=False, )
         tab2_Transmitt.append(js_transmi)
+
+    return tab2_Transmitt
+
+def obj_deja_deploy_v23(data_ob, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner, allData, operation):
+    """Fonction qui permet de construire les operations sur les objets et retourne l'ensemble des operations sur balise pour une route
+
+    Args:
+        dico_trams (json): dictionnaire de données pour les balises
+        dico_trams_oper (json): dictionnaire de données pour les operations sur balises
+        dico_trams_owner (json): dictionnaire de données pour les  sur balises
+        allData (json): données de references
+        js_Transmitts (json): structure json pour un enregistrement sur les balises
+        data_ob (dataFrame): les données du logbook sur operation sur objet
+        operation (str) : permet de connaitre le type d'operation (visite, transfert, mise à l'eau...)
+
+    Returns:
+         tab2_Transmitt (liste) : liste de structure de données Json
+    """
+    tab2_Transmitt = []
+
+    def sub_func(data, tab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper, dico_trams,
+                 dico_trams_owner, allData, js_Transmitts):
+        js_Transmitts['transmittingBuoyOperation'] = dico_trams_oper[code_trams_oper]
+        js_Transmitts['transmittingBuoyType'], comment = transmittingBType(data[tab_dcp_type_and_id[0]], dico_trams)
+        if comment != "":
+            js_Transmitts['comment'] = comment
+
+        if data[tab_dcp_type_and_id[1]] != "":
+            if data[tab_dcp_type_and_id[1]] != None:
+                code = int(data[tab_dcp_type_and_id[1]])
+                if code == 0:
+                    js_Transmitts['code'] = None
+                else:
+                    js_Transmitts['code'] = str(code)
+            else:
+                code = str(data[tab_dcp_type_and_id[1]])
+                if (code == "None") or (code == "0") :
+                    js_Transmitts['code'] = None
+                else:
+                    js_Transmitts['code'] = str(data[tab_dcp_type_and_id[1]])
+        else:
+            js_Transmitts['code'] = None
+
+        js_Transmitts['transmittingBuoyOwnership'] = dico_trams_owner[code_trams_owner]
+
+        return js_Transmitts
+
+    def fun_dcp_activ(data, Basetab_dcp_type_and_id, Othtab_dcp_type_and_id, code_trams_oper, code_trams_owner,
+                      dico_trams_oper, dico_trams, dico_trams_owner, allData, js_Transmitts, makeException=True):
+
+
+        if (data[Othtab_dcp_type_and_id[0]] != None) and (data[Basetab_dcp_type_and_id[0]] == data[Othtab_dcp_type_and_id[0]]) and (
+                "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()):              #############  Orth v23
+            return sub_func(data, Othtab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
+                            dico_trams, dico_trams_owner, allData, js_Transmitts)
+
+        elif (data[Basetab_dcp_type_and_id[0]] != None) and (
+                "pas de" not in str(data[Basetab_dcp_type_and_id[0]]).lower()):
+            js_transmi = sub_func(data, Basetab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
+                                  dico_trams, dico_trams_owner, allData, js_Transmitts)
+
+            if (data[Othtab_dcp_type_and_id[0]] != None) and (
+                    "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()) and (makeException == True):
+                # exception
+                message = "Le " + str(data["date"]) + " à " + str(data[
+                                                                      "heure"]) + " ===> Attention: Information non conforme sur le ou les FOB de l'activité: - '" + operation
+                raise TransmitException(message)
+
+            return js_transmi
+
+        elif (data[Othtab_dcp_type_and_id[0]] != None) and (
+                "pas de" not in str(data[Othtab_dcp_type_and_id[0]]).lower()):
+            return sub_func(data, Othtab_dcp_type_and_id, code_trams_oper, code_trams_owner, dico_trams_oper,
+                            dico_trams, dico_trams_owner, allData, js_Transmitts)
+
+    for _, data in data_ob.iterrows():
+
+        js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut   ### OKOKO
+        if ("déploiement" in str(data['bouee_inst_act_bou']).lower()):
+            js_transmi = fun_dcp_activ(data, ['bouee_modele', 'bouee_numero'],
+                                       ['bouee_modele', 'bouee_numero'], '3', '3', dico_trams_oper,
+                                       dico_trams, dico_trams_owner, allData, js_Transmitts)
+            tab2_Transmitt.append(js_transmi)
+
+        js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut   ### OKOKO  Visite
+        if ("renforcement" in str(data['bouee_inst_act_bou']).lower()) or ("visite" in str(data['bouee_inst_act_bou']).lower()):
+            js_transmi = fun_dcp_activ(data, ['bouee_modele', 'bouee_numero'],
+                                       ['bouee_modele', 'bouee_numero'], '1', '3', dico_trams_oper,
+                                       dico_trams, dico_trams_owner, allData, js_Transmitts)
+            tab2_Transmitt.append(js_transmi)
+
+        js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut  ### OKOKO
+        if (("récupération" in str(data['bouee_inst_act_bou']).lower()) or ("perte" in str(data['bouee_inst_act_bou']).lower())):
+            js_transmi = fun_dcp_activ(data, ['bouee_modele', 'bouee_numero'],
+                                       ['bouee_modele', 'bouee_numero'], '2', '3', dico_trams_oper,
+                                       dico_trams, dico_trams_owner, allData, js_Transmitts)
+            tab2_Transmitt.append(js_transmi)
+
+
+        js_Transmitts = js_Transmitt()  # intialisatiion des parametres par defaut    ### OKOKO
+        if ("fin" in str(data['bouee_inst_act_bou']).lower()):
+            js_transmi = fun_dcp_activ(data, ['bouee_modele', 'bouee_numero'],
+                                       ['bouee_modele', 'bouee_numero'], '5', '3', dico_trams_oper,
+                                       dico_trams, dico_trams_owner, allData, js_Transmitts)
+            tab2_Transmitt.append(js_transmi)
 
     return tab2_Transmitt
 
@@ -2158,7 +2308,6 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                 try:
                     check_vis_dep = tuple()
-
                     if (data['obj_flot_act_sur_obj'] != None) and (d_act_obj.loc[index + 1, 'obj_flot_act_sur_obj'] != None):
                         check_vis_dep = data['obj_flot_act_sur_obj'].lower(), d_act_obj.loc[index + 1, 'obj_flot_act_sur_obj'].lower()
                         prev = index + 1
@@ -2166,7 +2315,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
                         if ("visite" in check_vis_dep) and ("déploiement" in check_vis_dep):
 
                             operation = "renforcement == Visite + Déploiement"
-                            tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                            tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                              allData, operation)
                             js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                           bool_tuple=("true", "true"), argment="code=8")
@@ -2181,7 +2330,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
                                 if (str(d_date).split(" ")[0] >= depart_date) and (
                                         "perte" in str(d_act_boue).lower()):   ##### A corriger
                                     operation = "perte"
-                                    tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams,
+                                    tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams,
                                                                      dico_trams_owner, allData, operation)  ############# A corriger
                                     js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                                   bool_tuple=("true", "true"), argment="code=11")
@@ -2189,7 +2338,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                             elif ("déploiement" in str(data['obj_flot_act_sur_obj']).lower()):  ####### Déploiement
                                 operation = "mise à l'eau == Déploiement"
-                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                                  allData, operation)
                                 js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("false", "true"), argment="code=1")
@@ -2197,7 +2346,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                             elif ("visite" in str(data['obj_flot_act_sur_obj']).lower()):  ###### Visite
                                 operation = "visite == Visite"
-                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                                  allData, operation)
                                 js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("true", "false"), argment="code=2")
@@ -2205,7 +2354,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                             elif ("pêche" in str(data['obj_flot_act_sur_obj']).lower()):  ###### Pêche
                                 operation = "pêche == Pêche"
-                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                                  allData, operation)
                                 js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("true", "false"), argment="code=6")
@@ -2214,7 +2363,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                             elif ("récupération" in str(data['obj_flot_act_sur_obj']).lower()): ####### Récupération
                                 operation = "retrait == Récupération"
-                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                                  allData, operation)
                                 js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("true", "false"), argment="code=4")
@@ -2223,7 +2372,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
                             elif (("perte" in str(data['obj_flot_act_sur_obj']).lower()) or (
                                     "fin" in str(data['obj_flot_act_sur_obj']).lower())):  ####### Perte ou Fin d'utilisation
                                 operation = "Perte ou de fin d'utilisation == Perte ou Fin d'utilisation"
-                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                                  allData, operation)
                                 js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("true", "true"), argment="code=11")
@@ -2240,7 +2389,7 @@ def build_trip_v23(allData, info_bat, data_log, oce, prg):
 
                     elif ("déploiement" in str(data['obj_flot_act_sur_obj']).lower()):
                         operation = "renforcement == Visite + Déploiement"
-                        tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                        tab2_Transmitt = obj_deja_deploy_v23(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
                                                          allData, operation)
                         js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
                                                                               bool_tuple=("true", "true"), argment="code=8")

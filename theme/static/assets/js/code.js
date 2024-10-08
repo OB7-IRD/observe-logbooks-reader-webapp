@@ -102,7 +102,7 @@ $(document).ready(function(){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
-            if ($("#apply select[name='ty_doc']").val() == "ps" || $("#apply select[name='ty_doc']").val() == "ll"){
+            if (($("#apply select[name='ty_doc']").val() == "ps") || ($("#apply select[name='ty_doc']").val() == "ps2") || ($("#apply select[name='ty_doc']").val() == "ll")){
 
                 $.ajax({
                     type: 'POST',
@@ -143,7 +143,7 @@ $(document).ready(function(){
                     dropZone(domaine);
                 }
 
-                if ($("#apply select[name='ty_doc']").val() == "ps2"){
+                else if ($("#apply select[name='ty_doc']").val() == "ps2"){
                     $.ajax({
                         type: 'POST',
                         url: $("#apply").attr('action'),
