@@ -260,16 +260,17 @@ def logbook(request):
             url = reverse('presenting previous trip')
             url = f"{url}?selected_file={logbooks}"          
             return redirect(url) 
-                         
-                         
 
         # sinon on a un fichier senne
         if 0 < len(logbooks) <= 1:
-             info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0])
+            if apply_conf["ty_doc"] == "ps":
+                info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v21")
+            if apply_conf["ty_doc"] == "ps2":
+                info_Navir, data_logbook, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v23")
 
-             # Suprimer le ou les fichiers data logbooks
-             os.remove("media/logbooks/"+ logbooks[0])
-             # print(data_observateur)
+            # Suprimer le ou les fichiers data logbooks
+            os.remove("media/logbooks/"+ logbooks[0])
+            # print(data_observateur)
 
         if message == '' and len(logbooks) > 0:
              print("len log ", len(logbooks), " messa : ", message)
@@ -280,9 +281,10 @@ def logbook(request):
                  # returns JSON object as  a dictionary
                  allData = json.load(f)
 
-                 allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
-
-                 #print(content_json,'\n')
+                 if apply_conf["ty_doc"] == "ps":
+                    allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
+                 if apply_conf["ty_doc"] == "ps2":
+                    allMessages, content_json = build_trip_v23(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'])
 
                  if os.path.exists("media/temporary_files/content_json.json"):
                      os.remove("media/temporary_files/content_json.json")

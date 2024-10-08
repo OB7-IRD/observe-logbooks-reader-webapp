@@ -9,7 +9,6 @@ import json
 
 from api_traitement.json_fonctions import *
 
-
 from webapps.models import User
 from django.contrib.auth import authenticate
 
@@ -56,11 +55,11 @@ from django.contrib.auth import authenticate
 #     data_user = User.objects.get(username=user)
 
 #     baseUrl = data_user.url
-    
+
 #     print("data_user.database",data_user.database)
 #     if data_user.database == 'test' :
 #         data_user.username = 'technicienweb'
-                
+
 #     data_user_connect = {
 #         "config.login": data_user.username,
 #         "config.login": data_user.username,
@@ -95,7 +94,7 @@ from django.contrib.auth import authenticate
 # def load_data(token, baseUrl, forceUpdate=False):
 #     print("_"*20, "load_data function starting", "_"*20)
 #     day = strftime("%Y-%m-%d", gmtime())
-    
+
 #     # Si les dossiers ne sont pas existant, on les créés
 #     if not os.path.exists("media/data"):
 #         os.makedirs("media/data")
@@ -138,12 +137,12 @@ from django.contrib.auth import authenticate
 #         ps_logbook = get_all_referential_data(token, "ps/logbook", url)
 #         ps_common = get_all_referential_data(token, "ps/common", url)
 #         ll_common = get_all_referential_data(token, "ll/common", url)    
-        
+
 #         print("="*20, "load_data SubFunction", "="*20)
 #         # print(ref_common[5:])
 #         # with open('allData_load.json', 'w', encoding='utf-8') as f:
 #         #     json.dump(allData, f, ensure_ascii=False, indent=4)
-        
+
 #         file_name = "media/data/data_" + str(day) + ".json"
 
 #         with open(file_name, 'w', encoding='utf-8') as f:
@@ -152,7 +151,7 @@ from django.contrib.auth import authenticate
 #         return allData
 
 #     if (0 < len(files)) and (len(files) <= 1) and (forceUpdate == False):
-        
+
 #         last_date = files[0].split("_")[1].split(".")[0]
 #         last_file = files[0]
 
@@ -165,7 +164,7 @@ from django.contrib.auth import authenticate
 
 #             # Suprimer l'ancienne
 #             os.remove("media/data/" + last_file)
-            
+
 #             print("="*20, "allData updated", "="*20)
 #             # print(allData[5:])
 
@@ -175,7 +174,7 @@ from django.contrib.auth import authenticate
 #             f = open(file_name , encoding='utf-8')
 #             # returns JSON object as  a dictionary
 #             allData = json.load(f)
-            
+
 #             print("="*20, "allData already existing", "="*20)
 #             # print(allData)
 #     else:
@@ -216,7 +215,7 @@ from django.contrib.auth import authenticate
 #     except json.JSONDecodeError as e:
 #         print(f"Error decoding JSON file '{file_path}': {e}")
 #         return None
-    
+
 # def serialize(obj): 
 #     """ 
 #     Serialize obj dans un format json de type date, int ou str.
@@ -236,14 +235,13 @@ from django.contrib.auth import authenticate
 #         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
 #         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
 #     """
-    
+
 #     json_formatted_str = json.dumps(
 #         json_data, indent=2, default=serialize)
 #     # print("¤"*20, "pretty print function" ,"¤"*20)
 #     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
 #     with open(file, mode) as outfile:
 #         outfile.write(json_formatted_str)
-
 
 
 ########### Fonctions faisant appel au le web service ###########
@@ -289,7 +287,7 @@ from django.contrib.auth import authenticate
 
 #     return id_, ms_
 
-    
+
 # def get_one_from_ws(token, url_base, route, topiaid):
 #     """ Fonction qui interroge le web service (ws) pour récupérer toutes les données relatives à une route et un topiaid
 
@@ -302,27 +300,27 @@ from django.contrib.auth import authenticate
 #     Returns:
 #         file.json: informations relatives au topiaid fourni
 #     """
-    
+
 #     headers = {
 #         'authenticationToken': token, 
 #     }
-    
+
 #     params = {
 #         'config.recursive' : 'true', 
 #     }
-    
+
 #     url = url_base + route + topiaid
-    
+
 #     response = requests.get(url, headers=headers, params = params, timeout=15)
 
 #     if response.status_code == 200 :
 #         # with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
 #         #     outfile.write(response.text)
 #         return response.content
-    
+
 #     else:
 #         return None
-    
+
 
 # def send_trip(token, data, url_base, route):
 #     """ Fonction qui ajoute un trip (marée) dans la base
@@ -348,7 +346,7 @@ from django.contrib.auth import authenticate
 
 #     print("Post")
 #     pretty_print(data)
-    
+
 #     response = requests.post(url, data=data_json, headers=headers)
 
 #     print(response.status_code, "\n")
@@ -390,9 +388,9 @@ from django.contrib.auth import authenticate
 
 #     pretty_print(data)
 #     response = requests.put(url, data=data_json, headers=headers, timeout=15)
-    
+
 #     print("Code resultat de la requete", response.status_code)
-    
+
 #     if response.status_code == 200:
 #         return ("Logbook inséré avec success", 1)
 #     else:
@@ -476,7 +474,6 @@ def getId(allData, moduleName, argment, nbArg=False, domaine=None):
     return Id
 
 
-
 def getSome(allData, moduleName, argment):
     """Permet de retouner un dictionnaire de donnée du module dans une liste (tableau)
 
@@ -527,6 +524,7 @@ def getAll(allData, moduleName, type_data="dictionnaire"):
             dico[val["code"]] = val["topiaId"]
 
         return dico
+
 
 # Traitement du logbook
 def traiLogbook(logB):
@@ -600,17 +598,17 @@ def traiLogbook(logB):
     # Titrer le tableau
     data = data.rename(
         columns={0: "date", 1: "heure", 2: "lat1", 3: "lat2", 4: "lat3", 5: "long1", 6: "long2", 7: "long3", 8: "zee",
-                9: "temp_mer", 10: "vent_dir", 11: "vent_vit", 12: "calee_porta", 13: "calee_nul", 14: "calee_type",
-                15: "cap_alb_yft_p10_tail", 16: "cap_alb_yft_p10_cap", 17: "cap_alb_yft_m10_tail",
-                18: "cap_alb_yft_m10_cap", 19: "cap_lst_skj_tail", 20: "cap_lst_skj_cap", 21: "cap_pat_bet_p10_tail",
-                22: "cap_pat_bet_p10_cap", 23: "cap_pat_bet_m10_tail", 24: "cap_pat_bet_m10_cap",
-                25: "cap_ger_alb_tail", 26: "cap_ger_alb_cap", 27: "cap_aut_esp_oth_esp", 28: "cap_aut_esp_oth_tail",
-                29: "cap_aut_esp_oth_cap", 30: "cap_rej_dsc_esp", 31: "cap_rej_dsc_tail", 32: "cap_rej_dsc_cap",
-                33: "asso_bc_libre", 34: "asso_objet", 35: "asso_balise", 36: "asso_baliseur", 37: "asso_requin",
-                38: "asso_baleine", 39: "asso_oiseaux", 40: "obj_flot_act_sur_obj", 41: "obj_flot_typ_obj",
-                42: "obj_flot_typ_dcp_deriv", 43: "obj_flot_risq_mail_en_surf", 44: "obj_flot_risq_mail_sou_surf",
-                45: "bouee_inst_act_bou", 46: "bouee_inst_bou_prst_typ", 47: "bouee_inst_bou_prst_id",
-                48: "bouee_inst_bou_deplo_typ", 49: "bouee_inst_bou_deplo_id", 50: "comment"})
+                 9: "temp_mer", 10: "vent_dir", 11: "vent_vit", 12: "calee_porta", 13: "calee_nul", 14: "calee_type",
+                 15: "cap_alb_yft_p10_tail", 16: "cap_alb_yft_p10_cap", 17: "cap_alb_yft_m10_tail",
+                 18: "cap_alb_yft_m10_cap", 19: "cap_lst_skj_tail", 20: "cap_lst_skj_cap", 21: "cap_pat_bet_p10_tail",
+                 22: "cap_pat_bet_p10_cap", 23: "cap_pat_bet_m10_tail", 24: "cap_pat_bet_m10_cap",
+                 25: "cap_ger_alb_tail", 26: "cap_ger_alb_cap", 27: "cap_aut_esp_oth_esp", 28: "cap_aut_esp_oth_tail",
+                 29: "cap_aut_esp_oth_cap", 30: "cap_rej_dsc_esp", 31: "cap_rej_dsc_tail", 32: "cap_rej_dsc_cap",
+                 33: "asso_bc_libre", 34: "asso_objet", 35: "asso_balise", 36: "asso_baliseur", 37: "asso_requin",
+                 38: "asso_baleine", 39: "asso_oiseaux", 40: "obj_flot_act_sur_obj", 41: "obj_flot_typ_obj",
+                 42: "obj_flot_typ_dcp_deriv", 43: "obj_flot_risq_mail_en_surf", 44: "obj_flot_risq_mail_sou_surf",
+                 45: "bouee_inst_act_bou", 46: "bouee_inst_bou_prst_typ", 47: "bouee_inst_bou_prst_id",
+                 48: "bouee_inst_bou_deplo_typ", 49: "bouee_inst_bou_deplo_id", 50: "comment"})
 
     #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
 
@@ -622,7 +620,8 @@ def traiLogbook(logB):
     # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
     if df_data.date.isnull().sum() > 0:
         df_data = df_data[~df_data["date"].isna()]
-        df_data.reset_index(drop=True, inplace=True) #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
+        df_data.reset_index(drop=True,
+                            inplace=True)  #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
 
     df_data = df_data.loc[:, :"comment"]
 
@@ -634,19 +633,117 @@ def traiLogbook(logB):
 
     return info_bat, df_data, observ, ''
 
-def read_data(file):
+
+# Traitement du logbook orth v23
+def traiLogbook_v23(logB):
+    """Fonction qui permet d'extraire les informations d'un logbook SENNE dans ces variables
+        --> info_bat : contient les informations sur le navire, le port (D/A) et heure (D/A)
+                      et contient les informations sur le capitaine et le mar_homeid
+        --> df_data : contient les données du logbook
+
+    Args:
+        logB (str): fichier logbook à traiter
+
+    Returns:
+         info_bat (json), df_data (dataframe), (str)
+    """
+
+    try:
+        wb = op.load_workbook(logB)
+    except Exception as e:
+        print("Error :", e)
+
+    maree_log = wb[wb.sheetnames[3]]
+    act_sheet = wb[wb.sheetnames[4]]
+
+    info_bat = {
+        "Navire": maree_log["C"][3].value,
+        "Depart_Port": maree_log["C"][17].value,
+        "Depart_Date": str(maree_log["C"][18].value).split(" ")[0],
+        "Depart_heure": str(maree_log["C"][19].value).split(" ")[0],
+        # "Depart_heure": str(maree_log["C"][19].value),
+        "Arrivee_Port": maree_log["C"][22].value,
+        "Arrivee_Date": str(maree_log["C"][23].value).split(" ")[0],
+        "Arrivee_Loch": maree_log["C"][25].value,
+        "captain": str(maree_log["C"][11].value) + " " + str(maree_log["C"][12].value),
+        "mar_homeId": str(maree_log["C"][14].value) + "" + str(maree_log["C"][15].value),
+    }
+
+    # Variable pour recuperer les donnée dans le logbook
+    data = []
+    obj = []
+
+    # Recuperation des lignes qui nous interesses à partir de la ligne 33 dans le fichier
+
+    i = 1
+    for row in act_sheet.rows:
+        if i >= 7:
+            for index in range(len(row)):
+                obj.append(row[index].value)
+            data.append(obj)
+            obj = []
+        i = i + 1
+
+    # Transformer le tableau "data" en dataFrame pour faciliter la manipulation des données
+    data = pd.DataFrame(np.array(data))
+
+    data = data.drop(data.columns[[0, 40, 41]], axis=1)  # supprimer la 1ere colonne
+    data.columns = range(data.columns.size)  # reninitialiser les colonnes à partir de 0
+
+    # Titrer le tableau
+    data = data.rename(
+        columns={0: "type_declaration", 1: "date", 2: "heure",
+                 3: "lat1", 4: "lat2", 5: "lat3", 6: "long1",
+                 7: "long2", 8: "long3", 9: "port", 10: "zee",
+                 11: "temp_mer", 12: "vent_dir", 13: "vent_vit",
+                 14: "calee_type", 15: "espece", 16: "categ_poids",
+                 17: "quant_conser_tonne", 18: "quant_conser_nb",
+                 19: "quant_reje_tonne", 20: "quant_reje_nb",
+                 21: "obj_flot_act_sur_obj", 22: "obj_flot_typ_obj",
+                 23: "obj_flot_typ_dcp_deriv", 24: "obj_type_composant",
+                 25: "obj_nombre", 26: "obj_hauteur", 27: "obj_longueur",
+                 28: "obj_largeur", 29: "obj_profondeur", 30: "obj_mailles",
+                 31: "obj_plastique", 32: "obj_metal", 33: "obj_bio",
+                 34: "bouee_inst_act_bou", 35: "bouee_posit_connue",
+                 36: "bouee_nav_proprietaire", 37: "bouee_modele", 38: "bouee_numero", 39: "commentaire"})
+
+    #####  Traitement pour supprimer les lignes qui n'ont pas de donnée dans le datFrame 'data'
+
+    # Suppression des lignes identiques c.a.d les doublons
+    df_data = data.drop_duplicates(keep=False)
+
+    pd.options.mode.copy_on_write = True
+    df_data.date = df_data.date.fillna(method="ffill")
+
+    # Si nous avons des ligne contenant des valeurs NaT; les ignorer et garder la bonne données
+    if df_data.date.isnull().sum() > 0:
+        df_data = df_data[~df_data["date"].isna()]
+        df_data.reset_index(drop=True,
+                            inplace=True)  #  réinitialiser l'index à son format par défaut (c'est-à-dire un RangeIndex de 0 à la longueur du cadre de données moins 1)
+
+    df_data = df_data.loc[:, :"commentaire"]
+
+    return info_bat, df_data, ""
+
+
+def read_data(file, type_doc="v21"):
     """Fonction qui permet de faire appel à la fonction de traitement du logbook
 
     Args:
         file (str): fichier logbook à traiter
+        type_doc (str): logbook "v21" ou "v23"
 
     Returns:
          info_bat (json), data_bat (dataframe), obs (json), message (str)
     """
 
-    info_bat, data_bat, obs, message = traiLogbook(file)
+    if type_doc == "v21":
+        info_bat, data_bat, obs, message = traiLogbook(file)
+        return info_bat, data_bat, obs, message
+    if type_doc == "v23":
+        info_bat, data_bat, message = traiLogbook_v23(file)
+        return info_bat, data_bat, message
 
-    return info_bat, data_bat, obs, message
 
 def get_lat_long(allData, harbour):
     """Fonction qui permet de retourner les coordonnées de longitude et de latitude du port de depart ou soit d'arrivé
@@ -761,6 +858,7 @@ def get_wind_id_interval(allData, moduleName, windSpeed):
             except:
                 return None
     return None
+
 
 def fpaZone_id(chaine, tableau, allData):
     """Fonction qui permet de retourner le topiaId et un commentaire lorsqu'on ne retrouve pas la zone fpa passée en paramettre
@@ -928,7 +1026,6 @@ def cap_obs_sea(allData, ob):
                     # lorsque nous avons une seule informations saisie soit le nom ou le prenom; ex: kenji
                     nom_prenoms = ob['captain']
 
-
             if status == 1:
                 trouv_id = [val[0] for val in arra if ((nom.lower() in str(val)) and (prenoms.lower() in str(val)))]
                 if trouv_id != "": return trouv_id[0]
@@ -964,9 +1061,11 @@ class TransmitException(Exception):
     Returns:
 
     """
+
     def __init__(self, message):
         self.message = message
         super().__init__(self.message)
+
 
 def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner, allData, operation):
     """Fonction qui permet de construire les operations sur les objets et retourne l'ensemble des operations sur balise pour une route
@@ -1001,7 +1100,7 @@ def obj_deja_deploy(data, js_Transmitts, dico_trams_oper, dico_trams, dico_trams
                     js_Transmitts['code'] = str(code)
             else:
                 code = str(data[tab_dcp_type_and_id[1]])
-                if (code == "None") or (code == "0") :
+                if (code == "None") or (code == "0"):
                     js_Transmitts['code'] = None
                 else:
                     js_Transmitts['code'] = str(data[tab_dcp_type_and_id[1]])
@@ -1119,6 +1218,7 @@ def errorFilter(response):
     """Permet de simplifier l'afficharge des erreurs dans le programme lors de l'insertion des données
     """
     error = json.loads(response)
+
     # print(error) ['exception']['result']['nodes']
 
     def errorFonction(nodes):
@@ -1129,8 +1229,8 @@ def errorFilter(response):
             temp = nodes['messages']
             text = nodes['datum']['text']
 
-            return "<strong>Texte : </strong>"+ str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
-
+            return "<strong>Texte : </strong>" + str(text) + "  <br>   <strong>Champs erreur: </strong>" + str(
+                temp[0]['fieldName']) + " <br>  <strong>Message Erreur: </strong>" + str(temp[0]['message'])
 
     all_message = []
 
@@ -1245,8 +1345,6 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     tab_fpa = getAll(allData, "FpaZone", type_data="tableau")
     #############################
 
-
-
     oths = False
     oths_rej = []
     data_date = ""
@@ -1266,9 +1364,8 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
             # print(str(date).replace(" ","T").replace("00:00:00","")+str(data["heure"])+".000Z")
             tab4_catches = []
 
-
             # Permet d'incrementer le homeId sans perdre le file s'il n'y a pas d'activités
-            if  (data["lat1"] is not None) and (data["long1"] is not None) and (
+            if (data["lat1"] is not None) and (data["long1"] is not None) and (
                     data["zee"] is not None) and (
                     (data["cap_aut_esp_oth_esp"] is not None) or (data["cap_rej_dsc_esp"] is not None)):
 
@@ -1441,7 +1538,6 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
             ################# Floating Obj ##############
 
-
             tab1_Float = []
             tab2_Transmitt = []
             temp_float = None
@@ -1483,7 +1579,8 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                          dico_trams_owner, allData, operation)
                         # print("perte ou Fin ", data['date'])
                         # code 13 mettre avec ce que
-                        js_floatingObjects = func_tab3_floatingObject(allData, data, dico_objeMat, js_Float, bool_tuple=("true", "true"), argment="code=11")
+                        js_floatingObjects = func_tab3_floatingObject(allData, data, dico_objeMat, js_Float,
+                                                                      bool_tuple=("true", "true"), argment="code=11")
                         tab3_floatingObject.append(js_floatingObjects)
 
                 elif ("mise" in str(data['obj_flot_act_sur_obj']).lower()):
@@ -1533,8 +1630,10 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                                                                   bool_tuple=("true", "true"), argment="code=11")
                     tab3_floatingObject.append(js_floatingObjects)
 
-                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
-                    allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
+                if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and (
+                        "perte" != str(data['bouee_inst_act_bou']).lower())):
+                    allMessages.append("Le " + str(data["date"]) + " à " + str(
+                        data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
 
             except TransmitException as e:
                 # print(data["date"],data["heure"]," Logbook non conforme #######")
@@ -1543,13 +1642,13 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
             ########### Activite ############
 
-
             depart_date = info_bat['Depart_Date']
             Depart_heure = info_bat['Depart_heure']
 
             last = len(data_log) - 1
-            if (((data["heure"] is not None) or (data["heure"] is None)) and (data["lat1"] is not None) and (data["long1"] is not None) and (
-                    data["zee"] is not None)) or (((str(data["date"]).split(" ")[0] == depart_date) and (
+            if (((data["heure"] is not None) or (data["heure"] is None)) and (data["lat1"] is not None) and (
+                    data["long1"] is not None) and (
+                        data["zee"] is not None)) or (((str(data["date"]).split(" ")[0] == depart_date) and (
                     str(Depart_heure) == str(data["heure"]))) or (index == last)):
 
                 if data["heure"] is None:
@@ -1574,7 +1673,7 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                     js_activitys["time"] = data["heure"]
                 else:
                     js_activitys["time"] = str(date).replace(" ", "T").replace("00:00:00", "") + str(
-                    data["heure"]) + ".000Z"
+                        data["heure"]) + ".000Z"
                 js_activitys["seaSurfaceTemperature"] = data["temp_mer"]
                 js_activitys["windDirection"] = data["vent_dir"]
 
@@ -1718,23 +1817,28 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
                 elif data["asso_objet"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(
+                        getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_balise"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(
+                        getSome(allData, argment="code=20", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_baliseur"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=28", moduleName="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(
+                        getSome(allData, argment="code=28", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_requin"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=12", moduleName="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(
+                        getSome(allData, argment="code=12", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_baleine"] != None:
                     observedSystem.remove(ObserSys0)
-                    observedSystem.append(getSome(allData, argment="code=11", moduleName="ObservedSystem")[0]["topiaId"])
+                    observedSystem.append(
+                        getSome(allData, argment="code=11", moduleName="ObservedSystem")[0]["topiaId"])
 
                 elif data["asso_oiseaux"] != None:
                     observedSystem.remove(ObserSys0)
@@ -1745,22 +1849,23 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
                 js_activitys["number"] = int(nb)
 
-
                 if (heure_prece == data["heure"]) and (date_prece == data["date"]):
                     # Supprimer activité inseré en dernier
                     if len(activite) != 0:
-                        del(activite[-1])
+                        del (activite[-1])
                     # faire le changement de zone
                     js_activitys["number"] = nb_prece
                     js_activitys["previousFpaZone"], comment_temp = fpaZone_id(fpa_prece, tab_fpa, allData)
                     js_activitys["nextFpaZone"], comment_temp = fpaZone_id(data["zee"], tab_fpa, allData)
                     js_activitys["currentFpaZone"] = None
 
-                    if (comment_prece is not None) and ((js_activitys["comment"] is not None) and (js_activitys["comment"] != "Aucun commentaire")):
+                    if (comment_prece is not None) and (
+                            (js_activitys["comment"] is not None) and (js_activitys["comment"] != "Aucun commentaire")):
                         js_activitys["comment"] = comment_prece + " ==> " + js_activitys["comment"]
                     elif (comment_prece is None) and (js_activitys["comment"] is not None):
                         js_activitys["comment"] = js_activitys["comment"]
-                    elif (comment_prece is not None) and ((js_activitys["comment"] is None) or (js_activitys["comment"] == "Aucun commentaire")):
+                    elif (comment_prece is not None) and (
+                            (js_activitys["comment"] is None) or (js_activitys["comment"] == "Aucun commentaire")):
                         js_activitys["comment"] = comment_prece
                     else:
                         js_activitys["comment"] = "Aucun commentaire"
@@ -1777,14 +1882,13 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
                 else:
                     activite.append(js_activitys)
 
-                fpa_prece       = data["zee"]
-                heure_prece     = data["heure"]
-                date_prece     = data["date"]
-                comment_prece   = data["comment"]
-                nb_prece        = int(nb)
-                Som_thon        = 0
+                fpa_prece = data["zee"]
+                heure_prece = data["heure"]
+                date_prece = data["date"]
+                comment_prece = data["comment"]
+                nb_prece = int(nb)
+                Som_thon = 0
                 nb += 1
-
 
         js_routeLogbooks = js_routeLogbook(activite)
 
@@ -1798,7 +1902,6 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
         nb = 1
         nb_r += 1
-
 
     #print("Yes", routes)
 
@@ -1856,7 +1959,6 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
     else:
         js_contents["endDate"] = info_bat['Arrivee_Date'] + "T00:00:00.000Z"
 
-
     js_contents["captain"], js_contents["logbookDataEntryOperator"] = cap_obs_sea(allData, ob)
 
     js_contents["loch"] = info_bat['Arrivee_Loch']
@@ -1866,3 +1968,548 @@ def build_trip(allData, info_bat, data_log, oce, prg, ob):
 
     return allMessages, js_contents
 
+
+def build_trip_v23(allData, info_bat, data_log, oce, prg):
+    """Fonction qui permet de contruire le gros fragment json de la marée et retourner des messages par rapport à la construction
+
+    Args:
+        allData (json): données de references
+        info_bat (json): info sur le bateau date de depart/arrivée du port de depart/arrivé et info sur le capitaine et homeid du bateau
+        data_log (dataFrame):  les données du logbook
+        oce (list): la liste des océans
+        prg (list): pour la liste des programmes
+
+    Returns:
+        allMessages, js_contents
+    """
+
+    group = data_log.groupby(['date'])
+    oths = False
+    oths_rej = []
+    data_date = ""
+
+    fpa_suiv = ""
+    type_decla_suiv = ""
+    comment_suiv = ""
+    comment_prece = ""
+    nb_prece = 0
+    not_time = False
+
+    allMessages = []
+    tab3_floatingObject = []
+    activite = []
+    routes = []
+    ################## NEw
+    js_catches = {}
+    js_activitys = {}
+    js_routeLogbooks = {}
+    js_Transmitts = {}
+    js_Floats = {}
+    js_floatingObjects = {}
+    #####################
+
+    homeId = Som_thon = 0
+    nb = 1
+
+    WeightMeasureMet = getId(allData, "WeightMeasureMethod", argment="label2=Estimation visuelle")
+
+    code_conser = getId(allData, "SpeciesFate", argment="code=6")
+    code_conser_autre = getId(allData, "SpeciesFate", argment="code=15")
+    code_reje = getId(allData, "SpeciesFate", argment="code=11")
+
+    # Champs type de declaration dans le logbook
+    vers_code_0 = getId(allData, "VesselActivity", argment="code=0", domaine="seine")
+    vers_code_6 = getId(allData, "VesselActivity", argment="code=6", domaine="seine")
+    vers_code_13 = getId(allData, "VesselActivity", argment="code=13", domaine="seine")
+    vers_code_21 = getId(allData, "VesselActivity", argment="code=21", domaine="seine")
+    vers_code_99 = getId(allData, "VesselActivity", argment="code=99", domaine="seine")
+    vers_code_103 = getId(allData, "VesselActivity", argment="code=103", domaine="seine")
+
+    id_infoSource = getId(allData, "InformationSource", argment="code=S")
+    id_dataQua = getId(allData, "DataQuality", argment="code=A")
+
+    dico_code_sch_type = getAll(allData, "SchoolType")
+    dico_code_setSucc = getAll(allData, "SetSuccessStatus")
+    dico_objec = getAll(allData, "ObjectOperation")
+    dico_trams_oper = getAll(allData, "TransmittingBuoyOperation")
+    dico_trams = getAll(allData, "TransmittingBuoyType")
+    dico_trams_owner = getAll(allData, "TransmittingBuoyOwnership")
+    dico_objeMat = getAll(allData, "ObjectMaterial")
+
+    tab_fpa = getAll(allData, "FpaZone", type_data="tableau")
+    #############################
+
+
+
+    i = 0
+    for val in group:
+        i += 1
+
+        Som_thon = 0
+        list_catches = []
+        # nb += 1
+
+        number = 1
+        inner = val[1].groupby(['date', 'heure'])
+
+        for vals in inner:
+            for index, datas in vals[1].iterrows():
+                data = datas
+                date = data["date"]
+
+                if (data['espece'] != None and (data['quant_conser_tonne'] != None or data['quant_reje_tonne'] != None)):
+
+                    def func_tab4_catches(js_catches, topId_sp, weight, WeightMeasureMet, code_conser_reje, count=None, wgtCategory=None):
+                        js_catches["species"] = topId_sp
+                        js_catches["weight"] = weight
+                        js_catches["weightMeasureMethod"] = WeightMeasureMet
+                        js_catches["speciesFate"] = code_conser_reje
+                        js_catches["count"] = count
+                        js_catches["weightCategory"] = wgtCategory
+
+                        return js_catches
+
+                    wgtCategory = weightCategory(allData, data['categ_poids'], data["espece"][:3].upper())
+
+                    species_id = getId(allData, "Species", argment="faoCode=" + data["espece"][:3].upper())
+                    if species_id == "":
+                        species_id = getId(allData, "Species", argment="faoCode=XXX")
+
+                    # Recuperation des caputure et chercher les infor a partir de l'api pour concevoir le content pour catches
+                    js_catches = js_catche()  # intialisatiion des parametres defaut
+
+                    homeId += 1
+
+                    if data['quant_conser_tonne'] != None:
+
+                        Som_thon += float(data['quant_conser_tonne']) # Tonne
+                        js_catches = func_tab4_catches(js_catches, species_id, data['quant_conser_tonne'],
+                                                       WeightMeasureMet, code_conser, data['quant_conser_nb'], wgtCategory)
+                    elif data['quant_reje_tonne'] != None:
+
+                        Som_thon += float(data['quant_reje_tonne']) # Tonne
+                        js_catches = func_tab4_catches(js_catches, species_id, data['quant_reje_tonne'],
+                                                       WeightMeasureMet, code_reje, data['quant_reje_nb'], wgtCategory)
+                    else:
+                        Som_thon += float(0) # Tonne
+                        js_catches = func_tab4_catches(js_catches, species_id, None,
+                                                       WeightMeasureMet, code_conser, data['quant_conser_nb'], wgtCategory)
+
+                    list_catches.append(js_catches)
+
+            ##### Floating Obj CODE ###########
+            d_date  = vals[1].iloc[0]['date']
+            d_act_boue  = vals[1].iloc[0]['bouee_inst_act_bou']
+
+            depart_date = info_bat['Depart_Date']
+            Depart_heure = info_bat['Depart_heure']
+
+            # recuperer les objets
+            data_act_obj = vals[1].loc[:, 'obj_flot_act_sur_obj':'obj_bio']
+            data_act_bo = vals[1].loc[:, 'bouee_inst_act_bou':'bouee_numero']
+
+            # supprimer les doublons
+            d_act_obj = data_act_obj.drop_duplicates()
+            d_act_bo = data_act_bo.drop_duplicates()
+
+
+            check_vis_dep = ()
+            for index, datas in d_act_obj.iterrows():
+
+                data = datas
+                tab1_Float = []
+                tab2_Transmitt = []
+                temp_float = None
+
+                def func_tab3_floatingObject(allData, data, dico_objeMat, js_Floats, bool_tuple, argment, tab1_Float=[]):
+
+                    # Types objets flottants
+                    js_Floats = js_Float()  # intialisatiion des parametres defaut
+                    temp_float = floatingObjectPart(data['obj_flot_typ_obj'], data, dico_objeMat, index='obj_flot_typ_obj')
+                    obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple)
+
+                    try:
+                        # Maillage
+                        js_Floats = js_Float()  # intialisatiion des parametres defau
+                        temp_float = floatingObjectPart(data['obj_mailles'], data, dico_objeMat,
+                                                        index='obj_mailles')
+                        obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple)
+
+                    except:
+                        # Risque de maillage en surface
+                        js_Floats = js_Float()  # intialisatiion des parametres defau
+                        temp_float = floatingObjectPart(data['obj_flot_risq_mail_en_surf'], data, dico_objeMat,
+                                                        index='obj_flot_risq_mail_en_surf')
+                        obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple)
+
+                        # Risque de maillage sous la surface
+                        js_Floats = js_Float()  # intialisatiion des parametres defau
+                        temp_float = floatingObjectPart(data['obj_flot_risq_mail_sou_surf'], data, dico_objeMat,
+                                                        index='obj_flot_risq_mail_sou_surf', perte_act=True)
+                        obj_ob_part_body_(temp_float, tab1_Float, js_Floats, bool_tuple)
+
+                    js_floatingObjects = js_floatingObject(tab2_Transmitt, tab1_Float)
+                    js_floatingObjects["objectOperation"] = getId(allData, "ObjectOperation", argment)
+
+                    return js_floatingObjects
+
+
+                prev = -1
+
+                try:
+                    check_vis_dep = tuple()
+
+                    if (data['obj_flot_act_sur_obj'] != None) and (d_act_obj.loc[index + 1, 'obj_flot_act_sur_obj'] != None):
+                        check_vis_dep = data['obj_flot_act_sur_obj'].lower(), d_act_obj.loc[index + 1, 'obj_flot_act_sur_obj'].lower()
+                        prev = index + 1
+
+                        if ("visite" in check_vis_dep) and ("déploiement" in check_vis_dep):
+
+                            operation = "renforcement == Visite + Déploiement"
+                            tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                             allData, operation)
+                            js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                          bool_tuple=("true", "true"), argment="code=8")
+                            tab3_floatingObject.append(js_floatingObjects)
+                except:
+                    if index != prev:
+                        try:
+
+                            if (data['obj_flot_act_sur_obj'] == None) or ("perte" in str(d_act_boue).lower()):
+                                depart_date = info_bat['Depart_Date']
+
+                                if (str(d_date).split(" ")[0] >= depart_date) and (
+                                        "perte" in str(d_act_boue).lower()):   ##### A corriger
+                                    operation = "perte"
+                                    tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams,
+                                                                     dico_trams_owner, allData, operation)  ############# A corriger
+                                    js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                                  bool_tuple=("true", "true"), argment="code=11")
+                                    tab3_floatingObject.append(js_floatingObjects)
+
+                            elif ("déploiement" in str(data['obj_flot_act_sur_obj']).lower()):  ####### Déploiement
+                                operation = "mise à l'eau == Déploiement"
+                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                                 allData, operation)
+                                js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("false", "true"), argment="code=1")
+                                tab3_floatingObject.append(js_floatingObjects)
+
+                            elif ("visite" in str(data['obj_flot_act_sur_obj']).lower()):  ###### Visite
+                                operation = "visite == Visite"
+                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                                 allData, operation)
+                                js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("true", "false"), argment="code=2")
+                                tab3_floatingObject.append(js_floatingObjects)
+
+                            elif ("pêche" in str(data['obj_flot_act_sur_obj']).lower()):  ###### Pêche
+                                operation = "pêche == Pêche"
+                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                                 allData, operation)
+                                js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("true", "false"), argment="code=6")
+                                tab3_floatingObject.append(js_floatingObjects)
+
+
+                            elif ("récupération" in str(data['obj_flot_act_sur_obj']).lower()): ####### Récupération
+                                operation = "retrait == Récupération"
+                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                                 allData, operation)
+                                js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("true", "false"), argment="code=4")
+                                tab3_floatingObject.append(js_floatingObjects)
+
+                            elif (("perte" in str(data['obj_flot_act_sur_obj']).lower()) or (
+                                    "fin" in str(data['obj_flot_act_sur_obj']).lower())):  ####### Perte ou Fin d'utilisation
+                                operation = "Perte ou de fin d'utilisation == Perte ou Fin d'utilisation"
+                                tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                                 allData, operation)
+                                js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("true", "true"), argment="code=11")
+                                tab3_floatingObject.append(js_floatingObjects)
+
+
+                            if ((data['obj_flot_act_sur_obj'] == None) and (data['obj_flot_typ_obj'] != None) and ("perte" != str(data['bouee_inst_act_bou']).lower())):
+                                allMessages.append("Le " + str(data["date"]) + " à " + str(data["heure"]) + " ===> Activité sur objet flottant non renseignéé ")
+
+                        except TransmitException as e:
+                            allMessages.append(e.message)
+
+
+
+                    elif ("déploiement" in str(data['obj_flot_act_sur_obj']).lower()):
+                        operation = "renforcement == Visite + Déploiement"
+                        tab2_Transmitt = obj_deja_deploy(d_act_bo, js_Transmitts, dico_trams_oper, dico_trams, dico_trams_owner,
+                                                         allData, operation)
+                        js_floatingObjects = func_tab3_floatingObject(allData, d_act_obj, dico_objeMat, js_Float,
+                                                                              bool_tuple=("true", "true"), argment="code=8")
+                        tab3_floatingObject.append(js_floatingObjects)
+
+            ########### Activite ############
+            data_activity  = vals[1].iloc[0]
+
+            last = len(data_log) - 1
+
+            if data_activity["heure"] is None:
+                not_time = True
+
+            js_activitys = js_activity(list_catches, tab3_floatingObject)
+
+            tab3_floatingObject = []
+
+            if list_catches is not []:
+
+                if data_activity["commentaire"] is not None:
+                    js_activitys["comment"] = data_activity["commentaire"]
+                else:
+                    js_activitys["comment"] = "Aucun commentaire"
+            else:
+                js_activitys["comment"] = "Le programme de lecture du livre de bord n’a pas pu \
+                                            déterminer le code bateau. Le nom du bateau était " + info_bat['Navire']
+            if data_activity["heure"] is None:
+                js_activitys["time"] = data_activity["heure"]
+            else:
+                js_activitys["time"] = str(date).replace(" ", "T").replace("00:00:00", "") + str(
+                data_activity["heure"]) + ".000Z"
+            js_activitys["seaSurfaceTemperature"] = data_activity["temp_mer"]
+            js_activitys["windDirection"] = data_activity["vent_dir"]
+
+            if Som_thon != 0:
+                js_activitys["totalWeight"] = Som_thon
+
+
+            # Verifier si premiere activité et enregistrer
+            if ( ((str(data_activity["date"]).split(" ")[0] == depart_date) and (str(Depart_heure) == str(data_activity["heure"]))) or ("DEP" in data_activity["type_declaration"].upper()) ):
+                if data_activity["lat1"] != None and data_activity["lat2"] != None and \
+                        data_activity["lat3"] != None and data_activity["long1"] != None and \
+                        data_activity["long2"] != None and data_activity["long3"] != None:
+                    js_activitys["latitude"], js_activitys["longitude"], checkMsg = lat_long(data_activity["lat1"],
+                                                                                             data_activity["lat2"],
+                                                                                             data_activity["lat3"],
+                                                                                             data_activity["long1"],
+                                                                                             data_activity["long2"],
+                                                                                             data_activity["long3"])
+
+                    returnMsg = "Position manquante (latitude / longitude): Le " + str(data_activity["date"]).replace(
+                        " 00:00:00", " à ") + str(data_activity["heure"])
+                    if checkMsg:
+                        allMessages.append(returnMsg)
+                else:
+                    js_activitys["latitude"], js_activitys["longitude"] = get_lat_long(allData,
+                                                                                       info_bat['Depart_Port'])
+
+            elif ( (index == last) or ("RTP" in data_activity["type_declaration"].upper()) ) :
+                if data_activity["lat1"] != None and data_activity["lat2"] != None and \
+                        data_activity["lat3"] != None and data_activity["long1"] != None and \
+                        data_activity["long2"] != None and data_activity["long3"] != None:
+                    js_activitys["latitude"], js_activitys["longitude"], checkMsg = lat_long(data_activity["lat1"],
+                                                                                             data_activity["lat2"],
+                                                                                             data_activity["lat3"],
+                                                                                             data_activity["long1"],
+                                                                                             data_activity["long2"],
+                                                                                             data_activity["long3"])
+
+                    returnMsg = "Position manquant (latitude / longitude): Le " + str(data_activity["date"]).replace(
+                        " 00:00:00", " à ") + str(data_activity["heure"])
+                    if checkMsg:
+                        allMessages.append(returnMsg)
+                else:
+                    js_activitys["latitude"], js_activitys["longitude"] = get_lat_long(allData,
+                                                                                       info_bat['Arrivee_Port'])
+            else:
+                js_activitys["latitude"], js_activitys["longitude"], checkMsg = lat_long(data_activity["lat1"], data_activity["lat2"],
+                                                                                         data_activity["lat3"],
+                                                                                         data_activity["long1"],
+                                                                                         data_activity["long2"],
+                                                                                         data_activity["long3"])
+
+                returnMsg = "Position manquant (latitude / longitude): Le " + str(data_activity["date"]).replace(" 00:00:00",
+                                                                                                        " à ") + str(
+                    data_activity["heure"])
+                if checkMsg:
+                    allMessages.append(returnMsg)
+
+            def schoolType(chaine, dico_code_sch_type):
+                if chaine != None and chaine != "":
+                    if ("libre" in chaine.lower()):
+                        ## Table SchoolType code 2
+                        return dico_code_sch_type["2"]
+
+                    elif ("objet" in chaine.lower()):
+                        ## Table SchoolType code 1
+                        return dico_code_sch_type["1"]
+
+                    elif ("ind" in chaine.lower()):
+                        ## Table SchoolType code 0
+                        return dico_code_sch_type["0"]
+
+            def setCo_setSuc_vess(setCount, setSuccessStatus, vesselActivity):
+                return setCount, setSuccessStatus, vesselActivity
+
+            if data_activity["calee_type"] is not None:
+                if ( ("FAR -" in data_activity["type_declaration"].upper()) and ("libre" in data_activity["calee_type"].lower()) ):
+                    # Code 6
+                    js_activitys["setCount"], js_activitys["setSuccessStatus"], js_activitys["vesselActivity"] = setCo_setSuc_vess(1, dico_code_setSucc["1"], vers_code_6)
+                    js_activitys["schoolType"] = schoolType(data_activity["calee_type"], dico_code_sch_type)
+
+                elif ( ("FAR -" in data_activity["type_declaration"].upper()) and ("objet" in data_activity["calee_type"].lower()) ):
+                    # Code 6
+                    js_activitys["setCount"], js_activitys["setSuccessStatus"], js_activitys["vesselActivity"] = setCo_setSuc_vess(1, dico_code_setSucc["0"], vers_code_6)
+                    js_activitys["schoolType"] = schoolType(data_activity["calee_type"], dico_code_sch_type)
+
+            elif ( ("FAR -" in data_activity["type_declaration"].upper()) and (data_activity["calee_type"] is None) ):
+                # Code 13
+                js_activitys["setCount"], js_activitys["setSuccessStatus"], js_activitys["vesselActivity"] = setCo_setSuc_vess(0, None, vers_code_13)
+                js_activitys["schoolType"] = schoolType(data_activity["calee_type"], dico_code_sch_type)
+
+            elif ( ("DEP -" in data_activity["type_declaration"].upper()) or ("RTP -" in data_activity["type_declaration"].upper()) ):
+                # Code 0
+                js_activitys["setCount"], js_activitys["setSuccessStatus"], js_activitys["vesselActivity"] = setCo_setSuc_vess(None, None, vers_code_0)
+                js_activitys["schoolType"] = None
+
+            elif ( "FAR0 -" in data_activity["type_declaration"].upper() ):
+                # Code 103
+                js_activitys["setCount"], js_activitys["setSuccessStatus"], js_activitys["vesselActivity"] = setCo_setSuc_vess(0, None, vers_code_103)
+                js_activitys["schoolType"] = None
+
+            js_activitys["informationSource"] = id_infoSource
+            js_activitys["dataQuality"] = id_dataQua
+            js_activitys["currentFpaZone"], comment_temp = fpaZone_id(data_activity["zee"], tab_fpa, allData)
+            if (comment_temp != "") and (comment_temp != None):
+                js_activitys["comment"] = js_activitys["comment"] + " # " + comment_temp
+
+            ObserSys0 = getSome(allData, argment="code=0", moduleName="ObservedSystem")[0]["topiaId"]
+            observedSystem = [ObserSys0]
+
+
+            js_activitys["wind"] = get_wind_id_interval(allData, "Wind", data_activity["vent_vit"])
+
+            nb_lignes = len(vals[1])  # Nombre total de lignes dans vals[1]
+
+            if nb_lignes >= 2:
+                dernier_element        = vals[1].iloc[-1]  # Récupération de le dernier élément de datas
+                fpa_suiv               = dernier_element["zee"]
+                type_decla_suiv        = dernier_element["type_declaration"].lower()[:3]
+                comment_suiv           = dernier_element["type_declaration"]
+
+            if ( (type_decla_suiv == "cox") and ("coe" == data_activity["type_declaration"].lower()[:3]) or (type_decla_suiv == "coe") and ("cox" == data_activity["type_declaration"].lower()[:3]) or (type_decla_suiv == "coe") and ("coe" == data_activity["type_declaration"].lower()[:3]) or (type_decla_suiv == "cox") and ("cox" == data_activity["type_declaration"].lower()[:3]) ):
+
+                data_activity   = vals[1].iloc[-1]  # Récupération de le dernier élément de datas
+
+                # faire le changement de zone
+                # js_activitys["number"] = nb_prece
+                js_activitys["previousFpaZone"], comment_temp = fpaZone_id(data_activity["zee"], tab_fpa, allData)
+                js_activitys["nextFpaZone"], comment_temp = fpaZone_id(fpa_suiv, tab_fpa, allData)
+                js_activitys["currentFpaZone"] = None
+
+                if (comment_prece is not None) and ((js_activitys["comment"] is not None) and (js_activitys["comment"] != "Aucun commentaire")):
+                    js_activitys["comment"] = js_activitys["comment"] + " ==> " + comment_suiv
+                if (comment_prece is not None):
+                    js_activitys["comment"] = data_activity["type_declaration"] + " ==> " + comment_suiv
+                elif (comment_prece is None) and (js_activitys["comment"] is not None):
+                    js_activitys["comment"] = js_activitys["comment"]
+                elif (comment_prece is not None) and ((js_activitys["comment"] is None) or (js_activitys["comment"] == "Aucun commentaire")):
+                    js_activitys["comment"] = data_activity["type_declaration"]
+                else:
+                    js_activitys["comment"] = "Aucun commentaire"
+
+                if (comment_temp != "") and (comment_temp != None):
+                    js_activitys["comment"] = js_activitys["comment"] + " # " + comment_temp
+
+                js_activitys["vesselActivity"] = vers_code_21
+
+
+                js_activitys["latitude"], js_activitys["longitude"], checkMsg = lat_long(data_activity["lat1"], data_activity["lat2"],
+                                                                                         data_activity["lat3"],
+                                                                                         data_activity["long1"],
+                                                                                         data_activity["long2"],
+                                                                                         data_activity["long3"])
+
+                # ajouter la nouvelle activité
+                activite.append(js_activitys)
+
+                # Reinitialliser les variables
+                nb = nb_prece
+
+            else:
+                activite.append(js_activitys)
+
+
+            js_activitys["number"] = int(number)
+            Som_thon                = 0
+            nb += 1
+            number += 1
+
+        js_routeLogbooks = js_routeLogbook(activite)
+
+        js_routeLogbooks["date"] = str(date).replace(" ", "T") + ".000Z"
+
+        routes.append(js_routeLogbooks)
+
+        activite = []
+
+        nb = 1
+
+    js_contents = js_content(routes, oce, prg)
+    if not_time:
+        js_contents["activitiesAcquisitionMode"] = "BY_NUMBER"
+    else:
+        js_contents["activitiesAcquisitionMode"] = "BY_TIME"
+
+    # noinspection PyBroadException
+    try:
+        # si plusieurs Rechercher celui qui a le code le plus elévé avec toujours son status == 1
+        js_contents["vessel"] = getId(allData, "Vessel",
+                                      argment="label2=" + info_bat['Navire'] + "&filters.status=enabled", nbArg=3)
+        if js_contents["vessel"] is None:
+            js_contents["vessel"] = getId(allData, "Vessel",
+                                          argment="label2=" + info_bat['Navire'].upper() + "&filters.status=enabled",
+                                          nbArg=3)
+        if js_contents["vessel"] is None:
+            js_contents["vessel"] = getId(allData, "Vessel",
+                                          argment="label2=" + info_bat['Navire'].lower() + "&filters.status=enabled",
+                                          nbArg=3)
+        if js_contents["vessel"] is None:
+            allMessages.append(
+                "Le nom du Navire n'a pas été trouvé. Veuillez verifier son existance dans la base de données puis corriger dans le livre de bord.")
+    except:
+        pass
+
+    if info_bat['Depart_Port'] == None:
+        js_contents["departureHarbour"] = getId(allData, "Harbour", argment="code=999")
+    else:
+        resu = getId(allData, "Harbour", argment="label2=" + (info_bat['Depart_Port']).upper())
+        if resu == None:
+            js_contents["departureHarbour"] = getId(allData, "Harbour", argment="code=999")
+        else:
+            js_contents["departureHarbour"] = resu
+
+    if info_bat['Arrivee_Port'] == None:
+        js_contents["landingHarbour"] = getId(allData, "Harbour", argment="code=999")
+    else:
+        resu = getId(allData, "Harbour", argment="label2=" + (info_bat['Arrivee_Port']).upper())
+        if resu == None:
+            js_contents["landingHarbour"] = getId(allData, "Harbour", argment="code=999")
+        else:
+            js_contents["landingHarbour"] = resu
+
+    if info_bat['Depart_Date'] == None:
+        js_contents["startDate"] = None
+    else:
+        js_contents["startDate"] = info_bat['Depart_Date'] + "T00:00:00.000Z"  # "2021-03-02T00:00:00.000Z" #
+
+    if info_bat['Arrivee_Date'] == None:
+        js_contents["endDate"] = None
+    else:
+        js_contents["endDate"] = info_bat['Arrivee_Date'] + "T00:00:00.000Z"
+
+
+    js_contents["captain"], js_contents["logbookDataEntryOperator"] = cap_obs_sea(allData, info_bat)
+
+    js_contents["loch"] = info_bat['Arrivee_Loch']
+    js_contents["homeId"] = str(info_bat["mar_homeId"])
+    js_contents["observationsProgram"] = None
+    js_contents['logbookComment'] = "NB: Service Web"
+
+    return allMessages, js_contents
