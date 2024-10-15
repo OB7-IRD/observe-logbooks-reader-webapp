@@ -21,9 +21,9 @@ COPY . $DockerHOME
 # run this command to install all dependencies  
 RUN pip install -r requirements.txt  
 # port where the Django app runs  
-EXPOSE 8000  
+# EXPOSE 8000  
 
 # start server  
 # runs the production server
-ENTRYPOINT ["python", "manage.py"]
-CMD ["runserver", "0.0.0.0:8000"]
+# ENTRYPOINT ["python", "manage.py"]
+# CMD ["runserver", "0.0.0.0:8000"]
