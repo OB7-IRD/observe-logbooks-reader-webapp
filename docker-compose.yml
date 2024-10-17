@@ -1,10 +1,10 @@
+version: '3.7'
 services:
   web:
-    build: .
+    image: ghcr.io/ob7-ird/observe-logbooks-reader-webapp:main
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-          - type: bind
-            source: ./db.sqlite3
-            target: /db.sqlite3
+      - ./database:/home/app/webapp/database
     ports:
       - "8000:8000"
+      
