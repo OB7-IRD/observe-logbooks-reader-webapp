@@ -19,6 +19,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 DB_DIR = os.path.join(BASE_DIR, "database")
 
+print(DB_DIR)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -105,7 +107,7 @@ ASGI_APPLICATION = 'website.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': DB_DIR / 'db.sqlite3',
+        'NAME': os.path.join(DB_DIR, "db.sqlite3"),
     },
 }
 
