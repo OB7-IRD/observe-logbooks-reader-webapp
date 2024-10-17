@@ -5,6 +5,7 @@ ENV DockerHOME=/home/app/webapp
 
 # set work directory  
 RUN mkdir -p $DockerHOME  
+RUN mkdir -p $DockerHOME/database  
 
 # where your code lives  
 WORKDIR $DockerHOME  
