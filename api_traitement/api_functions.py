@@ -48,13 +48,13 @@ def get_token(base_url, data):
     return token
 
 
-def is_valid(token):
+def is_valid(base_url, token):
     """ 
     Fonction booléenne qui test si le token est encore valide
     Args:
         token (str)
     """
-    api_base = 'https://observe.ob7.ird.fr/observeweb/api/public/init/information?'
+    api_base = base_url + '/init/information?'
     # Constitution du lien url pour accéder à l'API et fermer la connexion
     api_url = api_base + 'authenticationToken=' + token
     response = requests.get(api_url, timeout=45)
@@ -436,7 +436,7 @@ def check_trip(token, content, base_url):
     return id_, ms_
 
 # Supprimer un trip
-def del_trip(token, content):
+def del_trip(base_url, token, content):
     """ Fonction qui permet de verifier si la marée a inserer existe déjà dans la base de donnée
 
     Args:
@@ -451,14 +451,14 @@ def del_trip(token, content):
         "Content-Type": "application/json",
         'authenticationToken': token
     }
-    base_url = 'https://observe.ob7.ird.fr/observeweb/api/public'
+    
     id_, ms_ = check_trip(token, content, base_url)
 
     if ms_ == True:
         
         id_ = id_.replace("#", "-")
 
-        url = 'https://observe.ob7.ird.fr/observeweb/api/public/data/ps/common/Trip/' + id_
+        url = base_url + '/data/ps/common/Trip/' + id_
 
         print(id_)
 
