@@ -233,7 +233,8 @@ def presenting_previous_trip(request):
 
         # on test le token, s'il est non valide, on le met à jour
         token = request.session['token']
-        if not api_functions.is_valid(token):
+        base_url = request.session['base_url']
+        if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
             # print(username, password)
@@ -286,7 +287,7 @@ def checking_logbook(request):
     allData = common_functions.load_json_file(allData_file_path)
 
     token = request.session['token']
-    if not api_functions.is_valid(token):
+    if not api_functions.is_valid(base_url, token):
         username = request.session.get('username')
         password = request.session.get('password')
         token  = api_functions.reload_token(request, username, password)
@@ -656,7 +657,7 @@ def send_logbook2observe(request):
         print("Load JSON data file")
 
         token = request.session['token']
-        if not api_functions.is_valid(token):
+        if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
             token  = api_functions.reload_token(request, username, password)
