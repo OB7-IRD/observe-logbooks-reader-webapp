@@ -287,6 +287,7 @@ def checking_logbook(request):
     allData = common_functions.load_json_file(allData_file_path)
 
     token = request.session['token']
+    base_url = request.session['base_url']
     if not api_functions.is_valid(base_url, token):
         username = request.session.get('username')
         password = request.session.get('password')
@@ -657,6 +658,7 @@ def send_logbook2observe(request):
         print("Load JSON data file")
 
         token = request.session['token']
+        base_url = request.session['base_url']
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
