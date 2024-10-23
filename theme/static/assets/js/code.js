@@ -37,6 +37,77 @@ $(document).ready(function(){
         });
     };
 
+    let scriptElement;
+    try {
+        // Récupérer l'élément script par son ID
+        scriptElement = document.getElementById('context-data');
+
+        // Extraire le contenu JSON à partir de l'attribut "text" ou "textContent"
+        var rawData = scriptElement.text || scriptElement.textContent;
+
+        // Parser le texte en un objet JSON
+        var ll_context = JSON.parse(rawData);
+
+        // Vérifiez si l'élément existe
+        if (ll_context) {
+            if (ll_context.domaine == "palangre") {
+                $.ajax({
+                    url: '/palangre',
+                    type: 'GET',
+                    success: function(response) {
+                        var option = '';
+                        for (var i = 0; i < response.dataPro.id.length; i++) {
+                            if (!ll_context.programtopiaid) {
+                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            } else {
+                                if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                    $("#apply select[name='ty_doc']").find('.after').after('<option selected value="ll">Logbook SFA industriel</option>');
+                                    option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                                } else {
+                                    option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                                }
+                            }
+                        }
+                        $("#apply select[name='programme']").find('.after').after(option);
+                    },
+                    error: function(response) {
+                        console.log('Erreur lors de la requête AJAX');
+                    }
+                });
+            } else if (ll_context.domaine == "senne") {
+                $.ajax({
+                    url: '/senne',
+                    type: 'GET',
+                    success: function(response) {
+                        var option = '';
+                        for (var i = 0; i < response.dataPro.id.length; i++) {
+                            if (!ll_context.programtopiaid) {
+                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            } else {
+                                if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                    $("#apply select[name='ty_doc']").find('.after').after('<option selected class="orth" value="ps">Logbook ORTHONGEL v21</option>');
+                                    $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
+                                    $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
+
+                                    option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                                } else {
+                                    option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                                }
+                            }
+                        }
+                        $("#apply select[name='programme']").find('.after').after(option);
+                    },
+                    error: function(response) {
+                        console.log('Erreur lors de la requête AJAX');
+                    }
+                });
+            };
+        }
+    }
+    catch(err) {
+      contextElement = null;
+      console.log("L'élément avec l'ID 'context-data' n'existe pas.");
+    };
 
     $("#domaine").change(function(){
         // console.log($(this).val());
@@ -213,18 +284,6 @@ $(document).ready(function(){
         }
     });
 
-    /*$("#btn_apply_last_config").click(function(e){
-        e.preventDefault();
-        $("#div_upload").show(1500);
-        $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
-
-        // Sélectionnez le span à l'intérieur de #btn_apply_last_config et récupérez sa classe
-        var classeDuSpan = $("#btn_apply_last_config").find("span").attr('class');
-        dropZone(classeDuSpan);
-
-        console.log("last ll config");
-    });*/
-
     $("#my-dropzone button[class='dz-button']").click(function(e){
         e.preventDefault();
         console.log($("#my-dropzone").serialize());
@@ -245,6 +304,7 @@ $(document).ready(function(){
           }
         });
     });
+
     $('#load_data2').click(function(e){
         e.preventDefault();
         $(".message").hide(1500);
@@ -260,6 +320,7 @@ $(document).ready(function(){
           }
         });
     });
+
     $('#load_data3').click(function(e){
         e.preventDefault();
         $(".message").hide(1500);
@@ -431,80 +492,4 @@ $(document).ready(function(){
         });
 
     });
-
-    //var ll_context = JSON.parse(document.getElementById('context-data').textContent);
-
-    var contextElement = document.getElementById('context-data');
-
-    // Vérifiez si l'élément existe
-    if (contextElement) {
-        if (ll_context.domaine == "palangre") {
-            $.ajax({
-                url: '/palangre',
-                type: 'GET',
-                success: function(response) {
-                    var option = '';
-                    for (var i = 0; i < response.dataPro.id.length; i++) {
-                        if (!ll_context.programtopiaid) {
-                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                        } else {
-                            if (ll_context.programtopiaid == response.dataPro.id[i]) {
-                                $("#apply select[name='ty_doc']").find('.after').after('<option selected value="ll">Logbook SFA industriel</option>');
-                                option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                            } else {
-                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                            }
-                        }
-                    }
-                    $("#apply select[name='programme']").find('.after').after(option);
-                },
-                error: function(response) {
-                    console.log('Erreur lors de la requête AJAX');
-                }
-            });
-        } else if (ll_context.domaine == "senne") {
-            $.ajax({
-                url: '/senne',
-                type: 'GET',
-                success: function(response) {
-                    var option = '';
-                    for (var i = 0; i < response.dataPro.id.length; i++) {
-                        if (!ll_context.programtopiaid) {
-                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                        } else {
-                            if (ll_context.programtopiaid == response.dataPro.id[i]) {
-                                $("#apply select[name='ty_doc']").find('.after').after('<option selected class="orth" value="ps">Logbook ORTHONGEL v21</option>');
-                                $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
-                                $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
-
-                                option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                            } else {
-                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
-                            }
-                        }
-                    }
-                    $("#apply select[name='programme']").find('.after').after(option);
-                },
-                error: function(response) {
-                    console.log('Erreur lors de la requête AJAX');
-                }
-            });
-        };
-    }else{
-        console.log("L'élément avec l'ID 'context-data' n'existe pas.");
-    };
-
-    /*
-
-    $('#test_btn').click(function(e){
-        e.preventDefault();
-        $("#div_upload").hide(1500);
-        $.ajax({
-          type: 'POST',
-            url: 'logbook',
-            data: $("#form_test").serialize(),
-        });
-    });
-    */
-
 });
