@@ -74,6 +74,7 @@ $(document).ready(function(){
                         console.log('Erreur lors de la requête AJAX');
                     }
                 });
+
             } else if (ll_context.domaine == "senne") {
                 $.ajax({
                     url: '/senne',
