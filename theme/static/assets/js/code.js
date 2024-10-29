@@ -37,6 +37,7 @@ $(document).ready(function(){
         });
     };
 
+
     $("#domaine").change(function(){
         // console.log($(this).val());
         $this = $(this);
@@ -101,7 +102,7 @@ $(document).ready(function(){
             // console.log($("#apply").serialize());
             data = $("#apply").serialize();
             // console.log($("#apply").data("url"));
-            if ($("#apply select[name='ty_doc']").val() == "ps" || $("#apply select[name='ty_doc']").val() == "ll"){
+            if (($("#apply select[name='ty_doc']").val() == "ps") || ($("#apply select[name='ty_doc']").val() == "ps2") || ($("#apply select[name='ty_doc']").val() == "ll")){
 
                 $.ajax({
                     type: 'POST',
@@ -117,6 +118,32 @@ $(document).ready(function(){
                 });
 
                 if ($("#apply select[name='ty_doc']").val() == "ps"){
+                    $.ajax({
+                        type: 'POST',
+                        url: $("#apply").attr('action'),
+                        data: data,
+                        dataType: "json",
+                        success: function(response){
+
+                            if (response.message == 'success'){
+                                console.log("Configuration enregistrée vous pouvez faire la migration des données logbook");
+
+                            }else{
+                                console.log("2message unsuccess"+response.message);
+                            }
+                        },
+                        error: function(response){
+                            console.log('La configuration n\'a pas été enregistrer');
+                        }
+                    });
+                    $("#div_upload").show(1500);
+                    $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+
+                    var domaine = $("#domaine").val();
+                    dropZone(domaine);
+                }
+
+                else if ($("#apply select[name='ty_doc']").val() == "ps2"){
                     $.ajax({
                         type: 'POST',
                         url: $("#apply").attr('action'),
@@ -169,7 +196,7 @@ $(document).ready(function(){
                     dropZone(domaine);
                 }
             }
-            else if (($("#apply select[name='ty_doc']").val() == "ps2") || ($("#apply select[name='ty_doc']").val() == "ers")){
+            else if ($("#apply select[name='ty_doc']").val() == "ers"){
                 $("#div_upload").hide(1500);
                 console.log('Rien pour l\'instant ');
 
@@ -185,6 +212,18 @@ $(document).ready(function(){
             });
         }
     });
+
+    /*$("#btn_apply_last_config").click(function(e){
+        e.preventDefault();
+        $("#div_upload").show(1500);
+        $("#my-dropzone button[class='dz-button']").text('Drop files here to upload and extract data');
+
+        // Sélectionnez le span à l'intérieur de #btn_apply_last_config et récupérez sa classe
+        var classeDuSpan = $("#btn_apply_last_config").find("span").attr('class');
+        dropZone(classeDuSpan);
+
+        console.log("last ll config");
+    });*/
 
     $("#my-dropzone button[class='dz-button']").click(function(e){
         e.preventDefault();
@@ -392,6 +431,69 @@ $(document).ready(function(){
         });
 
     });
+
+    //var ll_context = JSON.parse(document.getElementById('context-data').textContent);
+
+    var contextElement = document.getElementById('context-data');
+
+    // Vérifiez si l'élément existe
+    if (contextElement) {
+        if (ll_context.domaine == "palangre") {
+            $.ajax({
+                url: '/palangre',
+                type: 'GET',
+                success: function(response) {
+                    var option = '';
+                    for (var i = 0; i < response.dataPro.id.length; i++) {
+                        if (!ll_context.programtopiaid) {
+                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        } else {
+                            if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                $("#apply select[name='ty_doc']").find('.after').after('<option selected value="ll">Logbook SFA industriel</option>');
+                                option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            } else {
+                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            }
+                        }
+                    }
+                    $("#apply select[name='programme']").find('.after').after(option);
+                },
+                error: function(response) {
+                    console.log('Erreur lors de la requête AJAX');
+                }
+            });
+        } else if (ll_context.domaine == "senne") {
+            $.ajax({
+                url: '/senne',
+                type: 'GET',
+                success: function(response) {
+                    var option = '';
+                    for (var i = 0; i < response.dataPro.id.length; i++) {
+                        if (!ll_context.programtopiaid) {
+                            option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                        } else {
+                            if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                $("#apply select[name='ty_doc']").find('.after').after('<option selected class="orth" value="ps">Logbook ORTHONGEL v21</option>');
+                                $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
+                                $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
+
+                                option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            } else {
+                                option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
+                            }
+                        }
+                    }
+                    $("#apply select[name='programme']").find('.after').after(option);
+                },
+                error: function(response) {
+                    console.log('Erreur lors de la requête AJAX');
+                }
+            });
+        };
+    }else{
+        console.log("L'élément avec l'ID 'context-data' n'existe pas.");
+    };
+
     /*
 
     $('#test_btn').click(function(e){
