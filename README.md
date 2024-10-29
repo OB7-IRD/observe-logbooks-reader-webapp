@@ -32,8 +32,7 @@ To launch the documentation :
 ```         
 cd docs
 .\make html # Build the documentation 
-sphinx-serve & # Launch the serveur 
-sphinx-serve -b build -h 127.0.0.1
+sphinx-serve -b build -h 127.0.0.1 # Launch the serveur 
 
 if issue : sphinx-build -b html source build
 ```

@@ -28,8 +28,8 @@ print(DB_DIR)
 SECRET_KEY = 'yvz$wx7h!urn+asjmu$9l56&_d6&7s+y7_9i8+7tsou7cp2xfw'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
+DEBUG = True
+# DEBUG = False
 
 #SECURE_SSL_REDIRECT=True
 # SESSION_COOKIE_SECURE=True
@@ -97,7 +97,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'website.wsgi.application'
+# WSGI_APPLICATION = 'website.wsgi.application'
+ASGI_APPLICATION = 'website.asgi.application'
 
 
 # Database
