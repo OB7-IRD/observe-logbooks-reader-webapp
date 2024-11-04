@@ -42,6 +42,7 @@ $(document).ready(function(){
         // Récupérer l'élément script par son ID
         scriptElement = document.getElementById('context-data');
 
+
         // Extraire le contenu JSON à partir de l'attribut "text" ou "textContent"
         var rawData = scriptElement.text || scriptElement.textContent;
 
