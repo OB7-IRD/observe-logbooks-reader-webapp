@@ -18,8 +18,7 @@ from api_traitement.apiFunctions import errorFilter
 from api_traitement.common_functions import serialize, pretty_print
 from webapps.models import User
 from django.utils.translation import gettext as _
-
-
+from configuration.conf import TIMEOUT_VALUE
 
 ########### Token ###########
 
@@ -41,7 +40,7 @@ def get_token(base_url, data):
     """
 
     url = base_url + "/init/open"
-    response = requests.get(url, params=data, timeout=45)
+    response = requests.get(url, params=data, timeout=TIMEOUT_VALUE)
     print(response.url)
     token = response.json()['authenticationToken']
 
@@ -57,7 +56,7 @@ def is_valid(base_url, token):
     api_base = base_url + '/init/information?'
     # Constitution du lien url pour accéder à l'API et fermer la connexion
     api_url = api_base + 'authenticationToken=' + token
-    response = requests.get(api_url, timeout=45)
+    response = requests.get(api_url, timeout=TIMEOUT_VALUE)
     print("reponse of is valid function ", response.status_code)
     return response.status_code == 200
 
@@ -105,7 +104,7 @@ def get_all_referential_data(token, module, base_url):
         dict
     """
     url = base_url + "/referential/" + module + "?authenticationToken=" + token
-    ac_cap = requests.get(url, timeout=45)
+    ac_cap = requests.get(url, timeout=TIMEOUT_VALUE)
     if ac_cap.status_code == 200:
         dicoModule = {}
         for val in json.loads(ac_cap.text)["content"]:
@@ -254,7 +253,7 @@ def get_one_from_ws(token, base_url, route, topiaid):
     
     url = base_url + route + topiaid
     
-    response = requests.get(url, headers=headers, params = params, timeout=15)
+    response = requests.get(url, headers=headers, params = params, timeout=TIMEOUT_VALUE)
 
     if response.status_code == 200 :
         # with open(file = "media/temporary_files/previoustrip.json", mode = "w") as outfile:
@@ -285,7 +284,7 @@ def trip_for_prog_vessel(token, base_url, route, vessel_id, programme_topiaid):
     api_ordeer_filter = '&orders.endDate=DESC'
 
     api_trip_request = base_url + route + api_trip + token + api_vessel_filter + vessel_id + api_programme_filter + programme_topiaid + api_ordeer_filter
-    response = requests.get(api_trip_request, timeout=15)
+    response = requests.get(api_trip_request, timeout=TIMEOUT_VALUE)
     return response.content
 
 def send_trip(token, data, base_url, route):
@@ -314,7 +313,7 @@ def send_trip(token, data, base_url, route):
     print("Post - send data")
     pretty_print(data)
     
-    response = requests.post(url, data=data_json, headers=headers, timeout=45)
+    response = requests.post(url, data=data_json, headers=headers, timeout=TIMEOUT_VALUE)
 
     # print(response.status_code, "\n")
 
@@ -354,7 +353,7 @@ def update_trip(token, data, base_url, topiaid):
     url = base_url + '/data/ll/common/Trip/' + topiaid
 
     pretty_print(data)
-    response = requests.put(url, data=data_json, headers=headers, timeout=15)
+    response = requests.put(url, data=data_json, headers=headers, timeout=TIMEOUT_VALUE)
     
     print("Code resultat de la requete", response.status_code)
     
@@ -395,7 +394,7 @@ def getId_Data(token, base_url, moduleName, argment, route):
     }
 
     urls = base_url + route + moduleName + "?filters." + argment
-    rep = requests.get(urls, headers=headers, timeout=45)
+    rep = requests.get(urls, headers=headers, timeout=TIMEOUT_VALUE)
 
     # print(rep.url)
 
@@ -464,7 +463,7 @@ def del_trip(base_url, token, content):
 
         print("Supprimer")
 
-        res = requests.delete(url, data=dicts, headers=headers, timeout=45)
+        res = requests.delete(url, data=dicts, headers=headers, timeout=TIMEOUT_VALUE)
 
         print(res.status_code, "\n")
 
