@@ -1,3 +1,12 @@
+"""
+#######################################################
+#
+# Fonctions relatives à la constitution du json pour la seine 
+# selon le logbook version 23
+#
+#######################################################
+"""
+
 def js_content(tab6_routeLogbook, oce = None, program = None):
     return {
       "homeId": None, # Premiere page marée sous le nom du patron si donnée mettre  sinon None ou None #OK

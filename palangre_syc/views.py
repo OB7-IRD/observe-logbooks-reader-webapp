@@ -213,11 +213,8 @@ def presenting_previous_trip(request):
                                     allData=allData,
                                     domaine=None)
 
-    context = {'domaine': apply_conf['domaine'],
-                'program': programme,
-                'programtopiaid' : apply_conf['programme'],
-                'ocean': ocean, 
-                'oceantopiaid': apply_conf['ocean']}
+    context = dict(domaine=apply_conf['domaine'], program=programme, programtopiaid=apply_conf['programme'],
+                   ocean=ocean, oceantopiaid=apply_conf['ocean'])
 
     if selected_file is not None and apply_conf is not None:
 
