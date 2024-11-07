@@ -139,7 +139,8 @@ LANGUAGES = [
 LANGUAGE_CODE = 'fr'
 
 LOCALE_PATHS = [
-    os.path.join(BASE_DIR, 'locale'),
+    BASE_DIR / 'locale/',
+    # os.path.join(BASE_DIR, 'locale'),
 ]
 # A list of directories where Django looks for translation files
 
