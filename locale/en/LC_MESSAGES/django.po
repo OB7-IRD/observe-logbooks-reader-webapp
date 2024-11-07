@@ -391,7 +391,7 @@ msgstr "Username"
 
 #: webapps/templates/login.html:44
 msgid "login-password"
-msgstr "Paswword"
+msgstr "Password"
 
 #: webapps/templates/login.html:47
 msgid "login-submit"
