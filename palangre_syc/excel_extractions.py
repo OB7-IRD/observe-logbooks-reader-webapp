@@ -6,6 +6,7 @@ selon le format utilisé par les Seychelles
 """
 import pandas as pd
 import numpy as np
+import re
 
 from django.utils.translation import gettext as _
 
@@ -340,6 +341,9 @@ def get_vessel_activity_topiaid(startTimeStamp, allData):
     """
 
     if ":" in str(startTimeStamp):
+        code = "FO"
+        
+    elif re.findall(r"[0-9]{4}", startTimeStamp): 
         code = "FO"
 
     elif 'cruis' or 'no fishing' in startTimeStamp.lower():

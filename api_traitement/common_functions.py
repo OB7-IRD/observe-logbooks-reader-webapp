@@ -111,20 +111,15 @@ def convert_to_time_or_text(value):
     et qui laisse au format texte (cruising, in port etc) si la cellule est au format texte
     """
     if isinstance(value, str):
-        # print("="*3, value)
+        if re.findall(r"[0-9]{4}", value):
+            time_value = value[:2]+ ":"+ value[2:]+":00"
+            return datetime.datetime.strptime(time_value, '%H:%M:%S').time().strftime('%H:%M:%S')
         if re.match("[0-9]{2}:[0-9]{2}:[0-9]{2}", value):
-            #print("first match")
-            # return date_time.strftime('%H:%M:%S')
             return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         elif re.match("[0-9]{2}:[0-9]{2}", value.strip()):
-            # print("sd match")
             return value.strip() + ':00'
-            # return date_time.strftime('%H:%M:%S')
-            # return datetime.datetime.strptime(value, '%H:%M:%S').time().strftime('%H:%M:%S')
         return value
     elif isinstance(value, datetime.datetime):
-        # print("="*3, value)
-        # date_time = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M:%S').time()
         date_time = value.time()
         if hasattr(date_time, 'strftime'):
             return date_time.strftime('%H:%M:%S')
