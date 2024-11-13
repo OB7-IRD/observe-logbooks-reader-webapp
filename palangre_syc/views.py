@@ -29,30 +29,6 @@ from api_traitement import api_functions, common_functions
 DIR = "./media/logbooks"
 
 
-# def research_dep(df_donnees_p1, allData, startDate):
-#     """
-#     Fonction qui recherche si 'dep' est présent dans la case à la date donnée par l'utilisateur
-
-#     Args:
-#         df_donnees_p1 (dataframe): _description_
-#         allData (dataframe): données de références
-#         startDate (date): saisie par l'utilisateur quand on créé une marée
-
-#     Returns:
-#         bool: True si la date saisie correspond à un departure, False si non
-#     """
-#     data = excel_extractions.extract_time(df_donnees=df_donnees_p1, allData=allData)
-#     # print("#"*20, "research_dep function", "#"*20)
-#     day = startDate[8:10] 
-#     dep_rows = data[data['Time'].str.lower().str.contains('dep', case=False, na=False)]
-    
-#     if not dep_rows.empty:
-#         dep_dates = dep_rows['Day']
-#         return str(dep_dates.values[0]) in str(day)
-#     else:
-#         return False
-
-
 def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     """Fonction qui va faire appel au WS pour :
     1) trouver l'id du trip le plus récent pour un vessel et un programme donné
@@ -67,7 +43,6 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     """
     
     base_url = request.session.get('base_url')
-    # base_url = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
     vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, allData)
@@ -85,7 +60,6 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
     if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
-        print("pour ce programme et ce vessel on a : ", len(parsed_previous_trip['content']), "trip enregistrés")
         
         df_trip = pd.DataFrame(columns=["triptopiaid", "startDate", "depPort_topiaid", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
 
@@ -214,7 +188,7 @@ def presenting_previous_trip(request):
                                     domaine=None)
 
     context = dict(domaine=apply_conf['domaine'], program=programme, programtopiaid=apply_conf['programme'],
-                   ocean=ocean, oceantopiaid=apply_conf['ocean'])
+                    ocean=ocean, oceantopiaid=apply_conf['ocean'])
 
     if selected_file is not None and apply_conf is not None:
 
@@ -222,9 +196,6 @@ def presenting_previous_trip(request):
         logbook_file_path = DIR + "/" + file_name
 
         request.session['logbook_file_path'] = logbook_file_path
-
-        print("="*20, "presenting_previous_trip selected_file", "="*20)
-        print(logbook_file_path)
 
         df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
 
@@ -234,7 +205,6 @@ def presenting_previous_trip(request):
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
-            # print(username, password)
             token  = api_functions.reload_token(request, username, password)
             request.session['token'] = token
 
@@ -251,14 +221,12 @@ def presenting_previous_trip(request):
                 df_previous_trip = df_previous_trip.to_dict("index")
                 context.update({'df_previous': df_previous_trip,})
                 
-                
-                        
         except :
             context.update({'df_previous': None})
             
     request.session['context'] = context
     print("---"*50, "context saved")
-    print(context)
+    # print(context)
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -354,7 +322,7 @@ def checking_logbook(request):
 
         list_ports = common_functions.get_list_harbours(allData)
         
-        data_to_homepage = {
+        presenting_logbook = {
             'df_vessel': df_vessel,
             'df_cruise': df_cruise,
             'list_ports': list_ports,
@@ -488,16 +456,16 @@ def checking_logbook(request):
 
             if probleme is True:
                 # on doit ajouter les infos quand meme 
-                data_to_homepage.update({'programme': context['program'],
+                presenting_logbook.update({'programme': context['program'],
                                         'ocean': context['ocean'],})
                 
                 if context['df_previous'] is not None : 
-                    data_to_homepage.update({'previous_trip': context['df_previous'],
+                    presenting_logbook.update({'previous_trip': context['df_previous'],
                             'continuetrip': context['continuetrip'],})
                     print("ce qui permet de garder les infos :"*5)
-                    print(data_to_homepage)
+                    print(presenting_logbook)
                 
-                return render(request, 'LL_homepage.html', data_to_homepage)
+                return render(request, 'LL_presenting_logbook.html', presenting_logbook)
             
             else :
                 return send_logbook2observe(request)
@@ -610,18 +578,18 @@ def checking_logbook(request):
         print("+"*50, "END A la fin de la fonction", "+"*50)
         request.session['context'] = context
 
-        data_to_homepage.update({
+        presenting_logbook.update({
             'programme': context['program'],
             'ocean': context['ocean'],
             'previous_trip': dico_trip_infos,
             'continuetrip': continuetrip,
         })
-        return render(request, 'LL_homepage.html', data_to_homepage)
+        return render(request, 'LL_presenting_logbook.html', presenting_logbook)
 
     else:
         # Gérer le cas où la méthode HTTP n'est pas POST
         pass
-    return render(request, 'LL_homepage.html')
+    return render(request, 'LL_presenting_logbook.html')
 
 
 def send_logbook2observe(request):
