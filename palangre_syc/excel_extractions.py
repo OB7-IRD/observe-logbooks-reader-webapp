@@ -401,7 +401,7 @@ def extract_temperature(df_donnees):
     """
 
     df_temp = df_donnees.iloc[24:55, 8:9]
-    colnames = ['Température']
+    colnames = ['Temperature']
     df_temp.columns = colnames
     df_temp.reset_index(drop=True, inplace=True)
     return df_temp
@@ -450,7 +450,7 @@ def extract_fish_p1(df_donnees):
                 'No RET SFA', 'Kg RET SFA',
                 'No RET SSP', 'Kg RET SSP', 
                 'No RET OIL', 'Kg RET OIL',
-                'No RET XXX', 'Kg RET XXX']
+                'No RET MZZ', 'Kg RET MZZ']
     
     df_fishes.columns = colnames
     df_fishes = df_fishes.map(common_functions.zero_if_empty)

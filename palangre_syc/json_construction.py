@@ -163,7 +163,7 @@ def get_processing_topiaid(fao_code, allData):
         processing_code = "GG"
     elif fao_code == 'SWO' or fao_code == 'MLS' or fao_code == 'BUM' or fao_code == 'BLM' or fao_code == 'SFA' or fao_code == 'SSP':
         processing_code = "HG"
-    elif fao_code == 'ALB' or  fao_code == 'OIL' or fao_code == 'XXX':
+    elif fao_code == 'ALB' or  fao_code == 'OIL' or fao_code == 'MZZ':
         processing_code = "WL"
     else : 
         processing_code = "UNK"
@@ -200,7 +200,7 @@ def get_target_species_topiaid(df_donnees_p1, allData):
         elif 'Swordfish' in target: 
             list_target_topiaid.append(get_species_topiaid("SWO", allData))
         else: 
-            list_target_topiaid.append(get_species_topiaid("XXX*", allData))
+            list_target_topiaid.append(get_species_topiaid("MZZ", allData))
         
     return list_target_topiaid
 
@@ -580,7 +580,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
         activity.update({'endTimeStamp': None,
                         'latitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
                         'longitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
-                        'seaSurfaceTemperature': palangre_syc.excel_extractions.extract_temperature(df_donnees_p1).loc[i, 'Température'],
+                        'seaSurfaceTemperature': palangre_syc.excel_extractions.extract_temperature(df_donnees_p1).loc[i, 'Temperature'],
                         'wind': None,
                         'windDirection': None,
                         'currentSpeed': None,
