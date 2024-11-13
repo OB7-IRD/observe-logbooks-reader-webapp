@@ -30,11 +30,8 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = common_functions.remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
-
     df_vessel_clean['Logbook_name'] = df_vessel_clean['Logbook_name'].apply(lambda x: str(x).strip() if x is not None else '')
-    # Afficher le DataFrame résultant
-    # print("#"*20, "extract_vessel_info df_vessel_clean", "#"*20)
-    # print(df_vessel_clean)
+
     return df_vessel_clean
 
 
@@ -73,10 +70,11 @@ def extract_cruise_info(df_donnees):
 
     # Appliquer la fonction strip sur les cellules de la colonne 'Value' si l'élément correspond à une zone de texte
     df_cruise['Value'] = df_cruise.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
-
-    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name' et 'Value'
     df_cruise['Logbook_name'] = common_functions.remove_spec_char_from_list(df_cruise['Logbook_name'])
-
+    df_cruise['Value'] =  common_functions.remove_spec_char_from_list(df_cruise['Value'])
+    
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_cruise['Logbook_name'] = df_cruise['Logbook_name'].str.strip()
     
@@ -191,10 +189,6 @@ def extract_line_material(df_donnees):
     
     # Filtrer les lignes qui sont cochées
     df_line_used = df_line.loc[df_line['Value'] != "None"]
-
-    # Traduire chaque valeur du DataFrame df_line_used
-    # df_line_used['Logbook_name'] = df_line_used['Logbook_name'].apply(
-    #     lambda x: _(x) if isinstance(x, str) else x)
 
     if len(df_line_used) > 1:
         message = _("Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
@@ -319,10 +313,6 @@ def extract_positions(df_donnees):
     # Supprimer les lignes avec des valeurs nulles et conserver les colonnes d'intérêt
     data = data.dropna(subset=['Latitude', 'Longitude'])
     df_position = data[['Latitude', 'Longitude']]
-    
-    # for index, row in df_position.iterrows():
-    #     df_position.loc[index, 'Latitude'] = round(pd.to_numeric(df_position.loc[index, 'Latitude'], errors='coerce'), 2)
-    #     df_position.loc[index, 'Longitude'] = round(pd.to_numeric(df_position.loc[index, 'Longitude'], errors='coerce'), 2)
     
     df_position.reset_index(drop=True, inplace=True)
 

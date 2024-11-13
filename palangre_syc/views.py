@@ -226,7 +226,6 @@ def presenting_previous_trip(request):
             
     request.session['context'] = context
     print("---"*50, "context saved")
-    # print(context)
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -265,7 +264,6 @@ def checking_logbook(request):
     if request.method == 'POST':
             
         apply_conf = request.session.get('dico_config')
-        # print("apply_conf : ", apply_conf)
         continuetrip = request.POST.get('continuetrip')
         newtrip = request.POST.get('newtrip')
         context = request.session.get('context')
@@ -380,24 +378,6 @@ def checking_logbook(request):
                 messages.error(request, _("Les informations concernant la longueur du matériel de pêche doivent être des entiers."))
                 probleme = True
             #############################
-            
-            
-            # if context['df_previous'] == None or len(context['df_previous']) != 1:
-            #     # NOUVELLE MAREE
-            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
-            #                     'depPort': depPort,
-            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
-            #                     'endPort': endPort if endPort != '' else None,
-            #                     'continuetrip': None})
-                
-            #     #############################
-            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
-            #     if is_dep_match is False:
-            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
-            #         probleme = True
-            #     #############################
-            
-            # try:
                 
             if context['df_previous'] == None:
                 # NOUVELLE MAREE
@@ -406,19 +386,9 @@ def checking_logbook(request):
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
                                 'continuetrip': None})
-                
-                #############################
-                # is_dep_match = research_dep(df_donnees_p1, allData, startDate)
-                # print(is_dep_match)
-                # if is_dep_match is False:
-                #     messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
-                #     probleme = True
-                #############################
             
             else:
                 # CONTINUE TRIP
-                # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
-                # context.update({'df_previous' : context['df_previous'], orient = 'index')})
                 
                 with open ('media/temporary_files/previous_trip.json', 'r', encoding='utf-8') as f:
                     json_previoustrip = json.load(f)
@@ -430,8 +400,6 @@ def checking_logbook(request):
                 else:
                     date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
 
-                # print("%"*15, "context start et end Date ", "%"*15)
-                # print(context['df_previous']['endDate'])
                 #############################
                 # messages d'erreurs
                 if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
@@ -681,9 +649,6 @@ def send_logbook2observe(request):
             print("base url ::: ", base_url)
             print("token ::: ", token)
             resultat, code = api_functions.send_trip(token, trip, base_url, route)
-            
-            # if len(resultat[0]) > 1:
-            #     resultat = resultat[0][0]
             
             print("resultats : ", resultat)
             

@@ -81,7 +81,7 @@ def remove_spec_char_from_list(char_list):
     """
     Fonction qui applique remove_spec_char à chaque élément d'une liste de chaînes
     """
-    return [re.sub("[^A-Z ]", "", str(item), 0, re.IGNORECASE) for item in char_list]
+    return [re.sub("[^A-Z a-z0-9]", "", str(item), 0, re.IGNORECASE) for item in char_list]
 
 def convert_to_int(value):
     """
@@ -161,10 +161,8 @@ def zero_if_empty(value):
     Remplace par 0 quand la case est vide
     """
     if value == "None" or pd.isna(value):
-        # print("value empty")
         return 0
     elif isinstance(value, str) and (value == "" or re.search(r"\S*", value)):
-        # print("value blank space")
         return 0
     else:
         return int(value)
@@ -319,11 +317,8 @@ def search_in(allData, search="Ocean"):
     if allData == [] :
         return prog_dic
 
-    # print(allData)
-
     for val in allData[search]:
         prog_dic[val["topiaId"]] = val["label2"]
-    # print("search_in", prog_dic)
     return prog_dic
 
 def getSome(allData, moduleName, argment):
@@ -343,7 +338,6 @@ def getSome(allData, moduleName, argment):
 
     if moduleName in dataKey:
         tempDic = allData[moduleName]
-        # print(tempDic)
         argments = argment.split("=")
         for val in tempDic:
             if val[argments[0]].lower() == argments[1].lower():
