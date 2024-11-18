@@ -168,3 +168,4 @@ cython_debug/
 *.xlsm
 
 staticfiles
+/palangre_syc/test_LTO_entries
