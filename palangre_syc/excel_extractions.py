@@ -253,8 +253,11 @@ def extract_logbook_date(df_donnees):
     df_month = df_donnees.iloc[17, 5]
     df_year = df_donnees.iloc[17, 11]
 
+    month = int(df_month) if isinstance(df_month, (int, float)) and not pd.isna(df_month) else 0
+    year = int(df_year) if isinstance(df_year, (int, float)) and not pd.isna(df_year) else 0
+
     date = {'Logbook_name': ['Month', 'Year'],
-            'Value': [int(df_month), int(df_year)]}
+            'Value': [int(month), int(year)]}
     df_date = pd.DataFrame(date)
     
     df_date['Logbook_name'] = common_functions.remove_spec_char_from_list(df_date['Logbook_name'])

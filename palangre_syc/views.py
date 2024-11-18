@@ -346,15 +346,22 @@ def checking_logbook(request):
         #############################
         # messages d'erreurs
         if df_time_month['Day'][0] != 1:
-            messages.error(request, _("L'extraction des données ne semble pas correcte car ne commence pas au jour 1. Veuillez vérifier que le tableau commence ligne 22 sur votre logbook."))
+            messages.error(request, _("msg-error-day1"))
+            probleme = True
+        #############################
+        
+        #############################
+        # messages d'erreurs si le mois et l'année ne sont pas au bon format
+        if df_date.loc[df_date['Logbook_name'] == 'Month', 'Value'].values[0] == 0 or df_date.loc[df_date['Logbook_name'] == 'Year', 'Value'].values[0] == 0:
+            messages.error(request, _("msg-error-type-date"))
             probleme = True
         #############################
                 
         ######### Si on a rempli les données demandées, on vérifie ce qui a été saisi
         if endDate is not None :
-            print("+"*50, "phase de validation", "+"*50)
-            print(context)
-            print("+"*50, "END phase de validation", "+"*50)
+            # print("+"*50, "phase de validation", "+"*50)
+            # print(context)
+            # print("+"*50, "END phase de validation", "+"*50)
             
             probleme = False
             
@@ -375,7 +382,7 @@ def checking_logbook(request):
             #############################
             # messages d'erreurs
             if isinstance(df_gear, tuple):
-                messages.error(request, _("Les informations concernant la longueur du matériel de pêche doivent être des entiers."))
+                messages.error(request, _("msg-error-type-gear"))
                 probleme = True
             #############################
                 
@@ -409,7 +416,7 @@ def checking_logbook(request):
                 elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
                     print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
                     probleme = True
-                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
+                    messages.warning(request, _("msg-error-not-sequential"))
                 #############################
                                     
                 context.update({'startDate': context['df_previous']['startDate'], 
@@ -423,15 +430,14 @@ def checking_logbook(request):
                 # voir si faut ajouter un truc qui ré enregistre à la session ? 
 
             if probleme is True:
-                # on doit ajouter les infos quand meme 
                 presenting_logbook.update({'programme': context['program'],
                                         'ocean': context['ocean'],})
                 
                 if context['df_previous'] is not None : 
                     presenting_logbook.update({'previous_trip': context['df_previous'],
                             'continuetrip': context['continuetrip'],})
-                    print("ce qui permet de garder les infos :"*5)
-                    print(presenting_logbook)
+                    # print("ce qui permet de garder les infos :"*5)
+                    # print(presenting_logbook)
                 
                 return render(request, 'LL_presenting_logbook.html', presenting_logbook)
             
