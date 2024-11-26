@@ -473,7 +473,7 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
                 return True
     return False
             
-def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction):
+def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction, context):
     """ 
     Fonction qui créé les activités et les set selon le format json attendu dans la base de données Observe
 
@@ -584,9 +584,17 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
                         'wind': None,
                         'windDirection': None,
                         'currentSpeed': None,
-                        'currentDirection': None,
-                        'vesselActivity': palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
-                        'dataQuality': None,
+                        'currentDirection': None,})
+        
+        if (context['at_port_checkbox'] == "true"):
+            activity.update({'vesselActivity' : 'fr.ird.referential.ll.common.VesselActivity#666#03',})
+        elif ((context['continuetrip'] == None) and (i == start_extraction)):
+            activity.update({'vesselActivity' : 'fr.ird.referential.ll.common.VesselActivity#666#03',})
+        else: 
+            activity.update({'vesselActivity': palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
+                            })
+        
+        activity.update({'dataQuality': None,
                         'fpaZone': None,
                         'relatedObservedActivity': None,
                         })
@@ -688,29 +696,3 @@ def replace_null_false_true(obj):
         return obj
 
 
-# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
-#     """ Fonction qui affiche avec les bonnes indentations un fichier json
-
-#     Args:
-#         json_data (json): Données json en entrée
-#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
-#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
-#     """
-    
-#     json_formatted_str = json.dumps(
-#         json_data, indent = 2, default = common_functions.serialize)
-#     # print("¤"*20, "pretty print function" ,"¤"*20)
-#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
-#     with open(file, mode) as outfile:
-#         outfile.write(json_formatted_str)
-
-
-# DIR = "./palangre_syc/media"
-
-
-
-
-# if __name__ == "__main__":
-#     start_time = time.time()
-#     main()
-#     print("--- %s seconds ---" % (time.time() - start_time))

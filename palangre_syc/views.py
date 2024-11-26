@@ -335,6 +335,7 @@ def checking_logbook(request):
             'df_activity': df_activity,}
         #_______________________________EXTRACTION DES DONNEES__________________________________
         
+        at_port_checkbox = request.POST.get('atportcheckbox')
         startDate = request.POST.get('startDate')
         depPort = request.POST.get('depPort')
         endDate = request.POST.get('endDate')
@@ -388,7 +389,8 @@ def checking_logbook(request):
                 
             if context['df_previous'] == None:
                 # NOUVELLE MAREE
-                context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
+                context.update({'at_port_checkbox': at_port_checkbox, 
+                                'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
@@ -419,15 +421,15 @@ def checking_logbook(request):
                     messages.warning(request, _("msg-error-not-sequential"))
                 #############################
                                     
-                context.update({'startDate': context['df_previous']['startDate'], 
+                context.update({'at_port_checkbox': at_port_checkbox,
+                                'startDate': context['df_previous']['startDate'], 
                                 'depPort': context['df_previous']['depPort_topiaid'],
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None, 
                                 'continuetrip': 'Continuer cette marée'})
-                print("- 0 -"*30)
-                print(context)
-                print("- 0 -"*30)
-                # voir si faut ajouter un truc qui ré enregistre à la session ? 
+                # print("- 0 -"*30)
+                # print(context)
+                # print("- 0 -"*30)
 
             if probleme is True:
                 presenting_logbook.update({'programme': context['program'],
@@ -643,7 +645,8 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2,
                 allData,
-                start_extraction, end_extraction)
+                start_extraction, end_extraction, context
+                )
 
             print("="*80)
             print("Create Trip")
@@ -667,7 +670,7 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2, 
                 allData, 
-                start_extraction, end_extraction)
+                start_extraction, end_extraction, context)
 
             print("="*80)
             print("Update Trip")

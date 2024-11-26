@@ -99,10 +99,10 @@ def auth_login(request):
         user = authenticate(request, username=username,  password=password)
 
         print("="*20, "auth_login", "="*20)
-        print(user)
+        # print(user)
 
         if user is not None and user.is_active:
-            print(user)
+            # print(user)
             data_user = User.objects.get(username=user)
             print("_"*20, "user is not None and user.is_active", "_"*20)
                         
@@ -144,7 +144,6 @@ def auth_login(request):
                     request.session['base_url'] = base_url
                     
                     print("="*20, "if (token != "") and (allData is not [])", "="*20)
-                    # print("clés présentes dans allDAta ", allData.keys())
                     datat_0c_Pr = {
                         # "ocean": search_in(request, allData),
                         "ocean": None,
