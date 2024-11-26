@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-11-26 14:47+0400\n"
+"POT-Creation-Date: 2024-11-26 15:18+0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,7 +162,7 @@ msgid ""
 msgstr ""
 
 #: .\palangre_syc\templates\LL_presenting_logbook.html:529
-#: .\webapps\templates\logbook.html:173
+#: .\webapps\templates\logbook.html:172
 msgid "Annuler"
 msgstr ""
 
@@ -242,7 +242,7 @@ msgid "Le logbook a bien été envoyé dans la base"
 msgstr ""
 
 #: .\theme\templates\base.html:36 .\webapps\templates\home.html:13
-#: .\webapps\templates\logbook.html:33
+#: .\webapps\templates\logbook.html:32
 msgid "Tableau de bord"
 msgstr ""
 
@@ -1875,96 +1875,98 @@ msgstr ""
 
 #: .\webapps\templates\home.html:53
 msgid "text-intro"
-msgstr "Cette application web a pour objectif de faciliter le transfert des journaux de bord de pêche dans la base de données séléctionnée."
+msgstr ""
+"Cette application web a pour objectif de faciliter le transfert des journaux "
+"de bord de pêche dans la base de données séléctionnée."
 
 #: .\webapps\templates\home.html:104
 msgid "Commencer l'importation"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:60
+#: .\webapps\templates\logbook.html:59
 msgid "Mise à jour des données de réferences"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:98 .\webapps\templates\logbook.html:102
+#: .\webapps\templates\logbook.html:97 .\webapps\templates\logbook.html:101
 msgid "Domaine..."
 msgstr ""
 
-#: .\webapps\templates\logbook.html:99 .\webapps\templates\logbook.html:104
+#: .\webapps\templates\logbook.html:98 .\webapps\templates\logbook.html:103
 msgid "Senne"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:100
+#: .\webapps\templates\logbook.html:99
 msgid "Palangre"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:109
+#: .\webapps\templates\logbook.html:108
 msgid "Programmes du domaine..."
 msgstr ""
 
-#: .\webapps\templates\logbook.html:113
+#: .\webapps\templates\logbook.html:112
 msgid "Ocean..."
 msgstr ""
 
-#: .\webapps\templates\logbook.html:129
+#: .\webapps\templates\logbook.html:128
 msgid "Types de document..."
 msgstr ""
 
-#: .\webapps\templates\logbook.html:133
+#: .\webapps\templates\logbook.html:132
 msgid "Appliquer"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:158
+#: .\webapps\templates\logbook.html:157
 msgid "Les documents doivent être de type: .xlsx, .xlsm"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:172
+#: .\webapps\templates\logbook.html:171
 msgid "Extraction des informations pour la soumission dans observe"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:201
+#: .\webapps\templates\logbook.html:200
 msgid "Attention signal faible"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:208
+#: .\webapps\templates\logbook.html:207
 msgid "Info"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:222
+#: .\webapps\templates\logbook.html:221
 msgid "Envoyer les donnée"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:225
+#: .\webapps\templates\logbook.html:224
 msgid "Annuler et charger un nouveau logbook"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:233
+#: .\webapps\templates\logbook.html:232
 msgid "Effectué"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:241 .\webapps\templates\logbook.html:299
+#: .\webapps\templates\logbook.html:240 .\webapps\templates\logbook.html:298
 msgid "Charger un nouveau logbook"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:257
+#: .\webapps\templates\logbook.html:256
 msgid "Forcer l'envoie des données"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:260
+#: .\webapps\templates\logbook.html:259
 msgid "Corriger et envoyer à nouveau"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:268
+#: .\webapps\templates\logbook.html:267
 msgid "NB:"
 msgstr ""
 
-#: .\webapps\templates\logbook.html:268
+#: .\webapps\templates\logbook.html:267
 msgid ""
 "Il est possible de forcer l'envoi si les erreurs ne concernent que "
 "l'opération objet incorrectement saisie et/ou le code espèce rejeté à trois "
 "(3) caractères."
 msgstr ""
 
-#: .\webapps\templates\logbook.html:304 .\webapps\templates\logbook.html:309
+#: .\webapps\templates\logbook.html:303 .\webapps\templates\logbook.html:308
 msgid "Charger un logbook"
 msgstr ""
 
@@ -1988,36 +1990,36 @@ msgstr "Mot de passe"
 msgid "login-submit"
 msgstr "Envoyer"
 
-#: .\webapps\views.py:159
+#: .\webapps\views.py:158
 msgid "Impossible de se connecter au serveur verifier la connexion"
 msgstr ""
 
-#: .\webapps\views.py:161
+#: .\webapps\views.py:160
 msgid "serveur incorrect"
 msgstr ""
 
-#: .\webapps\views.py:163
+#: .\webapps\views.py:162
 msgid "username ou mot de passe incorrect"
 msgstr ""
 
-#: .\webapps\views.py:242
+#: .\webapps\views.py:241
 msgid ""
 "Merci de déposer un fichier excel avant de lancer l'extraction de données !"
 msgstr ""
 
-#: .\webapps\views.py:248
+#: .\webapps\views.py:247
 msgid "Merci de téléverser un fichier excel"
 msgstr ""
 
-#: .\webapps\views.py:304
+#: .\webapps\views.py:303
 msgid "Extration des données avec succès vous pouvez les soumettre maintenant."
 msgstr ""
 
-#: .\webapps\views.py:317
+#: .\webapps\views.py:316
 msgid "Veuillez recharger la page et reprendre votre opération SVP."
 msgstr ""
 
-#: .\webapps\views.py:414 .\webapps\views.py:471
+#: .\webapps\views.py:413 .\webapps\views.py:470
 msgid "Veuillez ressayer svp."
 msgstr ""
 
