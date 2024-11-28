@@ -433,7 +433,7 @@
                             </div> 
 
 
-                            {% elif df_gear|length == 1 %}
+                            {% elif df_line|length == 1 %}
                             <table class="items-center w-full bg-transparent border-collapse">
                                 <tbody>                
                                     {% for index, row in df_line.iterrows %}
@@ -518,6 +518,11 @@
                         {% endblocktranslate %}
                     </div>
                 {% endif %}
+                {%if port_mess != None %}
+                    <div class="w-full mb-2 select-none rounded-t-lg border-t-4 border-gray-500 bg-gray-300 p-4 font-medium">
+                        {% translate "port_mess" %}
+                    </div>
+                {% endif %}
                 <!-- End Div if error in the logbook -->
 
                 <!-- Div buttons -->
@@ -525,7 +530,7 @@
                     {% comment %} faire un truc mieux pour le bouton -->
                     <input id = "annuler_extraction" value = {% translate "Annuler"%} type="reset" name="annuler_extraction" class="py-3 px-4 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"/> {% endcomment %}
                     <a href="{% url 'logbook' %}" class="py-5 px-6 text-white font-semibold rounded-xl shadow-md mr-2 mb-0 transition bg-red-400 hover:bg-red-900 active:bg-red-900 focus:bg-red-900"> 
-                        {% translate "Annuler"%}
+                        {% translate "Annuler" %}
                     </a>
                     <input id = "sendform" value = {% translate "Envoyer le journal de bord" %} type="submit" name="sendform" class="w-full px-6 py-5 text-white font-semibold text-center rounded-xl transition bg-green-600 hover:bg-green-900 active:bg-green-900 focus:bg-green-900"/>
                 </div>
