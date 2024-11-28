@@ -186,10 +186,11 @@ def extract_line_material(df_donnees):
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_line['Logbook_name'] = df_line['Logbook_name'].str.strip()
+    df_line['Value'] = df_line['Value'].str.strip()
     
     # Filtrer les lignes qui sont cochées
-    df_line_used = df_line.loc[df_line['Value'] != "None"]
-
+    df_line_used = df_line[(df_line["Value"] != "None") & (df_line["Value"].notna())]
+    
     if len(df_line_used) > 1:
         message = _("Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
         return df_line_used, message
@@ -332,17 +333,16 @@ def get_vessel_activity_topiaid(startTimeStamp, allData):
     Returns:
         topiaID de l'activité détectée
     """
-
     if ":" in str(startTimeStamp):
         code = "FO"
         
     elif re.findall(r"[0-9]{4}", startTimeStamp): 
         code = "FO"
 
-    elif 'cruis' or 'no fishing' in startTimeStamp.lower():
+    if re.findall("cruis", startTimeStamp.lower()):
         code = "CRUISE"
 
-    elif 'port' in startTimeStamp.lower():
+    if re.findall("port", startTimeStamp.lower()):
         code = "PORT"
 
     elif startTimeStamp is None:
