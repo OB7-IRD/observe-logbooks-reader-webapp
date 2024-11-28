@@ -1,7 +1,7 @@
 import time
 
 import os
-# import re
+import re
 import json
 # import datetime
 import warnings
@@ -25,6 +25,8 @@ from palangre_syc import excel_extractions
 from palangre_syc import json_construction
 from api_traitement import api_functions, common_functions
 # from webapps.models import User
+
+import datetime
 
 DIR = "./media/logbooks"
 
@@ -310,6 +312,15 @@ def checking_logbook(request):
             df_fishing_effort_month = df_fishing_effort
             df_fishes_month = df_fishes
             df_bycatch_month = df_bycatch
+            
+        count = 0
+        port_mess = None
+        while count < len(df_time_month)-1:
+            count = count + 1
+            if re.findall("port", df_time_month['Time'][count].lower()):
+                port_mess = "warning-port"
+            else:
+                port_mess = None
         
         df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
                                     df_temperature_month,
@@ -332,7 +343,8 @@ def checking_logbook(request):
             'df_bait': df_bait,
             'df_position': df_position,
             'df_time': df_time,
-            'df_activity': df_activity,}
+            'df_activity': df_activity,
+            'port_mess': port_mess}
         #_______________________________EXTRACTION DES DONNEES__________________________________
         
         at_port_checkbox = request.POST.get('atportcheckbox')
@@ -374,14 +386,16 @@ def checking_logbook(request):
             
             #############################
             # messages d'erreurs
-            if (int(context['endDate'][5:7]) + int(context['endDate'][:4])) != (int(logbook_month) + int(logbook_year)):
-                print(int(context['endDate'][5:7]) + int(context['endDate'][:4]), "!= ", int(logbook_month) + int(logbook_year))
+            if (int(context['endDate'][5:7]) != int(logbook_month)):
+                # print(context['endDate'][5:7])
+                # print(int(logbook_month))
                 messages.error(request, _("La date de fin de trip doit être dans le mois. Saisir le dernier jour du mois dans le cas où le trip n'est pas réellement fini."))
                 probleme = True
             #############################
             
             #############################
             # messages d'erreurs
+            # si le materiel de pêche saisi contient des valeurs de type texte
             if isinstance(df_gear, tuple):
                 messages.error(request, _("msg-error-type-gear"))
                 probleme = True
@@ -414,9 +428,13 @@ def checking_logbook(request):
                 if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
                     probleme = True
-
-                elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
-                    print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
+                
+                # if the month submitted now is not the previous month
+                date_str = context['df_previous']['endDate']
+                date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ") 
+                logbook_date = datetime.datetime(int(logbook_year), int(logbook_month), 1)
+                previous_month_date = (logbook_date.replace(day=1) - datetime.timedelta(days=1)).replace(day=1)
+                if (date_obj.month, date_obj.year) != (previous_month_date.month, previous_month_date.year):
                     probleme = True
                     messages.warning(request, _("msg-error-not-sequential"))
                 #############################
@@ -427,9 +445,6 @@ def checking_logbook(request):
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None, 
                                 'continuetrip': 'Continuer cette marée'})
-                # print("- 0 -"*30)
-                # print(context)
-                # print("- 0 -"*30)
 
             if probleme is True:
                 presenting_logbook.update({'programme': context['program'],
