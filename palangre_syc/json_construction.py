@@ -304,7 +304,7 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
 # TopType et tracelineType sont unknown
 
 
-def create_branchelines_composition(df_donnees_p1):
+def create_branchline_composition(df_gear):
     """
     Fonction de construction du json pour les branchlineComposition
 
@@ -316,7 +316,8 @@ def create_branchelines_composition(df_donnees_p1):
     """
     branchlines_composition = [{
         'homeId': None,
-        'length': palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        # 'length': palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        'length': df_gear.loc[df_gear['Logbook_name'] == 'Branchline length m', 'Value'].values[0],
         'proportion': None,
         'tracelineLength': None,
         'topType': "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
@@ -542,8 +543,8 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
                     'haulingBreaks': None,
                     'monitored': False,
                     # En fait "totalLineLength" serait de plusierus km, ce qui ne correspond pas avec le champ "Set Line length m"
-                    # 'totalLineLength' : extract_gear_info(df_donnees_p1).loc[extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
-                    'totalLineLength': None,
+                    'totalLineLength' : palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+                    # 'totalLineLength': None,
                     'basketLineLength': None,
                     'lengthBetweenBranchlines': df_gear.loc[df_gear['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
                     })
@@ -564,7 +565,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
             'lightsticksType': None,
             'lightsticksColor': None,
             'mitigationType': [],
-            'branchlinesComposition': []
+            'branchlinesComposition': create_branchline_composition(df_gear)
         })
 
         activity = {
