@@ -1,21 +1,28 @@
-from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import get_user_model
+from .models import SiteUser
+from django.core.exceptions import ValidationError
 
-User = get_user_model()
-class UserForm(UserCreationForm):
+
+class SiteUserForm(UserCreationForm):
     class Meta:
-        model = User
+        model = SiteUser
         fields = [
-            "basename",
-            "url",
-            "database",
-            "ref_language",
-            "defaultdomain",
-            "defaultprogram",
+            "firstname",
+            "lastname",
+            "email",
             "username",
-            "password",
-            "password2"
+            "password1",
+            "password2",
         ]
-        
-        
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if SiteUser.objects.filter(username=username).exists():
+            raise ValidationError("Ce non d'utilisateur est déjà pris. Veuillez en choisir un autre.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if SiteUser.objects.filter(email=email).exists():
+            raise ValidationError("Cet email est déjà utilisé. Veuillez en fournir un autre.")
+        return email

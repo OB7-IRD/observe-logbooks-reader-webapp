@@ -234,8 +234,9 @@ def presenting_previous_trip(request):
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
+            database = request.session.get('database')
             # print(username, password)
-            token  = api_functions.reload_token(request, username, password)
+            token = api_functions.reload_token(username, password, base_url, database)
             request.session['token'] = token
 
         try :
@@ -288,7 +289,8 @@ def checking_logbook(request):
     if not api_functions.is_valid(base_url, token):
         username = request.session.get('username')
         password = request.session.get('password')
-        token  = api_functions.reload_token(request, username, password)
+        database = request.session.get('database')
+        token  = api_functions.reload_token(username, password, base_url, database)
         request.session['token'] = token
 
     base_url = request.session.get('base_url')
@@ -659,7 +661,8 @@ def send_logbook2observe(request):
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
-            token  = api_functions.reload_token(request, username, password)
+            database = request.session.get('database')
+            token  = api_functions.reload_token(username, password, base_url, database)
             request.session['token'] = token
             
         base_url = request.session.get('base_url')

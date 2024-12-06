@@ -37,7 +37,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
-AUTH_USER_MODEL = "webapps.User"
+
+AUTH_USER_MODEL = "webapps.SiteUser"
+# AUTH_USER_MODEL = "webapps.User"
+
 
 TAILWIND_APP_NAME = "theme"
 # INTERNAL_IPS = [
@@ -48,6 +51,7 @@ TAILWIND_APP_NAME = "theme"
 
 INSTALLED_APPS = [
 #    'daphne',
+    'webapps',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,7 +60,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tailwind',
     'theme',
-    'webapps',
     'palangre_syc',
     'django_browser_reload',
 ]
