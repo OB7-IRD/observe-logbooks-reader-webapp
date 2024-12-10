@@ -11,7 +11,7 @@ from api_traitement.api_functions import *
 # from palangre_syc import api
 
 from django.contrib import messages
-from .form import SiteUserForm
+from .form import LTOUserForm
 
 import json
 from zipfile import ZipFile
@@ -23,9 +23,9 @@ from .models import ConnectionProfile
 
 # Create your views here.
 def register(request):
-    form = SiteUserForm()
+    form = LTOUserForm()
     if request.method == "POST":
-        form = SiteUserForm(request.POST)
+        form = LTOUserForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.")

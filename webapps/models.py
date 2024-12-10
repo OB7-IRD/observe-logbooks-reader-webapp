@@ -4,7 +4,7 @@ from django.conf import settings
 
 
 # Modèle pour les utilisateurs du site
-class SiteUser(AbstractUser):
+class LTOUser(AbstractUser):
     firstname = models.CharField(max_length=64)
     lastname = models.CharField(max_length=64)
     email = models.EmailField(max_length=128, unique=True)

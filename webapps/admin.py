@@ -1,10 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import SiteUser, ConnectionProfile
+from .models import LTOUser, ConnectionProfile
 
-# Configuration de l'administration pour SiteUser
-class SiteUserAdmin(UserAdmin):
-    model = SiteUser
+# Configuration de l'administration pour LTOUser
+class LTOUserAdmin(UserAdmin):
+    model = LTOUser
     list_display = ('username', 'email', 'access_level', 'account_valid', 'is_staff')
     list_filter = ('access_level', 'is_staff', 'is_superuser')
     search_fields = ('username', 'email',)
@@ -30,5 +30,5 @@ class ConnectionProfileAdmin(admin.ModelAdmin):
     filter_horizontal = ('users',)  # Affiche une interface pour ajouter des utilisateurs au profil
 
 # Enregistrement des modèles dans l'administration
-admin.site.register(SiteUser, SiteUserAdmin)
+admin.site.register(LTOUser, LTOUserAdmin)
 admin.site.register(ConnectionProfile, ConnectionProfileAdmin)

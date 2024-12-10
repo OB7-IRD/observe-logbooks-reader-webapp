@@ -38,7 +38,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = ["http://localhost:8000"]
 
-AUTH_USER_MODEL = "webapps.SiteUser"
+AUTH_USER_MODEL = "webapps.LTOUser"
 # AUTH_USER_MODEL = "webapps.User"
 
 

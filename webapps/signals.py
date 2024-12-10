@@ -2,9 +2,9 @@ from django.db.models.signals import post_migrate, post_save
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
 from django.contrib.auth.models import Group
-from .models import SiteUser
+from .models import LTOUser
 
-@receiver(post_save, sender=SiteUser)
+@receiver(post_save, sender=LTOUser)
 def create_groups_and_assign_user(sender, instance, created, **kwargs):
     # Vérifier si un utilisateur vient d'être créé
     if created:

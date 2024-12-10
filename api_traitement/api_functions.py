@@ -18,7 +18,7 @@ from api_traitement.apiFunctions import errorFilter
 from api_traitement.common_functions import serialize, pretty_print
 
 # from webapps.models import User
-from webapps.models import SiteUser as User
+from webapps.models import LTOUser as User
 
 
 from django.utils.translation import gettext as _
