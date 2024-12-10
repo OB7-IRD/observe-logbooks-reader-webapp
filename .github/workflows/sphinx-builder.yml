@@ -2,7 +2,12 @@ name: documentation
 
 on:
   push:
-    branches: [main] # branch to trigger deployment
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: write
