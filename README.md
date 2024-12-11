@@ -1,9 +1,11 @@
 
-<div align="left" style="position: relative;">
-<img src="docs/source/_static/logo.png" align="right" width="30%" style="margin: -20px 0 0 20px;">
-</div>
 
 # LTO-WebApp
+
+<div align="left" style="position: relative;">
+<img src="docs/source/_static/logo.png" align="right" width="20%" style="margin: -20px 0 0 20px;">
+</div>
+
 
 The LTO web application is designed to make it easier to transfer logbooks relating to data on pelagic species collected as part of the OB7 observatory. It includes functions for importing and check validity data.
 
