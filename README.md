@@ -9,8 +9,8 @@
 
 The LTO web application is designed to make it easier to transfer logbooks relating to data on pelagic species collected as part of the OB7 observatory. It includes functions for importing and check validity data.
 
-![GitHub License](https://img.shields.io/github/license/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=0080ff)
-![GitHub top language](https://img.shields.io/github/languages/top/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&color=0080ff)
+![GitHub License](https://img.shields.io/github/license/OB7-IRD/lto-webapp?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=0080ff)
+![GitHub top language](https://img.shields.io/github/languages/top/OB7-IRD/lto-webapp?style=for-the-badge&color=0080ff)
 
 
 Built with the tools and technologies:
@@ -57,7 +57,7 @@ For now, the app is developed for the purseiners' and longliners' logbooks.
 
 ###  Prerequisites
 
-Before getting started with observe-logbooks-reader-webapp, ensure your runtime environment meets the following requirements:
+Before getting started with lto-webapp, ensure your runtime environment meets the following requirements:
 
 - **Programming Language:** Python
 - **Package Manager:** Pip
@@ -66,18 +66,18 @@ Before getting started with observe-logbooks-reader-webapp, ensure your runtime 
 
 ###  Installation
 
-Install observe-logbooks-reader-webapp using one of the following methods:
+Install lto-webapp using one of the following methods:
 
 **Build from source:**
 
-1. Clone the observe-logbooks-reader-webapp repository:
+1. Clone the `lto-webapp` repository:
 ```sh
-❯ git clone https://github.com/OB7-IRD/observe-logbooks-reader-webapp
+❯ git clone https://github.com/OB7-IRD/lto-webapp
 ```
 
 2. Navigate to the project directory:
 ```sh
-❯ cd observe-logbooks-reader-webapp
+❯ cd lto-webapp
 ```
 
 3. Install the project dependencies:
@@ -90,7 +90,7 @@ Install observe-logbooks-reader-webapp using one of the following methods:
 ```
 
 ###  Usage
-Run observe-logbooks-reader-webapp using the following command:
+Run lto-webapp using the following command:
 
 ```sh
 ❯ python manage.py runserver
@@ -102,13 +102,13 @@ Then access the application in your browser at [http://localhost:8000](http://lo
 
 ##  Documentation
 
-Project documentation is available online: <https://ob7-ird.github.io/observe-logbooks-reader-webapp/>
+Project documentation is available online: <https://ob7-ird.github.io/lto-webapp/>
 
 ---
 
 ##  Contributing
 
-- **🐛 [Report Issues](https://github.com/OB7-IRD/observe-logbooks-reader-webapp/issues)**: Submit bugs found or log feature requests for the `observe-logbooks-reader-webapp` project.
+- **🐛 [Report Issues](https://github.com/OB7-IRD/lto-webapp/issues)**: Submit bugs found or log feature requests for the `lto-webapp` project.
 
 <details closed>
 <summary>Contributing Guidelines</summary>
@@ -116,7 +116,7 @@ Project documentation is available online: <https://ob7-ird.github.io/observe-lo
 1. **Fork the Repository**: Start by forking the project repository to your github account.
 2. **Clone Locally**: Clone the forked repository to your local machine using a git client.
    ```sh
-   git clone https://github.com/OB7-IRD/observe-logbooks-reader-webapp
+   git clone https://github.com/OB7-IRD/lto-webapp
    ```
 3. **Create a New Branch**: Always work on a new branch, giving it a descriptive name.
    ```sh
@@ -139,8 +139,8 @@ Project documentation is available online: <https://ob7-ird.github.io/observe-lo
 <summary>Contributor Graph</summary>
 <br>
 <p align="left">
-   <a href="https://github.com{/OB7-IRD/observe-logbooks-reader-webapp/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=OB7-IRD/observe-logbooks-reader-webapp">
+   <a href="https://github.com{/OB7-IRD/lto-webapp/}graphs/contributors">
+      <img src="https://contrib.rocks/image?repo=OB7-IRD/lto-webapp">
    </a>
 </p>
 </details>
