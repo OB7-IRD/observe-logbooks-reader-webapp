@@ -1,25 +1,24 @@
 
 <div align="left" style="position: relative;">
 <img src="docs/source/_static/logo.png" align="right" width="30%" style="margin: -20px 0 0 20px;">
-<h1>LTO-WebApp</h1>
-<p align="left">
-The LTO web application is designed to make it easier to transfer logbooks relating to data on pelagic species collected as part of the OB7 observatory. It includes functions for importing and check validity data.
-</p>
-<p align="left">
-	<img src="https://img.shields.io/github/license/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
-	<img src="https://img.shields.io/github/last-commit/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&color=0080ff" alt="repo-top-language">
-</p>
-<p align="left">Built with the tools and technologies:</p>
-<p align="left">
-	<img src="https://img.shields.io/badge/Python-3776AB.svg?style=for-the-badge&logo=Python&logoColor=white" alt="Python">
-	<img src="https://img.shields.io/badge/Sphinx-000000.svg?style=for-the-badge&logo=Sphinx&logoColor=white" alt="Sphinx">
-	<img src="https://img.shields.io/badge/HTML5-E34F26.svg?style=for-the-badge&logo=HTML5&logoColor=white" alt="HTML5">
-	<img src="https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=for-the-badge&logo=JavaScript&logoColor=black" alt="JavaScript">
-	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=for-the-badge&logo=Docker&logoColor=white" alt="Docker">
-</p>
 </div>
-<br clear="right">
+
+# LTO-WebApp
+
+The LTO web application is designed to make it easier to transfer logbooks relating to data on pelagic species collected as part of the OB7 observatory. It includes functions for importing and check validity data.
+
+![GitHub License](https://img.shields.io/github/license/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&logo=opensourceinitiative&logoColor=white&color=0080ff)
+![GitHub top language](https://img.shields.io/github/languages/top/OB7-IRD/observe-logbooks-reader-webapp?style=for-the-badge&color=0080ff)
+
+
+Built with the tools and technologies:
+
+![Static Badge](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=Python&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Sphinx-000000?style=for-the-badge&logo=Sphinx&logoColor=white)
+![Static Badge](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=HTML5&logoColor=white)
+![Static Badge](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white)
+![Static Badge](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=Docker&logoColor=white)
+
 
 ##  Table of Contents
 
