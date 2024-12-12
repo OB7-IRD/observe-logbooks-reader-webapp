@@ -1,5 +1,5 @@
 from django.core.files.storage import FileSystemStorage
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -7,8 +7,6 @@ from django.urls import reverse
 
 from api_traitement import api_functions
 from api_traitement.apiFunctions import *
-from api_traitement.api_functions import *
-# from palangre_syc import api
 
 from django.contrib import messages
 from .form import LTOUserForm
@@ -28,10 +26,10 @@ def register(request):
         form = LTOUserForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.")
+            messages.success(request, _("success-account-creation"))
             return redirect("login")
         else:
-            messages.error(request, "Erreur lors de l'inscription. Veuillez vérifier les informations fournies.")
+            messages.error(request, _("error-register"))
     return render(request, "register.html", {"form": form})
 
 
@@ -89,9 +87,9 @@ def auth_login(request):
                 request.session['data_Oc_Pr'] = datat_0c_Pr
                 return redirect('home')  # Rediriger vers la page d'accueil ou une autre page définie
             else:
-                message = _("Votre compte n'a pas encore été validé par l'administrateur.")
+                message = _("error-unvalidated-account")
         else:
-            message = _("Nom d'utilisateur ou mot de passe incorrect")
+            message = _("error-username-incorrect")
 
     return render(request, "login.html", {"message": message})
 
@@ -104,7 +102,7 @@ def update_data(request):
     base_url = request.session.get('base_url')
     token  = api_functions.reload_token(username, password, base_url, database)
 
-    allData = load_data(token=token, base_url=base_url, forceUpdate=True)
+    allData = api_functions.load_data(token=token, base_url=base_url, forceUpdate=True)
     
     print("="*20, "update_data", "="*20)
     with open('allData.json', 'w', encoding='utf-8') as f:
@@ -169,7 +167,7 @@ def connect_profile(request):
                 token = api_functions.get_token(base_url, data_user_connect)
                 print("Token: ", token)
 
-                allData = load_data(token=token, base_url=base_url)
+                allData = api_functions.load_data(token=token, base_url=base_url)
 
             except:
                 pass
@@ -195,7 +193,7 @@ def connect_profile(request):
                 return redirect("home")
             else:
                 request.session['current_profile'] = None
-                request.session['message_home'] = _("Impossible de se connecter au serveur verifier la connexion")
+                request.session['message_home'] = _("error-server")
                 return redirect('home')
         except ConnectionProfile.DoesNotExist:
             # Si le profile n'existe pas ou n'est pas associé à l'utilisateur
@@ -208,7 +206,7 @@ def connect_profile(request):
                 "program" : None
             }
             request.session['data_Oc_Pr'] = datat_0c_Pr
-            request.session['message_home'] = _("Pas de profile pour l'instant ou n'est pas associé à l'utilisateur")
+            request.session['message_home'] = _("connexion-doesnt-exist")
             return redirect('home')
     return redirect('home')
 
