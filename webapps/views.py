@@ -86,6 +86,7 @@ def auth_login(request):
                     "ocean": None,
                     "program" : None
                 }
+                request.session['current_profile_id'] = -1
                 request.session['data_Oc_Pr'] = datat_0c_Pr
                 return redirect('home')  # Rediriger vers la page d'accueil ou une autre page définie
             else:
@@ -137,20 +138,35 @@ def home(request):
     request.session['language'] = request.LANGUAGE_CODE
     # Récupérer les profils de connexion liés à l'utilisateur connecté
     profiles = request.user.connection_profiles.all()
-    current_profile = request.session.get('current_profile')
+
+    # Récupérer l'ID du profil actuellement sélectionné depuis la session
+    current_profile_id = request.session.get('current_profile_id')
+
+    # Si un profil est sélectionné, récupérer les détails du profil
+    current_profile = None
+    if current_profile_id:
+        try:
+            current_profile = ConnectionProfile.objects.get(id=current_profile_id, users=request.user)
+        except ConnectionProfile.DoesNotExist:
+            current_profile = None
+
+    # print("request_user : ", request.user.email) # Pour Clementine
+
+    # Récupérer les messages de la session (si présent)
     message = request.session.get('message_home')
 
     return render(request, 'home.html', {
         'profiles': profiles,
         'current_profile': current_profile,
         'message': message
-        })
-
+    })
 
 @login_required
 def connect_profile(request):
+
     if request.method == 'POST':
         profile_id = request.POST.get('profile')
+
         token = ""
         try:
             # Récupérer le profil sélectionné
@@ -169,7 +185,16 @@ def connect_profile(request):
                 token = api_functions.get_token(base_url, data_user_connect)
                 print("Token: ", token)
 
-                allData = load_data(token=token, base_url=base_url)
+                current_profile_id = request.session.get('current_profile_id')
+                print(" profile_id : ", profile_id)
+                print(" current_profile_id : ", current_profile_id)
+
+                if profile_id != current_profile_id:
+                    print("="*20," Changement des données de references ", "="*20)
+                    allData = load_data(token=token, base_url=base_url, forceUpdate=True)
+                else:
+                    print("="*20," Pas de changement de profil ", "="*20)
+                    allData = load_data(token=token, base_url=base_url)
 
             except:
                 pass
@@ -181,20 +206,20 @@ def connect_profile(request):
                 request.session['password'] = profile.password
                 request.session['database'] = profile.database_alias
 
-                print("="*20, "if (token != "") and (allData is not [])", "="*20)
+                request.session['current_profile_id'] = profile_id
+
+                # print("="*20, "if (token != "") and (allData is not [])", "="*20)
                 datat_0c_Pr = {
                     "ocean": None,
                     "program" : allData["Program"]
                 }
                 request.session['data_Oc_Pr'] = datat_0c_Pr
                 request.session['table_files'] = []
-                request.session['current_profile'] = profile.name
 
                 request.session['message_home'] = ""
 
                 return redirect("home")
             else:
-                request.session['current_profile'] = None
                 request.session['message_home'] = _("Impossible de se connecter au serveur verifier la connexion")
                 return redirect('home')
         except ConnectionProfile.DoesNotExist:
@@ -216,8 +241,18 @@ def connect_profile(request):
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
-    ll_context = request.session.get('context')
-    current_profile = request.session.get('current_profile')
+    apply_conf  = request.session.get('dico_config')
+
+    # Récupérer l'ID du profil actuellement sélectionné depuis la session
+    current_profile_id = request.session.get('current_profile_id')
+
+    # Si un profil est sélectionné, récupérer les détails du profil
+    current_profile = None
+    if current_profile_id:
+        try:
+            current_profile = ConnectionProfile.objects.get(id=current_profile_id, users=request.user)
+        except ConnectionProfile.DoesNotExist:
+            current_profile = None
 
     try:
         file_name = "media/data/" + os.listdir('media/data')[0]
@@ -235,12 +270,6 @@ def logbook(request):
     if datat_0c_Pr['program'] != None:
         print(datat_0c_Pr['program'].keys())
         print("+"*20, "logbook datat_Oc_Pr", "+"*20)
-        # print(datat_0c_Pr)
-        # print(datat_0c_Pr.keys())
-
-        apply_conf  = request.session.get('dico_config')
-
-        # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         if request.POST.get('submit'):
 
@@ -258,7 +287,7 @@ def logbook(request):
                     "tags": tags,
                     "alert_message": _("Merci de téléverser un fichier excel"),
                     "ocean_data": datat_0c_Pr["ocean"],
-                    "ll_context" : ll_context,
+                    "ll_context" : json.dumps(apply_conf),
                     'current_profile': current_profile,
                 })
             print(apply_conf)
@@ -282,7 +311,6 @@ def logbook(request):
 
                 # Suprimer le ou les fichiers data logbooks
                 os.remove("media/logbooks/"+ logbooks[0])
-                # print(data_observateur)
 
             if message == '' and len(logbooks) > 0:
                  print("len log ", len(logbooks), " messa : ", message)
@@ -341,7 +369,7 @@ def logbook(request):
             return render(request, "logbook.html",{
                 "tags": tags,
                 "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context,
+                "ll_context" : json.dumps(apply_conf),
                 'current_profile': current_profile,
             })
 
@@ -349,21 +377,21 @@ def logbook(request):
         if apply_conf is not None :
             print("="*20, "apply_conf is not None", "="*20)
 
-            # print(apply_conf)
+            print(apply_conf)
             # print(datat_0c_Pr['program'])
 
             if apply_conf['domaine'] == 'palangre' :
                 return render(request, "logbook.html", context={
                     "program_data": datat_0c_Pr['program']['longline'],
                     "ocean_data": datat_0c_Pr["ocean"],
-                    "ll_context" : ll_context,
+                    "ll_context" : json.dumps(apply_conf),
                     'current_profile': current_profile,
                 })
             elif apply_conf['domaine'] == 'senne' :
                 return render(request, "logbook.html", context={
                     "program_data": datat_0c_Pr['program']['seine'],
                     "ocean_data": datat_0c_Pr["ocean"],
-                    "ll_context" : ll_context,
+                    "ll_context" : json.dumps(apply_conf),
                     'current_profile': current_profile,
                 })
     # print("="*20, "apply_conf is None", "="*20)
@@ -372,7 +400,7 @@ def logbook(request):
                 # "program_data": ll_programs,
                 "program_data": datat_0c_Pr["program"],
                 "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context,
+                "ll_context" : json.dumps(apply_conf),
                 'current_profile': current_profile,
             })
 
@@ -419,7 +447,6 @@ def postProg_info(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         request.session['dico_config'] = {
-            # 'langue': request.POST["langue"],
             'domaine': request.POST["domaine"],
             'ocean': request.POST["ocean"],
             'programme': request.POST["programme"],

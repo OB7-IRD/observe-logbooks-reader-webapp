@@ -44,7 +44,7 @@
                 class="h-4 w-4 rounded-full {% if current_profile %}bg-green-500{% else %}bg-red-500{% endif %} mr-2"></div>
               <span class="text-gray-300 text-sm font-medium">
                 {{ request.user.username }}
-                ({% if current_profile %}{{ current_profile }}{% else %}null{% endif %})
+                ({% if current_profile %}{{ current_profile }}{% else %}Aucun serveur connecté{% endif %})
               </span>
             </div>
 
@@ -90,71 +90,53 @@
 
   </header>
   <main>
-      {% if ll_context != None %}
-            {{ ll_context | json_script:"context-data" }}
-      {% endif %}
-<!--
-    {% if ll_context != None %}
-        <div class="max-w-3xl mx-auto p-2 sm:px-3 lg:px-3">
-            <div class="flex items-baseline space-x-2">
-                <strong class="p-1 text-white bg-green-600">Domaine: </strong>
-                <strong class="px-10">{{ll_context.domaine}}</strong>
-                <strong class="p-1 text-white bg-green-600">Program: </strong>
-                <strong class="px-10">{{ll_context.program}}</strong>
-                <strong class="p-1 text-white bg-green-600">Ocean: </strong>
-                <strong class="px-10">{{ll_context.ocean}}</strong>
-            </div>
-        </div>
-    {% endif %}-->
-
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        {% if ll_context != None %}
+            <script id="context-data" type="application/json">
+                {{ ll_context | safe }}
+            </script>
+        {% endif %}
 
-        <form action="apply" method="post" id="apply">
-            {% csrf_token %}
+<form action="apply" method="post" id="apply">
+    {% csrf_token %}
 
-          <div class="flex items-baseline space-x-2">
-              <select id="domaine" name="domaine" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                {% if not "domaine" in ll_context %}
-                    <option>{% translate "Domaine..." %}</option>
-                    <option value="senne">{% translate "Senne" %}</option>
-                    <option value="palangre">{% translate "Palangre" %}</option>
-                {% else %}
-                    <option>{% translate "Domaine..." %}</option>
-                    <option selected value="palangre">{{ll_context.domaine}}</option>
-                    <option value="senne">{% translate "Senne" %}</option>
-                {% endif %}
-            </select>
+    <div class="flex items-baseline space-x-2">
+        <!-- Domaine selection -->
+        <select id="domaine" name="domaine" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+            <option {% if not ll_context or not ll_context.domaine %}selected{% endif %}>{% translate "Domaine..." %}</option>
+            <option value="senne" {% if ll_context and ll_context.domaine == "senne" %}selected{% endif %}>{% translate "Senne" %}</option>
+            <option value="palangre" {% if ll_context and ll_context.domaine == "palangre" %}selected{% endif %}>{% translate "Palangre" %}</option>
+        </select>
 
-            <select id="programme" name="programme" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                <option class="after">{% translate "Programmes du domaine..." %}</option>
-            </select>
+        <!-- Programme selection -->
+        <select id="programme" name="programme" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+            <option class="after">{% translate "Programmes du domaine..." %}</option>
+        </select>
 
-            <select id="ocean" name="ocean" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                <option>{% translate "Ocean..." %}</option>
-                {% for key, value in ocean_data.items %}
+        <!-- Ocean selection -->
+        <select id="ocean" name="ocean" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+            <option value="">{% translate "Ocean..." %}</option>
+            {% for key, value in ocean_data.items %}
+                <option value="{{ key }}" {% if ll_context.ocean == key %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select><br>
 
-                    {% if not "oceantopiaid" in ll_context %}
-                        <option value="{{ key }}">{{ value }}</option>
-                    {% else %}
-                        {% if ll_context.oceantopiaid == key %}
-                            <option selected value="{{ key }}">{{ value }}</option>
-                        {% else %}
-                            <option value="{{ key }}">{{ value }}</option>
-                        {% endif %}
-                    {% endif %}
+        <!-- Type de document selection -->
+        <select id="ty_doc" name="ty_doc" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+            <option class="after">{% translate "Types de document..." %}</option>
+        </select><br>
 
-                {% endfor %}
-            </select><br>
-            <select id="ty_doc" name="ty_doc" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                <option class="after">{% translate "Types de document..." %}</option>
-            </select><br>
-              <button id="btn_apply" type="submit" name="appliquer" title="Submit" class="w-full px-4 py-3 text-center rounded-xl transition bg-blue-600 hover:bg-blue-900 active:bg-blue-900 focus:bg-blue-900">
-                  <span class="text-white font-semibold">
-                      {% translate "Appliquer" %}
-                  </span>
-              </button>
-          </div>
-        </form>
+        <!-- Submit Button -->
+        <button id="btn_apply" type="submit" name="appliquer" title="Submit" class="w-full px-4 py-3 text-center rounded-xl transition bg-blue-600 hover:bg-blue-900 active:bg-blue-900 focus:bg-blue-900">
+            <span class="text-white font-semibold">
+                {% translate "Appliquer" %}
+            </span>
+        </button>
+    </div>
+</form>
+
 
         <br>
 

@@ -18,10 +18,10 @@ Home
       <div class="hidden md:block">
         <div class="ml-10 flex items-baseline space-x-4">
           <!-- Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" -->
-          <a href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
+          <a id="dashboard_tab" href="#" class="bg-gray-900 text-white px-3 py-2 rounded-md text-sm font-medium"
             aria-current="page"> {% translate "Tableau de bord" %} </a>
 
-          <a href="{% url 'logbook' %}"
+          <a id="logbook_tab" href="{% url 'logbook' %}"
             class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Logbook</a>
         </div>
       </div>
@@ -34,7 +34,7 @@ Home
             class="h-4 w-4 rounded-full {% if current_profile %}bg-green-500{% else %}bg-red-500{% endif %} mr-2"></div>
           <span class="text-gray-300 text-sm font-medium">
             {{ request.user.username }}
-            ({% if current_profile %}{{ current_profile }}{% else %}null{% endif %})
+            ({% if current_profile %}{{ current_profile }}{% else %}Aucun serveur connecté{% endif %})
           </span>
         </div>
 
@@ -68,7 +68,9 @@ Home
 
 <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl font-bold text-gray-900"> {% translate "Tableau de bord" %} </h1>
-   
+    <div id="processing_message" class="text-lg text-center font-bold hidden animate-blink">
+      <p>Veuillez patienter pendant le traitement...</p>
+  </div>
   <div class = "flex justify-end items-center ml-6">
 
     {% get_current_language as CURRENT_LANGUAGE %}
@@ -79,7 +81,7 @@ Home
       <ul class="languages flex space-x-2">
       {% for language in languages %}
         <li>
-        <a href="/{{ language.code }}/"
+        <a id="language_{{ language.code }}" href="/{{ language.code }}/"
           {% if language.code == CURRENT_LANGUAGE %} class="active text-blue-600"{% endif %}>
           <img src="/static/assets/img/{{ language.code }}_flag.png" alt="{{ language.name_local }}"
                         class="w-6 h-auto inline-block">
@@ -109,48 +111,76 @@ Home
               h4{ color:red}
             </style>
             <h4 class="font-semibold">{% if message %}{{ message }}{% endif %}</h4>
-
             <form id="connect_form" method="post" action="{% url 'connect_profile' %}" class="space-y-4">
-        {% csrf_token %}
-        <div>
-            <label for="profile" class="block font-medium text-gray-700">
-                 {% translate "Sélectionnez un profil de connexion" %}
-            </label>
-            <select name="profile" id="profile" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
-                 <option value="-1">---------------------------------------</option>
-                 {% for profile in profiles %}
-                     <option value="{{ profile.id }}">{{ profile.name }}</option>
-                 {% endfor %}
-            </select>
-        </div>
-        <div>
-            <button id="connect_button" type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-200 font-medium rounded-lg text-sm px-4 py-2 inline-flex items-center">
-                <div id="spinner_connect" class="spinner_info" hidden role="status">
-                    <svg aria-hidden="true" class="w-5 h-5 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                    </svg>
-                    <span class="sr-only">Loading...</span>
+                {% csrf_token %}
+                <div>
+                    <label for="profile" class="block font-medium text-gray-700">
+                        {% translate "Sélectionnez un profil de connexion" %}
+                    </label>
+                    <select name="profile" id="profile" class="w-full px-4 py-3 ring-1 ring-cyan-700 rounded-xl">
+                        <!-- Option par défaut -->
+                        <option value="-1" {% if not current_profile %}selected{% endif %}>
+                            ---------------------------------------
+                        </option>
+                        <!-- Liste des profils -->
+                        {% for profile in profiles %}
+                            <option value="{{ profile.id }}" {% if current_profile and current_profile.id == profile.id %}selected{% endif %}>
+                                {{ profile.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% translate "Connect" %}
-            </button>
+                <div>
+                    <button id="connect_button" type="submit" class="text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:outline-none focus:ring-indigo-200 font-medium rounded-lg text-sm px-4 py-2 inline-flex items-center">
+                        <div id="spinner_connect" class="spinner_info" hidden role="status">
+                            <svg aria-hidden="true" class="w-5 h-5 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-white" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                            </svg>
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                        {% translate "Connect" %}
+                    </button>
+                </div>
+            </form>
+            <script>
+                document.getElementById('connect_form').addEventListener('submit', function(e) {
+                    // Activer le spinner
+                    const spinner = document.getElementById('spinner_connect');
+                    const connectButton = document.getElementById('connect_button');
+                    spinner.hidden = false;
+                    connectButton.disabled = true;
+
+                    // Désactiver les autres boutons
+                    document.getElementById('button_start_import').classList.add('opacity-50', 'pointer-events-none');
+                    document.querySelectorAll('.languages a').forEach(button => {
+                        button.classList.add('opacity-50', 'pointer-events-none');
+                    });
+                    document.getElementById('dashboard_tab').classList.add('opacity-50', 'pointer-events-none');
+                    document.getElementById('logbook_tab').classList.add('opacity-50', 'pointer-events-none');
+
+                    // Afficher le message dans la header page
+                    const processingMessage = document.getElementById('processing_message');
+                    processingMessage.classList.remove('hidden');
+                });
+            </script>
+
+            <style>
+                /* Animation pour le texte qui clignote */
+                @keyframes blink {
+                    0%, 100% { opacity: 1; color: #16a34a; }
+                    50% { opacity: 0; } /* Disparaît temporairement */
+                }
+                .animate-blink {
+                    animation: blink 1.5s infinite;
+                }
+            </style>
+
+
+
+
         </div>
-    </form>
-        </div>
 
-        <script>
-
-          document.getElementById('connect_form').addEventListener('submit', function(e) {
-        const connectButton = document.getElementById('connect_button');
-        const spinner = document.getElementById('spinner_connect');
-
-        // Affiche le spinner et désactive le bouton
-        spinner.hidden = false;
-        connectButton.disabled = true;
-
-    });
-
-        </script>
 
       </div>
 
@@ -208,7 +238,7 @@ Home
                 </div>
               </div>
 
-              <a href="{% url 'logbook' %}"
+              <a id="button_start_import" href="{% url 'logbook' %}"
                 class="inline-block text-center bg-indigo-600 border border-transparent rounded-md py-3 px-8 font-medium text-white hover:bg-indigo-700">
                 {% translate "Commencer l'importation" %}</a>
             </div>
