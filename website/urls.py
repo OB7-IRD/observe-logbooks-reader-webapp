@@ -16,7 +16,7 @@ Including another URLconf
 import django_browser_reload
 from django.contrib import admin
 from django.urls import path, include
-from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData, logbook_del_files
+from webapps.views import auth_login, deconnexion, home, logbook, register, file_upload_view, update_data, getProgram, postProg_info, domaineSelect, sendData, logbook_del_files, connect_profile
 from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
@@ -34,7 +34,8 @@ urlpatterns += i18n_patterns(
     path('', home, name="home"),
     path('admin', admin.site.urls),
     path('login', auth_login, name="login"),
-    # path('register', register, name="register"),
+    path('register', register, name="register"),
+    path('connect-profile/', connect_profile, name='connect_profile'),
     path('logout', deconnexion, name="logout"),
     path('logbook/', logbook, name="logbook"),
     path('logbook/upload', file_upload_view, name="upload_view"),

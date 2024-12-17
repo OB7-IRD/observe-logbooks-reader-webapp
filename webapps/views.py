@@ -9,47 +9,31 @@ from api_traitement import api_functions
 from api_traitement.apiFunctions import *
 from api_traitement.api_functions import *
 # from palangre_syc import api
-from .form import UserForm
+
 from django.contrib import messages
-from .models import User
+from .form import LTOUserForm
+
 import json
 from zipfile import ZipFile
 import os
 from django.utils.translation import gettext as _
 
+from django.shortcuts import render, redirect
+from .models import ConnectionProfile
+
 # Create your views here.
 def register(request):
-    form = UserForm()
+    form = LTOUserForm()
     if request.method == "POST":
-        form = UserForm(request.POST)
+        form = LTOUserForm(request.POST)
         if form.is_valid():
             form.save()
-            #messages.success(request, " Vous etes enregistrer")
+            messages.success(request, "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.")
             return redirect("login")
         else:
-            messages.error(request, form.errors)
+            messages.error(request, "Erreur lors de l'inscription. Veuillez vérifier les informations fournies.")
     return render(request, "register.html", {"form": form})
 
-# def reloadToken(req, username, password):
-
-#     user = authenticate(req, username=username,  password=password)
-#     data_user = User.objects.get(username=user)
-
-#     base_url = data_user.url
-    
-#     print(data_user.database)
-#     if data_user.database == 'test' :
-#         data_user.username = 'technicienweb'
-                
-#     data_user_connect = {
-#         "config.login": data_user.username,
-#         "config.login": data_user.username,
-#         "config.password": password,
-#         "config.databaseName": data_user.database,
-#         "referentialLocale": data_user.ref_language,
-#     }
-
-#     return getToken(base_url, data_user_connect)
 
 def search_in(request, allData, search="Ocean"):
     """Fonction permet d'avoir à partir des données de references les oceans ou les programmes
@@ -89,77 +73,26 @@ def search_in(request, allData, search="Ocean"):
 def auth_login(request):
     message = ""
     if request.method == "POST":
-        basename = request.POST['base']
-        username = request.POST['username']
+        user_login = request.POST['username']
         password = request.POST['password']
-
-        request.session['username'] = username
-        request.session['password'] = password
         
-        user = authenticate(request, username=username,  password=password)
+        user = authenticate(request, username=user_login, password=password)
 
-        print("="*20, "auth_login", "="*20)
-        # print(user)
-
-        if user is not None and user.is_active:
-            # print(user)
-            data_user = User.objects.get(username=user)
-            print("_"*20, "user is not None and user.is_active", "_"*20)
-                        
-            if basename == data_user.basename.lower():
-                token = ""
-                allData = []
-                base_url = data_user.url
-                
-                
-                if basename == 'test-proto.ird.fr' :
-                    data_user.username = 'technicienweb'
-                    request.session['username'] = data_user.username
-                
-                print("_"*20, "base_url", "_"*20)
-                
-                data_user_connect = {
-                    "config.login": data_user.username,
-                    "config.password": password,
-                    "config.databaseName": data_user.database,
-                    "referentialLocale": data_user.ref_language,
+        if user is not None:
+            # Vérifier si le compte a été validé par l'administrateur
+            if user.account_valid:
+                login(request, user)  # L'utilisateur est connecté
+                datat_0c_Pr = {
+                    "ocean": None,
+                    "program" : None
                 }
-
-
-                try:
-                    # token = "ok"
-                    token = api_functions.get_token(base_url, data_user_connect)
-                    print("Token: ", token)
-                    # print('baseURL: ', base_url)
-                    allData = load_data(token=token, base_url=base_url)
-                    # if allData == []:
-                    #     print("="*20, "if allData == []", "="*20)
-
-                except:
-                    pass
-            
-                if (token != "") and (allData != []):
-                    login(request, user)
-                    request.session['token'] = token
-                    request.session['base_url'] = base_url
-                    
-                    print("="*20, "if (token != "") and (allData is not [])", "="*20)
-                    datat_0c_Pr = {
-                        # "ocean": search_in(request, allData),
-                        "ocean": None,
-                        # "senne" : allData['seine'], "palangre" : allData['longline']
-                        "program" : allData["Program"]
-                    }
-                    request.session['data_Oc_Pr'] = datat_0c_Pr
-                    request.session['table_files'] = []
-                    # allData = load_data(token, base_url)
-                    return redirect("home")
-                else:
-                    message = _("Impossible de se connecter au serveur verifier la connexion")
+                request.session['current_profile_id'] = -1
+                request.session['data_Oc_Pr'] = datat_0c_Pr
+                return redirect('home')  # Rediriger vers la page d'accueil ou une autre page définie
             else:
-                message = _("serveur incorrect")
+                message = _("Votre compte n'a pas encore été validé par l'administrateur.")
         else:
-            message = _("username ou mot de passe incorrect")
+            message = _("Nom d'utilisateur ou mot de passe incorrect")
 
     return render(request, "login.html", {"message": message})
 
@@ -168,8 +101,9 @@ def auth_login(request):
 def update_data(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = api_functions.reload_token(request, username, password)
+    database = request.session.get('database')
     base_url = request.session.get('base_url')
+    token  = api_functions.reload_token(username, password, base_url, database)
 
     allData = load_data(token=token, base_url=base_url, forceUpdate=True)
     
@@ -192,7 +126,9 @@ def deconnexion(request):
     request.session['token'] = None
     request.session['username'] = None
     request.session['password'] = None
+    request.session['database'] = None
     request.session['context'] = None
+    request.session['current_profile'] = None
 
     return redirect("login")
 
@@ -200,13 +136,123 @@ def deconnexion(request):
 @login_required
 def home(request):
     request.session['language'] = request.LANGUAGE_CODE
-    return render(request, "home.html")
+    # Récupérer les profils de connexion liés à l'utilisateur connecté
+    profiles = request.user.connection_profiles.all()
+
+    # Récupérer l'ID du profil actuellement sélectionné depuis la session
+    current_profile_id = request.session.get('current_profile_id')
+
+    # Si un profil est sélectionné, récupérer les détails du profil
+    current_profile = None
+    if current_profile_id:
+        try:
+            current_profile = ConnectionProfile.objects.get(id=current_profile_id, users=request.user)
+        except ConnectionProfile.DoesNotExist:
+            current_profile = None
+
+    # print("request_user : ", request.user.email) # Pour Clementine
+
+    # Récupérer les messages de la session (si présent)
+    message = request.session.get('message_home')
+
+    return render(request, 'home.html', {
+        'profiles': profiles,
+        'current_profile': current_profile,
+        'message': message
+    })
+
+@login_required
+def connect_profile(request):
+
+    if request.method == 'POST':
+        profile_id = request.POST.get('profile')
+
+        token = ""
+        try:
+            # Récupérer le profil sélectionné
+            profile = ConnectionProfile.objects.get(id=profile_id, users=request.user)
+
+            # Stocker les informations du profil
+            data_user_connect = {
+                "config.login": profile.login,
+                "config.password": profile.password,
+                "config.databaseName": profile.database_alias,
+                "referentialLocale": "FR",
+            }
+            base_url = profile.url
+
+            try:
+                token = api_functions.get_token(base_url, data_user_connect)
+                print("Token: ", token)
+
+                current_profile_id = request.session.get('current_profile_id')
+                print(" profile_id : ", profile_id)
+                print(" current_profile_id : ", current_profile_id)
+
+                if profile_id != current_profile_id:
+                    print("="*20," Changement des données de references ", "="*20)
+                    allData = load_data(token=token, base_url=base_url, forceUpdate=True)
+                else:
+                    print("="*20," Pas de changement de profil ", "="*20)
+                    allData = load_data(token=token, base_url=base_url)
+
+            except:
+                pass
+
+            if (token != "") and (allData != []):
+                request.session['token'] = token
+                request.session['base_url'] = base_url
+                request.session['username'] = profile.login
+                request.session['password'] = profile.password
+                request.session['database'] = profile.database_alias
+
+                request.session['current_profile_id'] = profile_id
+
+                # print("="*20, "if (token != "") and (allData is not [])", "="*20)
+                datat_0c_Pr = {
+                    "ocean": None,
+                    "program" : allData["Program"]
+                }
+                request.session['data_Oc_Pr'] = datat_0c_Pr
+                request.session['table_files'] = []
+
+                request.session['message_home'] = ""
+
+                return redirect("home")
+            else:
+                request.session['message_home'] = _("Impossible de se connecter au serveur verifier la connexion")
+                return redirect('home')
+        except ConnectionProfile.DoesNotExist:
+            # Si le profile n'existe pas ou n'est pas associé à l'utilisateur
+            request.session['base_url'] = None
+            request.session['username'] = None
+            request.session['password'] = None
+            request.session['database'] = None
+            datat_0c_Pr = {
+                "ocean": None,
+                "program" : None
+            }
+            request.session['data_Oc_Pr'] = datat_0c_Pr
+            request.session['message_home'] = _("Pas de profile pour l'instant ou n'est pas associé à l'utilisateur")
+            return redirect('home')
+    return redirect('home')
 
 
 @login_required
 def logbook(request):
     datat_0c_Pr = request.session.get('data_Oc_Pr')
-    ll_context = request.session.get('context')
+    apply_conf  = request.session.get('dico_config')
+
+    # Récupérer l'ID du profil actuellement sélectionné depuis la session
+    current_profile_id = request.session.get('current_profile_id')
+
+    # Si un profil est sélectionné, récupérer les détails du profil
+    current_profile = None
+    if current_profile_id:
+        try:
+            current_profile = ConnectionProfile.objects.get(id=current_profile_id, users=request.user)
+        except ConnectionProfile.DoesNotExist:
+            current_profile = None
 
     try:
         file_name = "media/data/" + os.listdir('media/data')[0]
@@ -221,142 +267,141 @@ def logbook(request):
     except:
         pass
 
-    print(datat_0c_Pr['program'].keys())
-    print("+"*20, "logbook datat_Oc_Pr", "+"*20) 
-    # print(datat_0c_Pr)
-    # print(datat_0c_Pr.keys())
+    if datat_0c_Pr['program'] != None:
+        print(datat_0c_Pr['program'].keys())
+        print("+"*20, "logbook datat_Oc_Pr", "+"*20)
 
-    apply_conf  = request.session.get('dico_config')
+        if request.POST.get('submit'):
 
-    # if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            message = tags = ''
+            logbooks = os.listdir("media/logbooks")
 
-    if request.POST.get('submit'):
-        
-        message = tags = ''
-        logbooks = os.listdir("media/logbooks")
+            #Si validé sans fichier excel televersé
+            if logbooks == []:
+                print("="*10, "Validé sans fichier excel", "="*10)
+                msg = _("Merci de déposer un fichier excel avant de lancer l'extraction de données !")
+                messages.error(request, msg)
+                tags = "error2"
 
-        #Si validé sans fichier excel televersé
-        if logbooks == []:
-            print("="*10, "Validé sans fichier excel", "="*10)
-            msg = _("Merci de déposer un fichier excel avant de lancer l'extraction de données !")
-            messages.error(request, msg)
-            tags = "error2"
+                return render(request, "logbook.html",{
+                    "tags": tags,
+                    "alert_message": _("Merci de téléverser un fichier excel"),
+                    "ocean_data": datat_0c_Pr["ocean"],
+                    "ll_context" : json.dumps(apply_conf),
+                    'current_profile': current_profile,
+                })
+            print(apply_conf)
+            # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
+            if apply_conf["domaine"] == "palangre":
+                logbooks = os.listdir("media/logbooks")
+                # print("="*20, "logbook kwargs", "="*20)
+                # print(logbooks)
+                # print(apply_conf)
+
+                url = reverse('presenting previous trip')
+                url = f"{url}?selected_file={logbooks}"
+                return redirect(url)
+
+            # sinon on a un fichier senne
+            if 0 < len(logbooks) <= 1:
+                if apply_conf["ty_doc"] == "ps":
+                    info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v21")
+                if apply_conf["ty_doc"] == "ps2":
+                    info_Navir, data_logbook, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v23")
+
+                # Suprimer le ou les fichiers data logbooks
+                os.remove("media/logbooks/"+ logbooks[0])
+
+            if message == '' and len(logbooks) > 0:
+                 print("len log ", len(logbooks), " messa : ", message)
+                 try:
+                     file_name = "media/data/" + os.listdir('media/data')[0]
+                     # Opening JSON file
+                     f = open(file_name, encoding="utf8")
+                     # returns JSON object as  a dictionary
+                     allData = json.load(f)
+
+                     if apply_conf["ty_doc"] == "ps":
+                        allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
+                     if apply_conf["ty_doc"] == "ps2":
+                        allMessages, content_json = build_trip_v23(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'])
+
+                     if os.path.exists("media/temporary_files/content_json.json"):
+                         os.remove("media/temporary_files/content_json.json")
+                         # creer le nouveau
+                         file_name = "media/temporary_files/content_json.json"
+
+                         with open(file_name, 'w', encoding='utf-8') as f:
+                             f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+                     else:
+                         # creer le nouveau content
+                         file_name = "media/temporary_files/content_json.json"
+
+                         with open(file_name, 'w', encoding='utf-8') as f:
+                             f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
+
+                     if allMessages == []:
+                         messages.info(request, _("Extration des données avec succès vous pouvez les soumettre maintenant."))
+                     else:
+                         for msg in allMessages:
+                             messages.error(request, msg)
+                             tags = "error"
+
+                         # Mettre les messages d'erreurs dans un fichier log
+                         file_log_name = "media/log/log.txt"
+
+                         with open(file_log_name, 'w', encoding='utf-8') as f_log:
+                             log_mess = "\r\r".join(allMessages)
+                             f_log.write(log_mess)
+                 except UnboundLocalError:
+                     messages.error(request, _("Veuillez recharger la page et reprendre votre opération SVP."))
+                     tags = "error2"
+
+                     logbooks = os.listdir("media/logbooks")
+
+                     for logbook in logbooks:
+                         os.remove("media/logbooks/"+ logbook)
+
+            else:
+                messages.error(request, message)
+                tags = "error"
 
             return render(request, "logbook.html",{
                 "tags": tags,
-                "alert_message": _("Merci de téléverser un fichier excel"),
                 "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context
+                "ll_context" : json.dumps(apply_conf),
+                'current_profile': current_profile,
             })
-        print(apply_conf)
-        # Si le fichier pour les palangre, alors on renvoit vers 'palagre_syc'
-        if apply_conf["domaine"] == "palangre":
-            logbooks = os.listdir("media/logbooks")
-            # print("="*20, "logbook kwargs", "="*20)
-            # print(logbooks)
-            # print(apply_conf)
 
-            url = reverse('presenting previous trip')
-            url = f"{url}?selected_file={logbooks}"          
-            return redirect(url) 
+        # else :
+        if apply_conf is not None :
+            print("="*20, "apply_conf is not None", "="*20)
 
-        # sinon on a un fichier senne
-        if 0 < len(logbooks) <= 1:
-            if apply_conf["ty_doc"] == "ps":
-                info_Navir, data_logbook, data_observateur, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v21")
-            if apply_conf["ty_doc"] == "ps2":
-                info_Navir, data_logbook, message = read_data("media/logbooks/"+ logbooks[0], type_doc="v23")
+            print(apply_conf)
+            # print(datat_0c_Pr['program'])
 
-            # Suprimer le ou les fichiers data logbooks
-            os.remove("media/logbooks/"+ logbooks[0])
-            # print(data_observateur)
-
-        if message == '' and len(logbooks) > 0:
-             print("len log ", len(logbooks), " messa : ", message)
-             try:
-                 file_name = "media/data/" + os.listdir('media/data')[0]
-                 # Opening JSON file
-                 f = open(file_name, encoding="utf8")
-                 # returns JSON object as  a dictionary
-                 allData = json.load(f)
-
-                 if apply_conf["ty_doc"] == "ps":
-                    allMessages, content_json = build_trip(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'], ob=data_observateur)
-                 if apply_conf["ty_doc"] == "ps2":
-                    allMessages, content_json = build_trip_v23(allData=allData, info_bat=info_Navir, data_log=data_logbook, oce=apply_conf['ocean'], prg=apply_conf['programme'])
-
-                 if os.path.exists("media/temporary_files/content_json.json"):
-                     os.remove("media/temporary_files/content_json.json")
-                     # creer le nouveau 
-                     file_name = "media/temporary_files/content_json.json"
-
-                     with open(file_name, 'w', encoding='utf-8') as f:
-                         f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
-                 else:
-                     # creer le nouveau content
-                     file_name = "media/temporary_files/content_json.json"
-
-                     with open(file_name, 'w', encoding='utf-8') as f:
-                         f.write(json.dumps(content_json, ensure_ascii=False, indent=4))
-
-                 if allMessages == []:
-                     messages.info(request, _("Extration des données avec succès vous pouvez les soumettre maintenant."))
-                 else:
-                     for msg in allMessages:
-                         messages.error(request, msg)
-                         tags = "error"
-
-                     # Mettre les messages d'erreurs dans un fichier log
-                     file_log_name = "media/log/log.txt"
-
-                     with open(file_log_name, 'w', encoding='utf-8') as f_log:
-                         log_mess = "\r\r".join(allMessages)
-                         f_log.write(log_mess)
-             except UnboundLocalError:
-                 messages.error(request, _("Veuillez recharger la page et reprendre votre opération SVP."))
-                 tags = "error2"
-
-                 logbooks = os.listdir("media/logbooks")
-
-                 for logbook in logbooks:
-                     os.remove("media/logbooks/"+ logbook)
-
-        else:
-            messages.error(request, message)
-            tags = "error"
-
-        return render(request, "logbook.html",{
-            "tags": tags,
-            "ocean_data": datat_0c_Pr["ocean"],
-            "ll_context" : ll_context
-        })
-
-    # else : 
-    if apply_conf is not None :
-        print("="*20, "apply_conf is not None", "="*20)
-
-        # print(apply_conf)
-        # print(datat_0c_Pr['program'])
-
-        if apply_conf['domaine'] == 'palangre' :
-            return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['longline'],
-                "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context
-            })
-        elif apply_conf['domaine'] == 'senne' : 
-            return render(request, "logbook.html", context={
-                "program_data": datat_0c_Pr['program']['seine'],
-                "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context
-            })
+            if apply_conf['domaine'] == 'palangre' :
+                return render(request, "logbook.html", context={
+                    "program_data": datat_0c_Pr['program']['longline'],
+                    "ocean_data": datat_0c_Pr["ocean"],
+                    "ll_context" : json.dumps(apply_conf),
+                    'current_profile': current_profile,
+                })
+            elif apply_conf['domaine'] == 'senne' :
+                return render(request, "logbook.html", context={
+                    "program_data": datat_0c_Pr['program']['seine'],
+                    "ocean_data": datat_0c_Pr["ocean"],
+                    "ll_context" : json.dumps(apply_conf),
+                    'current_profile': current_profile,
+                })
     # print("="*20, "apply_conf is None", "="*20)
     # print(apply_conf)
     return render(request, "logbook.html", context={
                 # "program_data": ll_programs,
                 "program_data": datat_0c_Pr["program"],
                 "ocean_data": datat_0c_Pr["ocean"],
-                "ll_context" : ll_context
+                "ll_context" : json.dumps(apply_conf),
+                'current_profile': current_profile,
             })
 
 @login_required
@@ -402,7 +447,6 @@ def postProg_info(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
 
         request.session['dico_config'] = {
-            # 'langue': request.POST["langue"],
             'domaine': request.POST["domaine"],
             'ocean': request.POST["ocean"],
             'programme': request.POST["programme"],
@@ -443,8 +487,10 @@ def domaineSelect(request):
 def sendData(request):
     username = request.session.get('username')
     password = request.session.get('password')
-    token  = api_functions.reload_token(request, username, password)
     base_url = request.session.get('base_url')
+    database = request.session.get('database')
+
+    token  = api_functions.reload_token(username, password, base_url, database)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         file_name = "media/temporary_files/content_json.json"

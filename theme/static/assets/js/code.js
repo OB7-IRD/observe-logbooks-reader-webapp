@@ -1,4 +1,5 @@
 Dropzone.autoDiscover = false
+
 $(document).ready(function(){
 
     /*
@@ -37,31 +38,34 @@ $(document).ready(function(){
         });
     };
 
-    let scriptElement;
+    // Récupération des données du contexte via le script JSON intégré
+    let scriptElement = document.getElementById('context-data');
+    let ll_context = null;
     try {
-        // Récupérer l'élément script par son ID
-        scriptElement = document.getElementById('context-data');
-
-
-        // Extraire le contenu JSON à partir de l'attribut "text" ou "textContent"
-        var rawData = scriptElement.text || scriptElement.textContent;
-
-        // Parser le texte en un objet JSON
-        var ll_context = JSON.parse(rawData);
+        let rawData = scriptElement.text || scriptElement.textContent;
+        ll_context = JSON.parse(rawData);
 
         // Vérifiez si l'élément existe
         if (ll_context) {
+            if (ll_context.ocean) {
+                $("#ocean").val(ll_context.ocean); // Applique la valeur sélectionnée pour l'océan
+            }
+            if (ll_context.domaine) {
+                $("#domaine").val(ll_context.domaine);
+            }
             if (ll_context.domaine == "palangre") {
+                console.log(ll_context.domaine)
                 $.ajax({
                     url: '/palangre',
                     type: 'GET',
+                    dataType: "json",
                     success: function(response) {
                         var option = '';
                         for (var i = 0; i < response.dataPro.id.length; i++) {
-                            if (!ll_context.programtopiaid) {
+                            if (!ll_context.programme) {
                                 option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
                             } else {
-                                if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                if (ll_context.programme == response.dataPro.id[i]) {
                                     $("#apply select[name='ty_doc']").find('.after').after('<option selected value="ll">Logbook SFA industriel</option>');
                                     option += '<option selected value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
                                 } else {
@@ -80,13 +84,14 @@ $(document).ready(function(){
                 $.ajax({
                     url: '/senne',
                     type: 'GET',
+                    dataType: "json",
                     success: function(response) {
                         var option = '';
                         for (var i = 0; i < response.dataPro.id.length; i++) {
-                            if (!ll_context.programtopiaid) {
+                            if (!ll_context.programme) {
                                 option += '<option value="' + response.dataPro.id[i] + '">' + response.dataPro.value[i] + '</option>';
                             } else {
-                                if (ll_context.programtopiaid == response.dataPro.id[i]) {
+                                if (ll_context.programme == response.dataPro.id[i]) {
                                     $("#apply select[name='ty_doc']").find('.after').after('<option selected class="orth" value="ps">Logbook ORTHONGEL v21</option>');
                                     $("#apply select[name='ty_doc']").find('.orth').after('<option class="orth23" value="ps2">Logbook ORTHONGEL v23</option>');
                                     $("#apply select[name='ty_doc']").find('.orth23').after('<option class="ers" value="ers">Données ERS</option>');
