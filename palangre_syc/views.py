@@ -1,7 +1,7 @@
 import time
 
 import os
-import re
+# import re
 import json
 # import datetime
 import warnings
@@ -26,9 +26,31 @@ from palangre_syc import json_construction
 from api_traitement import api_functions, common_functions
 # from webapps.models import User
 
-import datetime
-
 DIR = "./media/logbooks"
+
+
+# def research_dep(df_donnees_p1, allData, startDate):
+#     """
+#     Fonction qui recherche si 'dep' est présent dans la case à la date donnée par l'utilisateur
+
+#     Args:
+#         df_donnees_p1 (dataframe): _description_
+#         allData (dataframe): données de références
+#         startDate (date): saisie par l'utilisateur quand on créé une marée
+
+#     Returns:
+#         bool: True si la date saisie correspond à un departure, False si non
+#     """
+#     data = excel_extractions.extract_time(df_donnees=df_donnees_p1, allData=allData)
+#     # print("#"*20, "research_dep function", "#"*20)
+#     day = startDate[8:10] 
+#     dep_rows = data[data['Time'].str.lower().str.contains('dep', case=False, na=False)]
+    
+#     if not dep_rows.empty:
+#         dep_dates = dep_rows['Day']
+#         return str(dep_dates.values[0]) in str(day)
+#     else:
+#         return False
 
 
 def get_previous_trip_infos(request, token, df_donnees_p1, allData):
@@ -45,6 +67,7 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     """
     
     base_url = request.session.get('base_url')
+    # base_url = 'https://observe.ob7.ird.fr/observeweb/api/public'
 
     # les topiaid envoyés au WS doivent être avec des '-' à la place des '#'
     vessel_topiaid = json_construction.get_vessel_topiaid(df_donnees_p1, allData)
@@ -62,6 +85,7 @@ def get_previous_trip_infos(request, token, df_donnees_p1, allData):
     parsed_previous_trip = json.loads(previous_trip.decode('utf-8'))
     if parsed_previous_trip['content'] != []:
         # Prévoir le cas ou le vessel n'a pas fait de trip avant
+        print("pour ce programme et ce vessel on a : ", len(parsed_previous_trip['content']), "trip enregistrés")
         
         df_trip = pd.DataFrame(columns=["triptopiaid", "startDate", "depPort_topiaid", "depPort", "endDate", "endPort_topiaid", "endPort", "ocean"])
 
@@ -190,7 +214,7 @@ def presenting_previous_trip(request):
                                     domaine=None)
 
     context = dict(domaine=apply_conf['domaine'], program=programme, programtopiaid=apply_conf['programme'],
-                    ocean=ocean, oceantopiaid=apply_conf['ocean'])
+                   ocean=ocean, oceantopiaid=apply_conf['ocean'])
 
     if selected_file is not None and apply_conf is not None:
 
@@ -198,6 +222,9 @@ def presenting_previous_trip(request):
         logbook_file_path = DIR + "/" + file_name
 
         request.session['logbook_file_path'] = logbook_file_path
+
+        print("="*20, "presenting_previous_trip selected_file", "="*20)
+        print(logbook_file_path)
 
         df_donnees_p1 = common_functions.read_excel(logbook_file_path, 1)
 
@@ -207,7 +234,9 @@ def presenting_previous_trip(request):
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
-            token  = api_functions.reload_token(request, username, password)
+            database = request.session.get('database')
+            # print(username, password)
+            token = api_functions.reload_token(username, password, base_url, database)
             request.session['token'] = token
 
         try :
@@ -223,11 +252,14 @@ def presenting_previous_trip(request):
                 df_previous_trip = df_previous_trip.to_dict("index")
                 context.update({'df_previous': df_previous_trip,})
                 
+                
+                        
         except :
             context.update({'df_previous': None})
             
     request.session['context'] = context
     print("---"*50, "context saved")
+    print(context)
     return render(request, 'LL_previoustrippage.html', context)
 
 
@@ -257,7 +289,8 @@ def checking_logbook(request):
     if not api_functions.is_valid(base_url, token):
         username = request.session.get('username')
         password = request.session.get('password')
-        token  = api_functions.reload_token(request, username, password)
+        database = request.session.get('database')
+        token  = api_functions.reload_token(username, password, base_url, database)
         request.session['token'] = token
 
     base_url = request.session.get('base_url')
@@ -266,6 +299,7 @@ def checking_logbook(request):
     if request.method == 'POST':
             
         apply_conf = request.session.get('dico_config')
+        # print("apply_conf : ", apply_conf)
         continuetrip = request.POST.get('continuetrip')
         newtrip = request.POST.get('newtrip')
         context = request.session.get('context')
@@ -312,15 +346,6 @@ def checking_logbook(request):
             df_fishing_effort_month = df_fishing_effort
             df_fishes_month = df_fishes
             df_bycatch_month = df_bycatch
-            
-        count = 0
-        port_mess = None
-        while count < len(df_time_month)-1:
-            count = count + 1
-            if re.findall("port", df_time_month['Time'][count].lower()):
-                port_mess = "warning-port"
-            else:
-                port_mess = None
         
         df_activity = pd.concat([df_fishing_effort_month.loc[:,'Day'], df_position, df_time_month.loc[:, 'Time'], 
                                     df_temperature_month,
@@ -331,7 +356,7 @@ def checking_logbook(request):
 
         list_ports = common_functions.get_list_harbours(allData)
         
-        presenting_logbook = {
+        data_to_homepage = {
             'df_vessel': df_vessel,
             'df_cruise': df_cruise,
             'list_ports': list_ports,
@@ -343,11 +368,9 @@ def checking_logbook(request):
             'df_bait': df_bait,
             'df_position': df_position,
             'df_time': df_time,
-            'df_activity': df_activity,
-            'port_mess': port_mess}
+            'df_activity': df_activity,}
         #_______________________________EXTRACTION DES DONNEES__________________________________
         
-        at_port_checkbox = request.POST.get('atportcheckbox')
         startDate = request.POST.get('startDate')
         depPort = request.POST.get('depPort')
         endDate = request.POST.get('endDate')
@@ -359,22 +382,15 @@ def checking_logbook(request):
         #############################
         # messages d'erreurs
         if df_time_month['Day'][0] != 1:
-            messages.error(request, _("msg-error-day1"))
-            probleme = True
-        #############################
-        
-        #############################
-        # messages d'erreurs si le mois et l'année ne sont pas au bon format
-        if df_date.loc[df_date['Logbook_name'] == 'Month', 'Value'].values[0] == 0 or df_date.loc[df_date['Logbook_name'] == 'Year', 'Value'].values[0] == 0:
-            messages.error(request, _("msg-error-type-date"))
+            messages.error(request, _("L'extraction des données ne semble pas correcte car ne commence pas au jour 1. Veuillez vérifier que le tableau commence ligne 22 sur votre logbook."))
             probleme = True
         #############################
                 
         ######### Si on a rempli les données demandées, on vérifie ce qui a été saisi
         if endDate is not None :
-            # print("+"*50, "phase de validation", "+"*50)
-            # print(context)
-            # print("+"*50, "END phase de validation", "+"*50)
+            print("+"*50, "phase de validation", "+"*50)
+            print(context)
+            print("+"*50, "END phase de validation", "+"*50)
             
             probleme = False
             
@@ -386,32 +402,57 @@ def checking_logbook(request):
             
             #############################
             # messages d'erreurs
-            if (int(context['endDate'][5:7]) != int(logbook_month)):
-                # print(context['endDate'][5:7])
-                # print(int(logbook_month))
+            if (int(context['endDate'][5:7]) + int(context['endDate'][:4])) != (int(logbook_month) + int(logbook_year)):
+                print(int(context['endDate'][5:7]) + int(context['endDate'][:4]), "!= ", int(logbook_month) + int(logbook_year))
                 messages.error(request, _("La date de fin de trip doit être dans le mois. Saisir le dernier jour du mois dans le cas où le trip n'est pas réellement fini."))
                 probleme = True
             #############################
             
             #############################
             # messages d'erreurs
-            # si le materiel de pêche saisi contient des valeurs de type texte
             if isinstance(df_gear, tuple):
-                messages.error(request, _("msg-error-type-gear"))
+                messages.error(request, _("Les informations concernant la longueur du matériel de pêche doivent être des entiers."))
                 probleme = True
             #############################
+            
+            
+            # if context['df_previous'] == None or len(context['df_previous']) != 1:
+            #     # NOUVELLE MAREE
+            #     context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
+            #                     'depPort': depPort,
+            #                     'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
+            #                     'endPort': endPort if endPort != '' else None,
+            #                     'continuetrip': None})
+                
+            #     #############################
+            #     is_dep_match = research_dep(df_donnees_p1, allData, startDate)
+            #     if is_dep_match is False:
+            #         messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
+            #         probleme = True
+            #     #############################
+            
+            # try:
                 
             if context['df_previous'] == None:
                 # NOUVELLE MAREE
-                context.update({'at_port_checkbox': at_port_checkbox, 
-                                'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
+                context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
                                 'continuetrip': None})
+                
+                #############################
+                # is_dep_match = research_dep(df_donnees_p1, allData, startDate)
+                # print(is_dep_match)
+                # if is_dep_match is False:
+                #     messages.warning(request, _("La date de début de marée que vous avez saisie ne semble pas correspondre à une activité 'departure' du logbook. Vérifiez les données."))
+                #     probleme = True
+                #############################
             
             else:
                 # CONTINUE TRIP
+                # context.update({'df_previous' : pd.DataFrame.from_dict(context['df_previous'], orient = 'index')})
+                # context.update({'df_previous' : context['df_previous'], orient = 'index')})
                 
                 with open ('media/temporary_files/previous_trip.json', 'r', encoding='utf-8') as f:
                     json_previoustrip = json.load(f)
@@ -423,40 +464,42 @@ def checking_logbook(request):
                 else:
                     date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
 
+                # print("%"*15, "context start et end Date ", "%"*15)
+                # print(context['df_previous']['endDate'])
                 #############################
                 # messages d'erreurs
                 if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il a déjà été envoyé dans un précédent trip. Merci de vérifier sur l'application"))
                     probleme = True
-                
-                # if the month submitted now is not the previous month
-                date_str = context['df_previous']['endDate']
-                date_obj = datetime.datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%fZ") 
-                logbook_date = datetime.datetime(int(logbook_year), int(logbook_month), 1)
-                previous_month_date = (logbook_date.replace(day=1) - datetime.timedelta(days=1)).replace(day=1)
-                if (date_obj.month, date_obj.year) != (previous_month_date.month, previous_month_date.year):
+
+                elif (int(context['df_previous']['endDate'][5:7]) + int(context['df_previous']['endDate'][:4]) + 1) != (int(logbook_month) + int(logbook_year)):
+                    print(int(context['endDate'][5:7]) + int(context['endDate'][:4]) + 1, "!=", int(logbook_month) + int(logbook_year))
                     probleme = True
-                    messages.warning(request, _("msg-error-not-sequential"))
+                    messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
                 #############################
                                     
-                context.update({'at_port_checkbox': at_port_checkbox,
-                                'startDate': context['df_previous']['startDate'], 
+                context.update({'startDate': context['df_previous']['startDate'], 
                                 'depPort': context['df_previous']['depPort_topiaid'],
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None, 
                                 'continuetrip': 'Continuer cette marée'})
+                print("- 0 -"*30)
+                print(context)
+                print("- 0 -"*30)
+                # voir si faut ajouter un truc qui ré enregistre à la session ? 
 
             if probleme is True:
-                presenting_logbook.update({'programme': context['program'],
+                # on doit ajouter les infos quand meme 
+                data_to_homepage.update({'programme': context['program'],
                                         'ocean': context['ocean'],})
                 
                 if context['df_previous'] is not None : 
-                    presenting_logbook.update({'previous_trip': context['df_previous'],
+                    data_to_homepage.update({'previous_trip': context['df_previous'],
                             'continuetrip': context['continuetrip'],})
-                    # print("ce qui permet de garder les infos :"*5)
-                    # print(presenting_logbook)
+                    print("ce qui permet de garder les infos :"*5)
+                    print(data_to_homepage)
                 
-                return render(request, 'LL_presenting_logbook.html', presenting_logbook)
+                return render(request, 'LL_homepage.html', data_to_homepage)
             
             else :
                 return send_logbook2observe(request)
@@ -569,18 +612,18 @@ def checking_logbook(request):
         print("+"*50, "END A la fin de la fonction", "+"*50)
         request.session['context'] = context
 
-        presenting_logbook.update({
+        data_to_homepage.update({
             'programme': context['program'],
             'ocean': context['ocean'],
             'previous_trip': dico_trip_infos,
             'continuetrip': continuetrip,
         })
-        return render(request, 'LL_presenting_logbook.html', presenting_logbook)
+        return render(request, 'LL_homepage.html', data_to_homepage)
 
     else:
         # Gérer le cas où la méthode HTTP n'est pas POST
         pass
-    return render(request, 'LL_presenting_logbook.html')
+    return render(request, 'LL_homepage.html')
 
 
 def send_logbook2observe(request):
@@ -618,7 +661,8 @@ def send_logbook2observe(request):
         if not api_functions.is_valid(base_url, token):
             username = request.session.get('username')
             password = request.session.get('password')
-            token  = api_functions.reload_token(request, username, password)
+            database = request.session.get('database')
+            token  = api_functions.reload_token(username, password, base_url, database)
             request.session['token'] = token
             
         base_url = request.session.get('base_url')
@@ -660,8 +704,7 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2,
                 allData,
-                start_extraction, end_extraction, context
-                )
+                start_extraction, end_extraction)
 
             print("="*80)
             print("Create Trip")
@@ -674,6 +717,9 @@ def send_logbook2observe(request):
             print("token ::: ", token)
             resultat, code = api_functions.send_trip(token, trip, base_url, route)
             
+            # if len(resultat[0]) > 1:
+            #     resultat = resultat[0][0]
+            
             print("resultats : ", resultat)
             
         else:   
@@ -685,7 +731,7 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2, 
                 allData, 
-                start_extraction, end_extraction, context)
+                start_extraction, end_extraction)
 
             print("="*80)
             print("Update Trip")

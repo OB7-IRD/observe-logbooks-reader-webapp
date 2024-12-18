@@ -16,7 +16,11 @@ from django.utils.html import format_html
 
 from api_traitement.apiFunctions import errorFilter
 from api_traitement.common_functions import serialize, pretty_print
-from webapps.models import User
+
+# from webapps.models import User
+from webapps.models import LTOUser as User
+
+
 from django.utils.translation import gettext as _
 from configuration.conf import TIMEOUT_VALUE
 
@@ -37,6 +41,7 @@ def get_token(base_url, data):
                     }
     Returns:
         token (str)
+        :rtype: object
     """
 
     url = base_url + "/init/open"
@@ -61,32 +66,27 @@ def is_valid(base_url, token):
     return response.status_code == 200
 
 
-def reload_token(request, username, password):
+def reload_token(username, password, base_url, database):
     """ Fonction qui recharge un token
 
     Args:
-        request
         username: identifiant de connexion
         password: mot de passe de connexion
+        base_url: l'url de base du profile
+        database: la base de données pour la connexion
 
     Returns:
         token
     """
 
-    user = authenticate(request, username=username,  password=password)
-    data_user = User.objects.get(username=user)
+    print("user database: ", database)
 
-    base_url = data_user.url
-    
-    print("data_user.database",data_user.database)
-    if data_user.database == 'test' :
-        data_user.username = 'technicienweb'
-                
     data_user_connect = {
-        "config.login": data_user.username,
+        "config.login": username,
         "config.password": password,
-        "config.databaseName": data_user.database,
-        "referentialLocale": data_user.ref_language,
+        "config.databaseName": database,
+        "referentialLocale": "FR",
+        # "referentialLocale": data_user.ref_language,
     }
 
     return get_token(base_url, data_user_connect)
