@@ -23,7 +23,7 @@ class LTOUser(AbstractUser):
 
 # Modèle pour les profils de connexion créés par l'administrateur
 class ConnectionProfile(models.Model):
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, unique=True)  # Champ unique
     url = models.CharField(max_length=512)
     login = models.CharField(max_length=64)
     password = models.CharField(max_length=64)  # Stocké en clair pour une utilisation dans la page d'administration

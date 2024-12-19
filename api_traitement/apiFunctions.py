@@ -603,18 +603,18 @@ def floatingObjectPart(chaine, data, dico, index, perte_act=False):
     # Risque de maillage en surface
     if index == 'obj_flot_risq_mail_en_surf':
         if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-2-3']
-        if ("< 6, 5 cm" in str(chaine).lower()): return dico['1-1-1-2-1']
-        if ("> 6,5 cm" in str(chaine).lower()): return dico['1-1-1-2-2']
+        if ("< 6, 5 cm" in str(chaine).lower()): return dico['1-1-1-2-1-1']
+        if ("> 6,5 cm" in str(chaine).lower()): return dico['1-1-1-2-1-2']
         if ("mailles de taille inconnue" in str(chaine).lower()): return dico['1-1-1-2-5']
         if ("non observable" in str(chaine).lower()): return dico['1-1-1-2-5']
 
     # Risque de maillage sous la surface
     if index == 'obj_flot_risq_mail_sou_surf':
-        if ("pas de mailles" in str(chaine).lower()): return dico['1-1-1-3-3'], dico['1-1-2-3']
-        if ("< 6, 5 cm" in str(chaine).lower()): return dico['1-1-1-3-1'], dico['1-1-2-4-2']
-        if ("> 6,5 cm" in str(chaine).lower()): return dico['1-1-1-3-2'], dico['1-1-2-4-3']
-        if ("mailles de taille inconnue" in str(chaine).lower()): return dico['1-1-1-3-5'], dico['1-1-2-2']
-        if ("non observable" in str(chaine).lower()): return dico['1-1-1-3-5'], dico['1-1-2-2']
+        if ("pas de mailles" in str(chaine).lower()): return None, dico['1-1-2-3']
+        if ("< 6, 5 cm" in str(chaine).lower()): return None, dico['1-1-2-4-2']
+        if ("> 6,5 cm" in str(chaine).lower()): return None, dico['1-1-2-4-3']
+        if ("mailles de taille inconnue" in str(chaine).lower()): None, dico['1-1-2-2']
+        if ("non observable" in str(chaine).lower()): None, dico['1-1-2-2']
 
     # Autre DFAD
     if perte_act:

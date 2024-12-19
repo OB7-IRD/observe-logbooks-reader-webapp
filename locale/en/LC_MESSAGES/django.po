@@ -18,15 +18,15 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\api_traitement\api_functions.py:120
+#: api_traitement/api_functions.py:121
 msgid "Problème de connexion pour recuperer les données"
 msgstr "It seems there is an issue to collect the data"
 
-#: .\api_traitement\api_functions.py:322 .\api_traitement\api_functions.py:361
+#: api_traitement/api_functions.py:323 api_traitement/api_functions.py:362
 msgid "Logbook inséré avec success"
 msgstr "The logbook has been successfully sent"
 
-#: .\api_traitement\api_functions.py:333 .\api_traitement\api_functions.py:365
+#: api_traitement/api_functions.py:334 api_traitement/api_functions.py:366
 msgid ""
 "L'insertion de cet logbook n'est pas possible. Désolé veuillez essayer un "
 "autre"
@@ -99,64 +99,60 @@ msgstr "%(programme)s program"
 msgid "Rapporté "
 msgstr "Reported "
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:200
+#: palangre_syc/templates/LL_homepage.html:238
 msgid "par"
 msgstr "by"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:205
+#: palangre_syc/templates/LL_homepage.html:243
 msgid "le "
 msgstr "on "
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:222
+#: palangre_syc/templates/LL_homepage.html:260
 msgid "Informations de marée"
 msgstr "Trip information"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:237
-msgid "at-port-trip"
-msgstr "Tick if the activity between the start and endDate is at port."
-
-#: .\palangre_syc\templates\LL_presenting_logbook.html:245
-#: .\palangre_syc\templates\LL_previoustrippage.html:46
+#: palangre_syc/templates/LL_homepage.html:270
+#: palangre_syc/templates/LL_previoustrippage.html:85
 msgid "Date de départ"
 msgstr "Departure date"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:261
-#: .\palangre_syc\templates\LL_previoustrippage.html:49
+#: palangre_syc/templates/LL_homepage.html:286
+#: palangre_syc/templates/LL_previoustrippage.html:88
 msgid "Port de départ"
 msgstr "Departure port"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:270
-#: .\palangre_syc\templates\LL_presenting_logbook.html:294
+#: palangre_syc/templates/LL_homepage.html:295
+#: palangre_syc/templates/LL_homepage.html:319
 msgid "Non concerné"
 msgstr "Not concerned"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:281
-#: .\palangre_syc\templates\LL_previoustrippage.html:53
+#: palangre_syc/templates/LL_homepage.html:306
+#: palangre_syc/templates/LL_previoustrippage.html:92
 msgid "Date d'arrivée"
 msgstr "Arrival date"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:290
-#: .\palangre_syc\templates\LL_previoustrippage.html:56
+#: palangre_syc/templates/LL_homepage.html:315
+#: palangre_syc/templates/LL_previoustrippage.html:95
 msgid "Port d'arrivée"
 msgstr "Arrival port"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:325
+#: palangre_syc/templates/LL_homepage.html:349
 msgid "Informations sur le navire"
 msgstr "Vessel information"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:360
+#: palangre_syc/templates/LL_homepage.html:384
 msgid "Informations sur le matériel"
 msgstr "Gear information"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:409
+#: palangre_syc/templates/LL_homepage.html:433
 msgid "Informations sur la ligne de pêche"
 msgstr "Main line information"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:461
+#: palangre_syc/templates/LL_homepage.html:485
 msgid "Espèces visées"
 msgstr "Target species"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:487
+#: palangre_syc/templates/LL_homepage.html:511
 msgid "Âppats utilisés"
 msgstr "Baits used"
 
@@ -181,44 +177,44 @@ msgstr ""
 msgid "Annuler"
 msgstr "Cancel"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:538
+#: palangre_syc/templates/LL_homepage.html:557
 msgid "Envoyer le journal de bord"
 msgstr "'Send the logbook'"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:552
+#: palangre_syc/templates/LL_homepage.html:571
 msgid "Données jour par jour"
 msgstr "Day per day detail"
 
-#: .\palangre_syc\templates\LL_presenting_logbook.html:596
+#: palangre_syc/templates/LL_homepage.html:615
 msgid "Accéder au haut de la page"
 msgstr "Back to the top"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:29
+#: palangre_syc/templates/LL_previoustrippage.html:68
 msgid "Données de marées associées au programme : "
 msgstr "Trips related to the program: "
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:59
+#: palangre_syc/templates/LL_previoustrippage.html:98
 msgid "Océan"
 msgstr "Ocean"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:108
+#: palangre_syc/templates/LL_previoustrippage.html:147
 msgid "'Continuer cette marée'"
 msgstr "'Continue the trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:112
+#: palangre_syc/templates/LL_previoustrippage.html:151
 msgid "'Créer une nouvelle marée'"
 msgstr "'Create a new trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:122
+#: palangre_syc/templates/LL_previoustrippage.html:161
 msgid "'Cette marée est une nouvelle marée'"
 msgstr "'This trip is a new trip'"
 
-#: .\palangre_syc\templates\LL_previoustrippage.html:134
-#: .\palangre_syc\templates\LL_send_data.html:69
+#: palangre_syc/templates/LL_previoustrippage.html:173
+#: palangre_syc/templates/LL_send_data.html:108
 msgid "En cours de développement"
 msgstr "In development"
 
-#: .\palangre_syc\templates\LL_send_data.html:51
+#: palangre_syc/templates/LL_send_data.html:90
 msgid "Retour à la zone de dépôt"
 msgstr "Back to the drop-off zone"
 
@@ -259,8 +255,8 @@ msgstr ""
 #: .\palangre_syc\views.py:441
 msgid "msg-error-not-sequential"
 msgstr ""
-"The logbook you are submitting is not the sequential to the trip you want to "
-"continue"
+"The logbook submitted could not be entered in the database because ti is not "
+"consecutive to the previous trip."
 
 #: .\palangre_syc\views.py:725
 msgid "Le logbook a bien été envoyé dans la base"
@@ -1889,7 +1885,7 @@ msgstr "Domain-dependent programs..."
 msgid "Ocean..."
 msgstr "Ocean..."
 
-#: .\webapps\templates\logbook.html:128
+#: webapps/templates/logbook.html:128
 msgid "Types de document..."
 msgstr "Type of document..."
 
@@ -1955,11 +1951,11 @@ msgstr ""
 msgid "Charger un logbook"
 msgstr "Load a logbook"
 
-#: .\webapps\templates\login.html:18
+#: webapps/templates/login.html:18
 msgid "login-welcome"
 msgstr "Welcome !"
 
-#: .\webapps\templates\login.html:28
+#: webapps/templates/login.html:28
 msgid "login-credentials"
 msgstr "Enter your credentials to access the application."
 

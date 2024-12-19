@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.core.exceptions import ValidationError
+from django.forms import ModelForm
 from .models import LTOUser, ConnectionProfile
 
 # Configuration de l'administration pour LTOUser
@@ -23,8 +25,21 @@ class LTOUserAdmin(UserAdmin):
         }),
     )
 
-# Ajout des profils de connexion à l'interface d'administration
+# Formulaire personnalisé pour imposer l'unicité du champ "name"
+class ConnectionProfileForm(ModelForm):
+    class Meta:
+        model = ConnectionProfile
+        fields = '__all__'
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if ConnectionProfile.objects.filter(name=name).exists():
+            raise ValidationError("Un profil avec ce nom existe déjà.")
+        return name
+
+# Configuration de l'administration pour ConnectionProfile
 class ConnectionProfileAdmin(admin.ModelAdmin):
+    form = ConnectionProfileForm
     list_display = ('name', 'database_alias', 'url', 'login')
     search_fields = ('name', 'database_alias', 'login')
     filter_horizontal = ('users',)  # Affiche une interface pour ajouter des utilisateurs au profil

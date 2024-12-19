@@ -28,8 +28,9 @@ def register(request):
         form = LTOUserForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.")
+            messages.success(request, "Your account has been successfully created. You can now log in.")
             return redirect("login")
+
         else:
             messages.error(request, "Erreur lors de l'inscription. Veuillez vérifier les informations fournies.")
     return render(request, "register.html", {"form": form})
