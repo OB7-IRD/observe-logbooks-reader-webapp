@@ -17,6 +17,10 @@ WORKDIR $DockerHOME
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1  
 
+# Update image
+RUN apt-get update 
+RUN apt-get upgrade -y
+
 # install dependencies  
 RUN pip install --upgrade pip  
 
