@@ -163,7 +163,7 @@ def get_processing_topiaid(fao_code, allData):
         processing_code = "GG"
     elif fao_code == 'SWO' or fao_code == 'MLS' or fao_code == 'BUM' or fao_code == 'BLM' or fao_code == 'SFA' or fao_code == 'SSP':
         processing_code = "HG"
-    elif fao_code == 'ALB' or  fao_code == 'OIL' or fao_code == 'XXX':
+    elif fao_code == 'ALB' or  fao_code == 'OIL' or fao_code == 'MZZ':
         processing_code = "WL"
     else : 
         processing_code = "UNK"
@@ -200,7 +200,7 @@ def get_target_species_topiaid(df_donnees_p1, allData):
         elif 'Swordfish' in target: 
             list_target_topiaid.append(get_species_topiaid("SWO", allData))
         else: 
-            list_target_topiaid.append(get_species_topiaid("XXX*", allData))
+            list_target_topiaid.append(get_species_topiaid("MZZ", allData))
         
     return list_target_topiaid
 
@@ -304,7 +304,7 @@ def create_catch_table_fishes(df_donnees_p1, df_donnees_p2, row_number):
 # TopType et tracelineType sont unknown
 
 
-def create_branchelines_composition(df_donnees_p1):
+def create_branchline_composition(df_gear):
     """
     Fonction de construction du json pour les branchlineComposition
 
@@ -316,7 +316,8 @@ def create_branchelines_composition(df_donnees_p1):
     """
     branchlines_composition = [{
         'homeId': None,
-        'length': palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        # 'length': palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+        'length': df_gear.loc[df_gear['Logbook_name'] == 'Branchline length m', 'Value'].values[0],
         'proportion': None,
         'tracelineLength': None,
         'topType': "fr.ird.referential.ll.common.LineType#1239832686157#0.9",
@@ -473,7 +474,7 @@ def search_date_into_json(json_previoustrip, date_to_look_for):
                 return True
     return False
             
-def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction):
+def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extraction, end_extraction, context):
     """ 
     Fonction qui créé les activités et les set selon le format json attendu dans la base de données Observe
 
@@ -542,8 +543,8 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
                     'haulingBreaks': None,
                     'monitored': False,
                     # En fait "totalLineLength" serait de plusierus km, ce qui ne correspond pas avec le champ "Set Line length m"
-                    # 'totalLineLength' : extract_gear_info(df_donnees_p1).loc[extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
-                    'totalLineLength': None,
+                    'totalLineLength' : palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1).loc[palangre_syc.excel_extractions.extract_gear_info(df_donnees_p1)['Logbook_name'] == 'Set Line length m', 'Value'].values[0],
+                    # 'totalLineLength': None,
                     'basketLineLength': None,
                     'lengthBetweenBranchlines': df_gear.loc[df_gear['Logbook_name'] == 'Length between branches m', 'Value'].values[0]
                     })
@@ -564,7 +565,7 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
             'lightsticksType': None,
             'lightsticksColor': None,
             'mitigationType': [],
-            'branchlinesComposition': []
+            'branchlinesComposition': create_branchline_composition(df_gear)
         })
 
         activity = {
@@ -580,13 +581,21 @@ def create_activity_and_set(df_donnees_p1, df_donnees_p2, allData, start_extract
         activity.update({'endTimeStamp': None,
                         'latitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Latitude'],
                         'longitude': palangre_syc.excel_extractions.extract_positions(df_donnees_p1).loc[i, 'Longitude'],
-                        'seaSurfaceTemperature': palangre_syc.excel_extractions.extract_temperature(df_donnees_p1).loc[i, 'Température'],
+                        'seaSurfaceTemperature': palangre_syc.excel_extractions.extract_temperature(df_donnees_p1).loc[i, 'Temperature'],
                         'wind': None,
                         'windDirection': None,
                         'currentSpeed': None,
-                        'currentDirection': None,
-                        'vesselActivity': palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
-                        'dataQuality': None,
+                        'currentDirection': None,})
+        
+        if (context['at_port_checkbox'] == "true"):
+            activity.update({'vesselActivity' : 'fr.ird.referential.ll.common.VesselActivity#666#03',})
+        elif ((context['continuetrip'] == None) and (i == start_extraction)):
+            activity.update({'vesselActivity' : 'fr.ird.referential.ll.common.VesselActivity#666#03',})
+        else: 
+            activity.update({'vesselActivity': palangre_syc.excel_extractions.extract_time(df_donnees_p1, allData).loc[i, 'VesselActivity'],
+                            })
+        
+        activity.update({'dataQuality': None,
                         'fpaZone': None,
                         'relatedObservedActivity': None,
                         })
@@ -688,29 +697,3 @@ def replace_null_false_true(obj):
         return obj
 
 
-# def pretty_print(json_data, file="media/temporary_files/created_json_file.json", mode="a"):
-#     """ Fonction qui affiche avec les bonnes indentations un fichier json
-
-#     Args:
-#         json_data (json): Données json en entrée
-#         file (str, optional): Nom de fichier json de sortie "created_json_file.json".
-#         mode (str, optional): Defaults to "a" pour "append" - "w" pour "write"
-#     """
-    
-#     json_formatted_str = json.dumps(
-#         json_data, indent = 2, default = common_functions.serialize)
-#     # print("¤"*20, "pretty print function" ,"¤"*20)
-#     # print("pretty print type ::::", type(json_formatted_str), 'and before it was :::', type(json_data))
-#     with open(file, mode) as outfile:
-#         outfile.write(json_formatted_str)
-
-
-# DIR = "./palangre_syc/media"
-
-
-
-
-# if __name__ == "__main__":
-#     start_time = time.time()
-#     main()
-#     print("--- %s seconds ---" % (time.time() - start_time))

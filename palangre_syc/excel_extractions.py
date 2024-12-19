@@ -6,6 +6,7 @@ selon le format utilisé par les Seychelles
 """
 import pandas as pd
 import numpy as np
+import re
 
 from django.utils.translation import gettext as _
 
@@ -29,11 +30,8 @@ def extract_vessel_info(df_donnees):
     df_vessel_clean.columns = ['Logbook_name', 'Value']
     # On enlève les caractères spéciaux
     df_vessel_clean['Logbook_name'] = common_functions.remove_spec_char_from_list(df_vessel_clean['Logbook_name'])
-
     df_vessel_clean['Logbook_name'] = df_vessel_clean['Logbook_name'].apply(lambda x: str(x).strip() if x is not None else '')
-    # Afficher le DataFrame résultant
-    # print("#"*20, "extract_vessel_info df_vessel_clean", "#"*20)
-    # print(df_vessel_clean)
+
     return df_vessel_clean
 
 
@@ -72,10 +70,11 @@ def extract_cruise_info(df_donnees):
 
     # Appliquer la fonction strip sur les cellules de la colonne 'Value' si l'élément correspond à une zone de texte
     df_cruise['Value'] = df_cruise.iloc[:, 1].apply(lambda x: x.strip() if isinstance(x, str) else x)
-
-    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name'
+    
+    # Appliquer un filtre pour les caractères spéciaux dans la colonne 'Logbook_name' et 'Value'
     df_cruise['Logbook_name'] = common_functions.remove_spec_char_from_list(df_cruise['Logbook_name'])
-
+    df_cruise['Value'] =  common_functions.remove_spec_char_from_list(df_cruise['Value'])
+    
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_cruise['Logbook_name'] = df_cruise['Logbook_name'].str.strip()
     
@@ -187,14 +186,11 @@ def extract_line_material(df_donnees):
 
     # Supprimer les espaces supplémentaires dans la colonne 'Logbook_name'
     df_line['Logbook_name'] = df_line['Logbook_name'].str.strip()
+    df_line['Value'] = df_line['Value'].str.strip()
     
     # Filtrer les lignes qui sont cochées
-    df_line_used = df_line.loc[df_line['Value'] != "None"]
-
-    # Traduire chaque valeur du DataFrame df_line_used
-    # df_line_used['Logbook_name'] = df_line_used['Logbook_name'].apply(
-    #     lambda x: _(x) if isinstance(x, str) else x)
-
+    df_line_used = df_line[(df_line["Value"] != "None") & (df_line["Value"].notna())]
+    
     if len(df_line_used) > 1:
         message = _("Ici on n'attend qu'un seul matériau. Veuillez vérifier les données.")
         return df_line_used, message
@@ -258,8 +254,11 @@ def extract_logbook_date(df_donnees):
     df_month = df_donnees.iloc[17, 5]
     df_year = df_donnees.iloc[17, 11]
 
+    month = int(df_month) if isinstance(df_month, (int, float)) and not pd.isna(df_month) else 0
+    year = int(df_year) if isinstance(df_year, (int, float)) and not pd.isna(df_year) else 0
+
     date = {'Logbook_name': ['Month', 'Year'],
-            'Value': [int(df_month), int(df_year)]}
+            'Value': [int(month), int(year)]}
     df_date = pd.DataFrame(date)
     
     df_date['Logbook_name'] = common_functions.remove_spec_char_from_list(df_date['Logbook_name'])
@@ -319,10 +318,6 @@ def extract_positions(df_donnees):
     data = data.dropna(subset=['Latitude', 'Longitude'])
     df_position = data[['Latitude', 'Longitude']]
     
-    # for index, row in df_position.iterrows():
-    #     df_position.loc[index, 'Latitude'] = round(pd.to_numeric(df_position.loc[index, 'Latitude'], errors='coerce'), 2)
-    #     df_position.loc[index, 'Longitude'] = round(pd.to_numeric(df_position.loc[index, 'Longitude'], errors='coerce'), 2)
-    
     df_position.reset_index(drop=True, inplace=True)
 
     return df_position
@@ -338,14 +333,16 @@ def get_vessel_activity_topiaid(startTimeStamp, allData):
     Returns:
         topiaID de l'activité détectée
     """
-
     if ":" in str(startTimeStamp):
         code = "FO"
+        
+    elif re.findall(r"[0-9]{4}", startTimeStamp): 
+        code = "FO"
 
-    elif 'cruis' or 'no fishing' in startTimeStamp.lower():
+    if re.findall("cruis", startTimeStamp.lower()):
         code = "CRUISE"
 
-    elif 'port' in startTimeStamp.lower():
+    if re.findall("port", startTimeStamp.lower()):
         code = "PORT"
 
     elif startTimeStamp is None:
@@ -401,7 +398,7 @@ def extract_temperature(df_donnees):
     """
 
     df_temp = df_donnees.iloc[24:55, 8:9]
-    colnames = ['Température']
+    colnames = ['Temperature']
     df_temp.columns = colnames
     df_temp.reset_index(drop=True, inplace=True)
     return df_temp
@@ -450,7 +447,7 @@ def extract_fish_p1(df_donnees):
                 'No RET SFA', 'Kg RET SFA',
                 'No RET SSP', 'Kg RET SSP', 
                 'No RET OIL', 'Kg RET OIL',
-                'No RET XXX', 'Kg RET XXX']
+                'No RET MZZ', 'Kg RET MZZ']
     
     df_fishes.columns = colnames
     df_fishes = df_fishes.map(common_functions.zero_if_empty)
