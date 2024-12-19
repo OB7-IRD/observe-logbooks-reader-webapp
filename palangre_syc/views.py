@@ -370,6 +370,7 @@ def checking_logbook(request):
             'df_activity': df_activity,}
         #_______________________________EXTRACTION DES DONNEES__________________________________
         
+        at_port_checkbox = request.POST.get('atportcheckbox')
         startDate = request.POST.get('startDate')
         depPort = request.POST.get('depPort')
         endDate = request.POST.get('endDate')
@@ -434,7 +435,8 @@ def checking_logbook(request):
                 
             if context['df_previous'] == None:
                 # NOUVELLE MAREE
-                context.update({'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
+                context.update({'at_port_checkbox': at_port_checkbox, 
+                                'startDate': json_construction.create_starttimestamp_from_field_date(startDate),
                                 'depPort': depPort,
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None,
@@ -463,8 +465,7 @@ def checking_logbook(request):
                 else:
                     date = json_construction.create_starttimestamp(df_donnees_p1, allData, 0, False)
 
-                # print("%"*15, "context start et end Date ", "%"*15)
-                # print(context['df_previous']['endDate'])
+
                 #############################
                 # messages d'erreurs
                 if json_construction.search_date_into_json(json_previoustrip['content'], date) is True:
@@ -477,7 +478,8 @@ def checking_logbook(request):
                     messages.warning(request, _("Le logbook soumis n'a pas pu être saisi dans la base de données car il n'est pas consécutif à la marée précédente"))
                 #############################
                                     
-                context.update({'startDate': context['df_previous']['startDate'], 
+                context.update({'at_port_checkbox': at_port_checkbox, 
+                                'startDate': context['df_previous']['startDate'], 
                                 'depPort': context['df_previous']['depPort_topiaid'],
                                 'endDate' : json_construction.create_starttimestamp_from_field_date(endDate),
                                 'endPort': endPort if endPort != '' else None, 
@@ -498,7 +500,7 @@ def checking_logbook(request):
                     print("ce qui permet de garder les infos :"*5)
                     print(data_to_homepage)
                 
-                return render(request, 'LL_homepage.html', data_to_homepage)
+                return render(request, 'LL_presenting_logbook.html', data_to_homepage)
             
             else :
                 return send_logbook2observe(request)
@@ -617,12 +619,12 @@ def checking_logbook(request):
             'previous_trip': dico_trip_infos,
             'continuetrip': continuetrip,
         })
-        return render(request, 'LL_homepage.html', data_to_homepage)
+        return render(request, 'LL_presenting_logbook.html', data_to_homepage)
 
     else:
         # Gérer le cas où la méthode HTTP n'est pas POST
         pass
-    return render(request, 'LL_homepage.html')
+    return render(request, 'LL_presenting_logbook.html')
 
 
 def send_logbook2observe(request):
@@ -643,10 +645,7 @@ def send_logbook2observe(request):
 
         logbook_file_path = request.session.get('logbook_file_path')
         context = request.session.get('context')
-                
         resultat = None
-
-        # print("°"*40, context)
         
 
         if os.path.exists("media/temporary_files/created_json_file.json"):
@@ -703,7 +702,7 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2,
                 allData,
-                start_extraction, end_extraction)
+                start_extraction, end_extraction, context)
 
             print("="*80)
             print("Create Trip")
@@ -730,7 +729,7 @@ def send_logbook2observe(request):
             MultipleActivity = json_construction.create_activity_and_set(
                 df_donnees_p1, df_donnees_p2, 
                 allData, 
-                start_extraction, end_extraction)
+                start_extraction, end_extraction, context)
 
             print("="*80)
             print("Update Trip")
