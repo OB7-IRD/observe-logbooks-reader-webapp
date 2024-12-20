@@ -20,6 +20,7 @@ ENV PYTHONUNBUFFERED=1
 # Update image
 RUN apt-get update 
 RUN apt-get upgrade -y
+RUN apt-get install nano
 
 # install dependencies  
 RUN pip install --upgrade pip  
